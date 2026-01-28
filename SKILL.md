@@ -106,6 +106,7 @@ description: |
 
 | 文档 | 用途 | 模板 |
 |------|------|------|
+| `docs/context-snapshot.md` | ⭐ 上下文快照（新对话必读） | `assets/templates/context-snapshot.md` |
 | `docs/project-map.md` | 项目架构地图 | `assets/templates/project-map.md` |
 | `docs/module-registry.md` | 可复用组件清单 | `assets/templates/module-registry.md` |
 | `docs/postmortem.md` | 经验库 | `assets/templates/postmortem.md` |
@@ -119,12 +120,40 @@ description: |
 
 输出: `📄 已创建: docs/xxx.md（使用模板初始化）`
 
+### ⭐ 上下文快照机制（新对话必读）
+
+**问题**：每次开新对话，之前的项目信息丢失，需要重新告诉 AI。
+
+**解决**：`docs/context-snapshot.md` 记录项目关键信息，新对话时自动恢复认知。
+
+**⛔ 强制规则**：
+
+1. **新对话首次交互时**，必须先读取 `docs/context-snapshot.md`
+2. **任务完成后**，必须更新 `docs/context-snapshot.md`
+
+**更新规则**：
+
+| 字段 | 更新规则 |
+|------|----------|
+| 最近完成的功能 | 添加新条目，保留最近 5 个，删除旧的 |
+| 当前进行中 | 任务开始时添加，完成时清除 |
+| 关键决策 | 有新的重要约定时添加 |
+| 已知问题 | 发现问题时添加，解决后删除 |
+| 最后更新时间 | 每次更新时刷新 |
+
+**大小控制**：context-snapshot.md 必须保持精简（< 100 行），只记录"新对话必须知道"的信息。详细内容放 project-map.md。
+
+**输出**: 更新后输出 `📸 已更新上下文快照: [简述更新内容]`
+
 ### AI 强制读取规则
 
 **⛔ 用户无需手动 @ 任何文件，AI 必须自动读取以下文件**：
 
-| 模式 | ⚠️ 必须读取（不可跳过） |
-|------|-------------------------|
+**所有模式通用（必须首先读取）**：
+- ⭐ `docs/context-snapshot.md` — 恢复项目认知
+
+| 模式 | ⚠️ 额外必须读取（不可跳过） |
+|------|----------------------------|
 | Architect | `docs/project-map.md`, `docs/module-registry.md`, `references/patterns/` 相关经验 |
 | Debug | `docs/postmortem.md`, `references/patterns/` 相关经验 |
 | Refactor | `docs/project-map.md`, 目标文件 |
@@ -140,6 +169,7 @@ description: |
 
 | 完成动作 | 必须更新 | 输出格式 |
 |----------|----------|----------|
+| **任何任务完成** | ⭐ context-snapshot.md | `📸 已更新上下文快照` |
 | 新功能开发完成 | project-map.md, module-registry.md | `📝 已更新: xxx.md` |
 | Bug 修复完成 | postmortem.md | `📝 已更新: postmortem.md - Bug-xxx` |
 | 重构完成 | project-map.md | `📝 已更新: project-map.md` |
