@@ -141,5 +141,6 @@ AI:   生成 Step 计划，写入 current_steps.md，包含:
 [1] 开始执行（进入 autoDevTeam/step 流程）- 逐步执行，每步验证回归
 [2] 信任模式（进入 autoDevTeam/step 流程）- 连续执行，完成后统一验证
 [3] 修改 - 调整重构方案
+[?] 🔍 Critique 此方案 - 是最简方案吗？会不会改太多？
 [0] 取消
 ```
