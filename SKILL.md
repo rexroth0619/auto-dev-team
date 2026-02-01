@@ -119,6 +119,32 @@ description: |
 - **框架固定**：项目一键测试必须遵循“分层 + 编排 + 用例库 + 数据清理 + UI 自动化”的统一框架
 - **⛔ 禁止跳过测试直接 commit**
 
+### 🎯 影响范围分析与自动测试
+
+⚠️ **必须读取** `references/principles/impact-analysis.md` 和 `references/principles/auto-testing.md`
+
+**核心规则**：
+- 代码变更后，**必须执行影响范围分析**，识别所有可能受影响的模块
+- **自动调用 Test Writer Subagent**（`.cursor/agents/test-writer.md`）生成测试
+- **自动调用 Test Runner Subagent**（`.cursor/agents/test-runner.md`）执行测试
+- 测试代码存放在项目的 `agent_test/` 目录
+- **失败重试**：最多 3 次，超过则请求人工介入
+- **测试清理**：保留重要测试，删除临时单测
+
+**测试策略**：
+
+| 模式 | 测试时机 |
+|-----|---------|
+| Step 模式（逐步确认） | 每步完成后测试 |
+| 信任模式（连续执行） | 所有步骤完成后合集测试 |
+| Debug 模式 | 修复后回归测试 |
+| Hotfix 模式 | 最小化烟雾测试 |
+
+**执行顺序**：
+```
+代码变更 → 影响分析 → /test-writer → /test-runner → /critique → 输出
+```
+
 ### 可读性
 
 - **显式优于隐式**: 不藏逻辑
