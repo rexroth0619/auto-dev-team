@@ -25,22 +25,27 @@ description: |
 
 ## 模式选择指南
 
-根据用户意图自动选择合适的模式：
+⚠️ **必须先读取** `references/modes/_index.md`，根据索引确定模式后，再读取对应模式的 README.md。
 
-| 用户场景 | 模式 | 流程文件（必须读取） |
-|----------|------|----------------------|
-| 想开发新功能、实现新需求、做一个XX | Architect | ⚠️ **必须读取** `references/modes/architect.md` |
-| 改文案、调样式、修小问题（≤2文件） | FastTrack | ⚠️ **必须读取** `references/modes/fasttrack.md` |
-| 遇到 bug、报错、功能不正常 | Debug | ⚠️ **必须读取** `references/modes/debug.md` |
-| 线上出问题、紧急、需要快速止血 | Hotfix | ⚠️ **必须读取** `references/modes/hotfix.md` |
-| 代码太乱、想整理、想重构 | Refactor | ⚠️ **必须读取** `references/modes/refactor.md` |
-| 刚接手项目、想了解项目结构 | Survey | ⚠️ **必须读取** `references/modes/survey.md` |
-| 删除没用的代码、清理冗余 | Cleanup | ⚠️ **必须读取** `references/modes/cleanup.md` |
-| 程序太慢、想优化性能 | Optimize | ⚠️ **必须读取** `references/modes/optimize.md` |
-| 想加测试、写单元测试 | Tester | ⚠️ **必须读取** `references/modes/tester.md` |
-| 想理解某段代码怎么工作的 | Explain | ⚠️ **必须读取** `references/modes/explain.md` |
+**⛔ 渐进式披露规则**：
+1. 先读索引 `_index.md`（~60行），根据用户意图匹配模式
+2. 确定唯一模式后，只读取该模式的 `README.md`
+3. ⛔ 禁止同时读取多个模式的 README.md
+4. ⛔ 禁止跳过索引直接读取模式文件
+5. ⛔ 禁止"先读一下看看是不是"
 
-**⛔ 强制规则**：进入任何模式前，**必须先读取对应的流程文件**，不得凭记忆执行。
+| 用户场景 | 模式 | 流程文件 |
+|----------|------|----------|
+| 想开发新功能、实现新需求 | Architect | `references/modes/architect/README.md` |
+| 改文案、调样式、修小问题 | FastTrack | `references/modes/fasttrack/README.md` |
+| 遇到 bug、报错、功能不正常 | Debug | `references/modes/debug/README.md` |
+| 线上出问题、紧急止血 | Hotfix | `references/modes/hotfix/README.md` |
+| 代码太乱、想重构 | Refactor | `references/modes/refactor/README.md` |
+| 刚接手项目、了解结构 | Survey | `references/modes/survey/README.md` |
+| 删除没用的代码 | Cleanup | `references/modes/cleanup/README.md` |
+| 程序太慢、优化性能 | Optimize | `references/modes/optimize/README.md` |
+| 想加测试、写单元测试 | Tester | `references/modes/tester/README.md` |
+| 想理解代码怎么工作的 | Explain | `references/modes/explain/README.md` |
 
 **模式判断原则**：根据用户的实际意图判断，无需用户使用特定格式。
 
@@ -94,6 +99,25 @@ description: |
 - **⛔ 禁止主 Agent 自己审自己** —— 必须用独立 Subagent
 - 各模式文件（architect.md / debug.md / refactor.md 等）中已内置会诊节点
 - Subagent 位置：`.cursor/agents/critique.md`（项目级）或 `~/.cursor/agents/critique.md`（用户级）
+- **会诊后必须输出原计划 + 修订计划，并等待用户选择**（禁止先执行）
+
+**⭐ 需求澄清优先**：
+- Critique 必须**先审查用户需求本身**，再审查方案
+- 发现需求歧义/不合理/缺少关键信息 → **立即暂停，向用户提问**
+- **⛔ 禁止在需求有疑问时直接输出方案选项** —— 必须先澄清
+
+### 🧪 自动化测试验证机制（One-Click Test）
+
+⚠️ **必须读取** `references/principles/test-verification.md` 了解完整流程
+
+**核心规则**：
+- 新功能完成 / Debug 修复完成后，**必须自动验证**
+- 优先级：预发/生产一键测试 → 本地脚本 → 手动引导
+- 无一键测试能力时，必须明确提示并给出补齐建议
+- **缺失即补齐**：没有一键测试能力时，必须先补齐最小可用版本
+- **自动演进**：每次功能完成/修复完成后判断是否需要更新一键测试
+- **框架固定**：项目一键测试必须遵循“分层 + 编排 + 用例库 + 数据清理 + UI 自动化”的统一框架
+- **⛔ 禁止跳过测试直接 commit**
 
 ### 可读性
 
@@ -273,12 +297,17 @@ description: |
 
 **任何代码改动完成后**：
 
-1. **自动 Git Commit**（强制，不再是可选项）
+1. **自动化测试验证**（强制）
+   - 读取 `docs/path.md` 获取一键测试入口 / 测试命令
+   - 按 `references/principles/test-verification.md` 执行
+   - 输出：`🧪 自动化测试验证` 结果
+
+2. **自动 Git Commit**（强制，不再是可选项）
    - 读取 `docs/path.md` 获取 git 配置
    - `git add -A && git commit -m "{类型}: {描述}" && git push`
    - 输出：`🔄 已提交: {hash} → {远程仓库}`
 
-2. **输出任务完成报告**
+3. **输出任务完成报告**
    ```
    ━━━━━━━━━━━━━━━━━━━━
    ✅ 已完成: [一句话描述]
