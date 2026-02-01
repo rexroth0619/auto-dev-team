@@ -57,10 +57,8 @@
 
 进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
 - `docs/postmortem.md` - 病例库，查找历史类似病例
-- `docs/context-snapshot.md` - ⭐ **最近做了什么功能**（病发诱因）
-- `git log -5 --oneline` - ⭐ **最近 5 次提交**（首要嫌疑人）
 
-**⛔ 新对话必须执行**：新对话丢失了之前的上下文，必须通过 context-snapshot 和 git log 恢复"最近做了什么"的认知。
+**注意**：context-snapshot 和 git log 已在 `_index.md` 通用前置步骤中强制执行。
 
 ## 流程
 
