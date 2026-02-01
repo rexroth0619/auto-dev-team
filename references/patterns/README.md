@@ -197,6 +197,9 @@ patterns/
 
 ### 通用原理 (universal/)
 
+#### architecture/
+- `internal-external-isolation.md` - 内外网隔离：内网优化功能不能让内网地址暴露给外网用户
+
 #### concurrency/
 - (暂无)
 
