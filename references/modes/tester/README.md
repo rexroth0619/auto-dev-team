@@ -1,236 +1,236 @@
-# Tester 模式 (单元测试)
+# Tester Mode (Unit Testing)
 
-> 适用: 想加测试、写单元测试 | 产出: 测试文件
+> Applies to: Add tests, write unit tests | Output: Test files
 
-## AI 必须主动读取
+## AI Must Proactively Read
 
-进入此模式时，AI 必须主动读取用户提到的目标源文件（无需用户手动提供）。
+On entry, AI must read target source files the user mentions (without user providing them).
 
-## Phase 0: 环境检查
+## Phase 0: Environment Check
 
 ```
-AI 检查项目是否已配置测试框架:
+AI checks for test framework:
 
-✅ 有测试框架:
-   → 识别使用的框架 (jest/vitest/pytest/mocha/等)
-   → 直接进入 Phase 1
+✅ Framework exists:
+   → Identify (jest/vitest/pytest/mocha/etc.)
+   → Proceed to Phase 1
 
-❌ 无测试框架:
-   → "项目未配置测试框架，是否现在配置？"
-   → 用户确认后，根据项目语言推荐并配置合适的测试框架
+❌ No framework:
+   → "No test framework configured. Set one up?"
+   → After confirm, recommend and configure based on project language
 ```
 
-### 常见测试框架 (按语言)
+### Common Test Frameworks
 
-| 语言 | 推荐框架 | 备选 |
-|------|----------|------|
+| Language | Recommended | Alternative |
+|----------|-------------|-------------|
 | JavaScript/TypeScript | vitest | jest, mocha |
 | Python | pytest | unittest |
 | Go | go test | - |
 | Rust | cargo test | - |
 | Java | JUnit | TestNG |
 
-## Phase 1: 可测性分析
+## Phase 1: Testability Analysis
 
 ```
-AI 分析目标代码，分类:
+AI analyzes target code:
 
-✅ 容易测试 (优先):
-   - 纯函数 (输入→输出，无副作用)
-   - 工具函数
-   - 数据转换逻辑
-   - 业务规则计算
+✅ Easy to test (priority):
+   - Pure functions (input→output, no side effects)
+   - Utility functions
+   - Data transformation logic
+   - Business rule calculations
    
-⚠️ 需要 Mock:
-   - 依赖外部 API / 网络请求
-   - 依赖数据库
-   - 依赖文件系统
-   - 依赖时间/随机数
-   - 依赖第三方服务
+⚠️ Requires mocking:
+   - External API / network
+   - Database
+   - File system
+   - Time/randomness
+   - Third-party services
    
-❌ 不建议单测:
-   - UI 组件渲染 (用手动测试或 E2E)
-   - 简单的透传函数
-   - 配置文件
-   - 胶水代码
+❌ Not recommended for unit testing:
+   - UI component rendering (use manual/E2E)
+   - Simple pass-through functions
+   - Configuration files
+   - Glue code
 ```
 
-输出:
+Output:
 ```
-📋 可测性分析:
-| 函数/模块 | 可测性 | 原因 |
-|-----------|--------|------|
-| calculate() | ✅ 容易 | 纯函数 |
-| fetchData() | ⚠️ 需Mock | 网络请求 |
-| Button组件 | ❌ 不建议 | UI用手动测试 |
+📋 Testability Analysis:
+| Function/Module | Testability | Reason |
+|-----------------|-------------|--------|
+| calculate() | ✅ Easy | Pure function |
+| fetchData() | ⚠️ Needs mock | Network request |
+| Button component | ❌ Not recommended | Use manual testing for UI |
 
-建议测试: calculate()
-```
-
-## Phase 2: 编写测试
-
-### 测试文件规范
-```
-位置: 与源文件同目录 或 独立 tests/ 目录 (跟随项目惯例)
-命名: 跟随项目惯例，常见:
-  - {源文件}.test.{ext}
-  - {源文件}_test.{ext}
-  - test_{源文件}.{ext}
+Recommended: calculate()
 ```
 
-### 测试结构 (通用模式)
+## Phase 2: Write Tests
+
+### File Conventions
 ```
-describe/group: 被测函数名
-  ├── test: 正常情况 (Happy Path)
-  ├── test: 边界情况 (空值、极值)
-  └── test: 异常情况 (非法输入)
+Location: Same directory or tests/ directory (follow project conventions)
+Naming: Follow project conventions:
+  - {source-file}.test.{ext}
+  - {source-file}_test.{ext}
+  - test_{source-file}.{ext}
 ```
 
-### 测试覆盖原则
+### Test Structure (Universal)
 ```
-每个被测函数至少覆盖:
-1. ✅ 正常路径 - 典型输入，预期输出
-2. ⚠️ 边界情况 - 空值、零值、极大极小值
-3. ❌ 异常情况 - 非法输入、错误处理
+describe/group: Function under test
+  ├── test: Normal case (Happy Path)
+  ├── test: Edge case (empty values, extremes)
+  └── test: Error case (invalid input)
 ```
 
-### 测试命名规范
+### Coverage Principles
 ```
-好的测试名能说明:
-- 在什么条件下
-- 做什么操作
-- 期望什么结果
+Each function must cover at minimum:
+1. ✅ Happy path - Typical input, expected output
+2. ⚠️ Edge cases - Empty values, zero, extremes
+3. ❌ Error cases - Invalid input, error handling
+```
 
-示例:
-✅ "当输入为空时应返回默认值"
-✅ "当金额为负数时应抛出异常"
+### Naming Conventions
+```
+Good names describe:
+- Condition
+- Action
+- Expected result
+
+Examples:
+✅ "should return default value when input is empty"
+✅ "should throw exception when amount is negative"
 ❌ "test1"
-❌ "测试calculate"
+❌ "test calculate"
 ```
 
-## Phase 3: 运行测试
+## Phase 3: Run Tests
 
 ```
-AI: "测试已写好，优先自动执行测试命令 (根据你的项目)
+AI: "Tests written. Auto-executing:
 
-    常见命令:
+    Common commands:
     - npm run test
     - pytest
     - go test ./...
     - cargo test
 
-    预期看到:
-    ✅ 全部通过: X passed, 0 failed
+    Expected:
+    ✅ All passed: X passed, 0 failed
     
-    如果有失败会显示:
-    ❌ 失败信息 + 期望值 vs 实际值
+    If any fail:
+    ❌ Failure info + expected vs actual
     
-    如果我无法自动执行，会一步步引导你手动运行。
-    请把结果贴给我。"
+    If cannot auto-execute, will guide manual run.
+    Paste results."
 ```
 
-## Phase 4: 处理结果
+## Phase 4: Handle Results
 
-### 测试通过
+### Tests Pass
 ```
-AI: "✅ 测试全部通过
+AI: "✅ All tests passed
 
-    是否保留测试作为回归保障？
-    - 保留: 以后改动会自动检查，防止改坏
-    - 不保留: 删除测试文件"
+    Keep as regression safeguard?
+    - Keep: Future changes auto-checked
+    - Remove: Delete test files"
 ```
 
-### 测试失败
+### Tests Fail
 ```
-AI: "❌ 有测试失败
+AI: "❌ Some tests failed
 
-    分析失败原因...
+    Analyzing...
     
-    可能情况:
-    1. 代码有 Bug → 修复代码
-    2. 测试写错了 → 修复测试
-    3. 需求理解有误 → 和用户确认
+    Possible scenarios:
+    1. Code bug → Fix code
+    2. Test wrong → Fix test
+    3. Requirement misunderstood → Confirm with user
     
-    建议: [具体建议]"
+    Suggestion: [specific suggestion]"
 ```
 
-## 与 How to Test 的关系
+## Relationship with How to Test
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│  How to Test (手动测试)                             │
-│  - 验证 UI 效果和视觉表现                           │
-│  - 验证用户交互流程                                 │
-│  - 验证端到端功能                                   │
-│  → 每次改动后手动执行                               │
+│  How to Test (Manual)                               │
+│  - UI effects and visual presentation               │
+│  - User interaction flows                           │
+│  - End-to-end functionality                         │
+│  → Execute manually after each change               │
 ├─────────────────────────────────────────────────────┤
-│  单元测试 (自动测试)                                │
-│  - 验证函数逻辑正确性                               │
-│  - 验证边界情况处理                                 │
-│  - 验证错误处理                                     │
-│  → 运行命令自动执行，秒级反馈                       │
+│  Unit Tests (Automated)                             │
+│  - Function logic correctness                       │
+│  - Edge case handling                               │
+│  - Error handling                                   │
+│  → Run commands, instant                            │
 ├─────────────────────────────────────────────────────┤
-│  两者互补，不是替代                                 │
-│  用户交互/视觉 → 手动测试                           │
-│  核心逻辑/计算 → 单元测试                           │
+│  Complementary, not substitutes                     │
+│  User interaction/visual → Manual testing           │
+│  Core logic/computation → Unit testing              │
 └─────────────────────────────────────────────────────┘
 ```
 
-## 何时建议添加测试
+## When to Suggest Tests
 
-| 场景 | 建议 | 原因 |
-|------|------|------|
-| 修复的 Bug | 🟢 强烈建议 | 防止 Bug 复发 |
-| 重构后 | 🟢 强烈建议 | 验证行为等价 |
-| 核心业务逻辑 | 🟢 建议 | 保障正确性 |
-| 工具函数 | 🟢 建议 | 容易测，价值高 |
-| 新功能 | 🟡 可选 | 视复杂度决定 |
-| UI 组件 | 🔴 不建议 | 用手动测试 |
-| 简单透传 | 🔴 不建议 | 价值太低 |
+| Scenario | Suggestion | Reason |
+|----------|-----------|--------|
+| Fixed bug | 🟢 Strongly recommend | Prevent recurrence |
+| After refactoring | 🟢 Strongly recommend | Verify equivalence |
+| Core business logic | 🟢 Recommend | Ensure correctness |
+| Utility functions | 🟢 Recommend | Easy, high value |
+| New feature | 🟡 Optional | Depends on complexity |
+| UI components | 🔴 Not recommended | Use manual testing |
+| Simple pass-through | 🔴 Not recommended | Too low value |
 
-## Mock 原则
+## Mock Principles
 
 ```
-Mock 的目的: 隔离被测代码，不真正调用外部依赖
+Purpose: Isolate code under test from external dependencies
 
-何时需要 Mock:
-- 外部 API / 网络请求
-- 数据库操作
-- 文件系统
-- 时间相关 (Date.now, time.time)
-- 随机数
+When to mock:
+- External API / network
+- Database operations
+- File system
+- Time (Date.now, time.time)
+- Random numbers
 
-Mock 原则:
-- 只 Mock 必须 Mock 的
-- Mock 行为，不 Mock 实现
-- 保持 Mock 简单
+Rules:
+- Only mock what must be mocked
+- Mock behavior, not implementation
+- Keep mocks simple
 ```
 
-## 强制规则
+## Mandatory Rules
 
-- 测试文件跟随项目已有惯例
-- 测试命名清晰描述预期行为
-- 不测试实现细节，测试行为
-- 先写最有价值的测试 (核心逻辑、Bug 修复)
+- Test files follow project conventions
+- Test names clearly describe expected behavior
+- Test behavior, not implementation details
+- Write highest-value tests first (core logic, bug fixes)
 
-## 阶段结束选项
+## Phase End Options
 
-### 测试通过后
+### After Tests Pass
 ```
-📍 当前: [N] 个测试全部通过，覆盖了 [函数/模块名]
-📌 下一步:
-[1] 保留 - 作为回归测试保障
-[2] 更多测试（继续 autoDevTeam/tester 流程）- 为其他函数添加测试
-[3] 开发新功能（进入 autoDevTeam/architect 流程）
-[0] 删除测试
+📍 Current: [N] tests passed, covering [function/module names]
+📌 Next:
+[1] Keep - As regression safeguard
+[2] More tests (continue autoDevTeam/tester workflow) - Other functions
+[3] Develop new feature (enter autoDevTeam/architect workflow)
+[0] Delete tests
 ```
 
-### 测试失败后
+### After Tests Fail
 ```
-📍 当前: [N] 个测试失败，失败在 [测试名/断言简述]
-📌 下一步:
-[1] 修复代码（进入 autoDevTeam/debug 流程）- 代码有 Bug，需要修复
-[2] 修复测试 - 测试预期写错了，需要修复测试
-[3] 详情 - 查看具体失败原因和堆栈
-[0] 取消
+📍 Current: [N] tests failed at [test name/assertion summary]
+📌 Next:
+[1] Fix code (enter autoDevTeam/debug workflow) - Bug needs fixing
+[2] Fix test - Wrong expectation
+[3] Details - Failure reason and stack trace
+[0] Cancel
 ```

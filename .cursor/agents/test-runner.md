@@ -1,10 +1,10 @@
 ---
 name: test-runner
 description: |
-  已停用。仅在用户明确要求“运行完整测试套件”时使用。
+  Disabled. Use only when user explicitly requests "run the full test suite".
 model: inherit
 ---
 
-# Test Runner Subagent（停用）
+# Test Runner Subagent (Disabled)
 
-默认不调用。若用户明确要求运行完整测试，再按项目命令执行并汇报结果。
+Not invoked by default. On explicit user request, execute project test commands and report results.

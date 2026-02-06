@@ -1,7 +1,7 @@
-# 数据处理 Pattern
+# Data Processing Patterns
 
-流式处理、增量更新、批处理、分页、数据同步等通用原理。
+Stream processing, incremental updates, batch processing, pagination, data sync, and other universal principles.
 
-**典型场景**：大数据量处理、实时数据、离线同步
+**Typical scenarios**: Large-scale data, real-time processing, offline sync
 
-**使用模板**：`../_TEMPLATE.md`
+**Use template**: `../_TEMPLATE.md`

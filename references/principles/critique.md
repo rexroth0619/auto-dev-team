@@ -1,161 +1,162 @@
-# 自动会诊机制
+# Auto-Consultation Mechanism
 
-> ⚕️ 每个方案都需要第二意见——主治医生自己审自己有 bias
+> ⚕️ Every plan needs a second opinion — the attending physician reviewing their own work has bias.
 
-## 机制说明
+## Mechanism
 
-**问题**：新对话后 AI 丢失上下文，可能提出过度设计或临时补丁方案。主 Agent 自己审自己有 confirmation bias。更危险的是：用户需求本身可能不合理、有歧义、或缺少关键信息，主 Agent 往往直接执行而不质疑。
+**Problem**: After a new conversation, the AI loses context and may propose over-engineered or band-aid solutions. The primary Agent self-reviewing has confirmation bias. Worse: user requirements themselves may be unreasonable, ambiguous, or incomplete, and the primary Agent tends to execute without questioning.
 
-**解决方案**：每次输出方案后，**自动调用独立的 Critique Subagent** 进行审查。Subagent 不仅审查方案本身，还要回溯审查用户的原始需求。
+**Solution**: After every plan, **auto-invoke an independent Critique Subagent** for review. The Subagent reviews both the plan and the user's original requirements.
 
-## 触发时机（强制自动，不再是可选项）
+## Trigger Conditions (Mandatory Auto-trigger)
 
-- 提出新功能开发方案后
-- 提出 Debug 修复方案后
-- 提出重构/优化方案后
-- 任何涉及代码改动的方案输出后
+- After proposing any plan involving code changes (feature, debug, refactor, optimization)
 
-## 执行流程
+## Execution Flow
 
 ```
-1. 主 Agent 生成方案
-2. 自动调用 Critique Subagent（不等用户选择）
-   - 传递：【用户原始需求】+ 方案内容、诊断结论、理由
-   - 不传递：主 Agent 的思考过程（避免 bias 传递）
-3. Subagent 执行两阶段审查：
+1. Primary Agent generates plan
+2. Auto-invoke Critique Subagent (no user selection needed)
+   - Pass: [user's original requirements] + plan content, diagnosis, rationale
+   - Do NOT pass: Primary Agent's thought process (avoids bias transfer)
+3. Subagent performs two-phase review:
    ┌─────────────────────────────────────────┐
-   │ 阶段 A: 需求澄清检查（Clarification）    │
-   │ → 用户需求是否合理？是否有歧义？         │
-   │ → 是否缺少关键信息？                     │
-   │ → 是否需要用户二次确认？                 │
+   │ Phase A: Requirements Clarification      │
+   │ → Requirements reasonable?              │
+   │ → Any ambiguity?                        │
+   │ → Missing critical info?                │
+   │ → User re-confirmation needed?           │
    │                                         │
-   │ ⚠️ 如有澄清问题，立即暂停，先问用户      │
+   │ ⚠️ If clarification needed, pause       │
+   │    immediately and ask the user          │
    └─────────────────────────────────────────┘
    ┌─────────────────────────────────────────┐
-   │ 阶段 B: 方案审查（只有澄清通过后才执行） │
-   │ → 根因验证、过度设计、成本审计、副作用   │
+   │ Phase B: Plan Review (only after        │
+   │          clarification passes)           │
+   │ → Root cause, over-engineering,          │
+   │   cost audit, side effects               │
    └─────────────────────────────────────────┘
-4. Subagent 返回会诊报告
-5. 主 Agent 将会诊报告呈现给用户
-6. 主 Agent 必须输出：
-   - 原计划（未修订）
-   - 会诊建议后的修订计划（如有）
-7. **等待用户选择**（原计划 / 修订计划 / 取消）
+4. Subagent returns consultation report
+5. Primary Agent presents report to user
+6. Primary Agent outputs:
+   - Original plan (unrevised)
+   - Revised plan based on feedback (if any)
+7. **Wait for user selection** (original / revised / cancel)
 ```
 
-## 输出格式
+## Output Format
 
-### 情况 1: 需求需要澄清（阶段 A 发现问题）
-
-```
-━━━━━━━━━━━━━━━━━━━━
-⏸️ 会诊暂停 - 需求待澄清
-━━━━━━━━━━━━━━━━━━━━
-Critique Subagent 在审查需求时发现以下问题：
-
-❓ 待澄清问题:
-1. [具体问题1 - 需要用户回答]
-2. [具体问题2 - 需要用户回答]
-
-💡 建议:
-[如有替代方案或风险提醒，在此说明]
-
-━━━━━━━━━━━━━━━━━━━━
-📌 请先回答以上问题，然后继续
-━━━━━━━━━━━━━━━━━━━━
-```
-
-**⛔ 此时禁止输出方案选项，必须等用户澄清后重新生成方案**
-
-### 情况 2: 需求无歧义，方案审查通过
+### Case 1: Requirements Need Clarification (Phase A Issues)
 
 ```
 ━━━━━━━━━━━━━━━━━━━━
-📋 原计划（未修订）
+⏸️ Consultation Paused — Requirements Pending Clarification
 ━━━━━━━━━━━━━━━━━━━━
-[原计划内容]
+Critique Subagent found issues during requirements review:
+
+❓ Pending Clarification:
+1. [specific question 1 — needs user response]
+2. [specific question 2 — needs user response]
+
+💡 Suggestions:
+[alternatives or risk warnings, if any]
 
 ━━━━━━━━━━━━━━━━━━━━
-🏥 会诊报告（Critique Subagent）
-━━━━━━━━━━━━━━━━━━━━
-✅ 需求澄清: 需求清晰，无歧义
-[方案审查结果]
-
-━━━━━━━━━━━━━━━━━━━━
-🛠️ 修订计划（若有）
-━━━━━━━━━━━━━━━━━━━━
-[基于会诊的修订版本]
-
-━━━━━━━━━━━━━━━━━━━━
-📌 下一步:
-[1] 执行原计划
-[2] 执行修订计划
-[0] 取消
+📌 Please answer the above questions before proceeding
 ━━━━━━━━━━━━━━━━━━━━
 ```
 
-## Critique Subagent 审查清单
+**⛔ Do NOT output plan options here; wait for user clarification then regenerate the plan**
 
-### 阶段 A: 需求澄清检查（优先执行，有问题则暂停）
+### Case 2: Requirements Clear, Plan Review Passed
 
-| 检查项 | 检查内容 | 发现问题时的行动 |
+```
+━━━━━━━━━━━━━━━━━━━━
+📋 Original Plan (Unrevised)
+━━━━━━━━━━━━━━━━━━━━
+[original plan content]
+
+━━━━━━━━━━━━━━━━━━━━
+🏥 Consultation Report (Critique Subagent)
+━━━━━━━━━━━━━━━━━━━━
+✅ Requirements Clarification: Requirements are clear, no ambiguity
+[plan review results]
+
+━━━━━━━━━━━━━━━━━━━━
+🛠️ Revised Plan (If Any)
+━━━━━━━━━━━━━━━━━━━━
+[revised version based on consultation]
+
+━━━━━━━━━━━━━━━━━━━━
+📌 Next steps:
+[1] Execute original plan
+[2] Execute revised plan
+[0] Cancel
+━━━━━━━━━━━━━━━━━━━━
+```
+
+## Critique Subagent Review Checklist
+
+### Phase A: Requirements Clarification (Execute First — Pause If Issues Found)
+
+| Check Item | What to Check | Action on Issues |
 |--------|----------|------------------|
-| 🤔 需求合理性 | 用户要做的事情合理吗？有没有更好的方式？ | 提出替代建议 |
-| ❓ 需求歧义 | 需求是否有多种理解方式？ | 列出歧义点，要求澄清 |
-| 📋 信息完整性 | 是否缺少关键信息（边界条件、优先级、约束等）？ | 列出缺失信息，要求补充 |
-| 🎯 目标明确性 | 用户真正想解决的问题是什么？表面需求 vs 真实需求？ | 追问真实意图 |
-| ⚠️ 风险预警 | 用户是否意识到这个需求的潜在风险/成本？ | 提醒风险，要求确认 |
+| 🤔 Reasonableness | Is the request reasonable? Better approach available? | Suggest alternatives |
+| ❓ Ambiguity | Multiple interpretations possible? | List ambiguities, request clarification |
+| 📋 Completeness | Missing critical info (boundaries, priorities, constraints)? | List gaps, request supplementation |
+| 🎯 Goal Clarity | Real problem? Surface vs. actual needs? | Probe true intent |
+| ⚠️ Risk Warning | User aware of potential risks/costs? | Highlight risks, request confirmation |
 
-**⛔ 阶段 A 有任何问题 → 必须暂停，先向用户澄清，不进入阶段 B**
+**⛔ Any Phase A issues → must pause, clarify with user first; do NOT proceed to Phase B**
 
-### 阶段 B: 方案审查（需求澄清通过后执行）
+### Phase B: Plan Review (After Requirements Clarification Passes)
 
-| 检查项 | 检查内容 |
+| Check Item | What to Check |
 |--------|----------|
-| 🔬 根因验证 | 确认了还是在猜？基础检查做了吗？ |
-| 🎯 过度设计 | 有没有 PM 没要求的东西？ |
-| 💰 成本审计 | 有免费替代吗？根因确认了才花钱？ |
-| ⚡ 副作用 | 会引入新问题吗？可回退吗？ |
-| 🛡️ 保留性 | 用户说"添加"时是否做成了"替换"？同级/内层元素是否被意外删除？ |
-| 🔗 关联性 | 是否有对称操作被遗漏？（编码改了，解码改了吗？）完整流程是否都检查了？ |
-| 📐 继承性 | 改了基类/接口，子类/实现是否需要同步？ |
+| 🔬 Root Cause | Confirmed or guessing? Basic checks performed? |
+| 🎯 Over-Engineering | Anything the PM didn't ask for? |
+| 💰 Cost Audit | Free alternatives available? Root cause confirmed before spending? |
+| ⚡ Side Effects | New problems introduced? Reversible? |
+| 🛡️ Preservation | Did "add" become "replace"? Sibling/nested elements accidentally deleted? |
+| 🔗 Correlation | Symmetric operations missed? (Changed encoding — did decoding change?) Full flow checked? |
+| 📐 Inheritance | Changed base class/interface — subclasses/implementations need syncing? |
 
-## Subagent 位置
+## Subagent Location
 
-| 位置 | 路径 | 用途 |
+| Location | Path | Purpose |
 |------|------|------|
-| 项目级 | `.cursor/agents/critique.md` | 跟着 git，包含项目上下文 |
-| 用户级 | `~/.cursor/agents/critique.md` | 跟着电脑，通用版 |
+| Project-level | `.cursor/agents/critique.md` | Follows git; includes project context |
+| User-level | `~/.cursor/agents/critique.md` | Follows machine; universal version |
 
-优先使用项目级，因为可以理解项目业务背景。
+Prefer project-level — it understands the project's business context.
 
-## ⛔ 禁止行为
+## ⛔ Prohibited Actions
 
-- 主 Agent 自己切换角色审查（有 bias）
-- 跳过会诊直接执行方案
-- 会诊时传递主 Agent 的思考过程
-- **需求有歧义时直接开始方案审查**（必须先澄清）
-- **发现澄清问题后仍输出方案选项**（必须等用户回答）
+- Primary Agent self-reviewing by switching roles (has bias)
+- Skipping consultation and executing directly
+- Passing Primary Agent's thought process during consultation
+- **Starting plan review when requirements are ambiguous** (must clarify first)
+- **Outputting plan options after finding clarification issues** (must wait for user response)
 
-## 灵活性原则
+## Flexibility Principle
 
-Critique Subagent 必须：
-1. 先读取 `docs/context-snapshot.md` 理解业务背景
-2. 理解"弯弯绕绕"有时是业务需要
-3. 有合理解释的方案可以接受
-4. 目标是帮助决策，不是阻止执行
+The Critique Subagent must:
+1. Read `docs/context-snapshot.md` to understand business context first
+2. Accept that "convoluted" approaches are sometimes business necessities
+3. Accept plans with reasonable justification
+4. Aid decision-making, not block execution
 
-## 需求澄清的判断标准
+## Clarification Judgment Criteria
 
-**需要澄清的情况**：
-- 用户说"做一个 XX 功能"但没说具体要求
-- 用户的需求可能有多种实现方式，选择会影响后续
-- 用户描述的问题现象，但根因不明确
-- 用户要求的改动可能有副作用，但用户可能没意识到
-- 需求涉及敏感操作（删除数据、修改权限、影响线上）
+**Clarification needed**:
+- User says "build an XX feature" without specifying requirements
+- Multiple approaches exist, choice impacts downstream work
+- User describes symptoms, root cause unclear
+- Requested change may have side effects user is unaware of
+- Requirements involve sensitive operations (deleting data, modifying permissions, affecting production)
 
-**不需要澄清的情况**：
-- 用户需求已经足够具体和明确
-- 用户明确说"不用问我，直接做"
-- 细节可以由 AI 合理推断且用户可以在验收时调整
-- 澄清问题的价值远小于直接执行再调整
+**Clarification not needed**:
+- Requirements are sufficiently specific and clear
+- User explicitly says "don't ask me, just do it"
+- Details can be reasonably inferred and adjusted during review
+- Clarification value is far less than just executing and iterating

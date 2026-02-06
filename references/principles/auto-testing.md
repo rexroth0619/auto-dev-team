@@ -1,46 +1,46 @@
-# 自动化测试流程规范
+# Automated Testing Workflow
 
-> ⚕️ 目标：**快、准、可复现**，由主 Agent 当场完成验证。
+> ⚕️ Goal: **Fast, accurate, reproducible** — primary Agent verifies on the spot.
 
-## 核心原则
+## Core Principles
 
-- **每次代码更新后立即验证**
-- **主 Agent 自己验证**，不调用测试 Subagent
-- **验证要有证据**：命令 + 输出/结果
-- **最多重试 3 次**，仍失败请求人工介入
+- **Verify immediately after every code change**
+- **Primary Agent verifies directly** — no testing Subagent
+- **Evidence required**: command + output/result
+- **Max 3 retries** — then request human intervention
 
-## 分层验证
+## Layered Verification
 
-1. **即时验证（必做）**  
-   - 覆盖：核心逻辑 + 1 个边界条件  
-   - 手段：终端命令 / 临时脚本 / 直接运行
-2. **回归检查（可选）**  
-   - 任务完成前执行  
-   - 仅在项目已有测试时运行
-3. **用户确认（必要时）**  
-   - UI/体验/外部依赖无法自动验证时
+1. **Instant Verification (Required)**  
+   - Coverage: core logic + 1 boundary condition  
+   - Methods: terminal commands / temporary scripts / direct execution
+2. **Regression Check (Optional)**  
+   - Run before task completion  
+   - Only when project already has tests
+3. **User Confirmation (When Necessary)**  
+   - When UI/UX/external dependencies cannot be auto-verified
 
-## 执行顺序
+## Execution Order
 
 ```
-代码变更完成
-→ 影响范围分析
-→ 即时验证
+Code change complete
+→ Impact analysis
+→ Instant verification
 → /critique
-→ 输出
+→ Output
 ```
 
-## 输出格式（精简）
+## Output Format
 
 ```
-🧪 即时验证
-方式: [命令/脚本]
-结果: [通过/失败]
-证据: [关键输出或错误]
+🧪 Instant Verification
+Method: [command/script]
+Result: [pass/fail]
+Evidence: [key output or error]
 ```
 
-## 禁止行为
+## Prohibited Actions
 
-- ❌ 跳过验证直接 commit
-- ❌ 只有结论没有证据
-- ❌ 失败仍继续推进
+- ❌ Skip verification and commit directly
+- ❌ Conclusions without evidence
+- ❌ Continue progressing despite failure

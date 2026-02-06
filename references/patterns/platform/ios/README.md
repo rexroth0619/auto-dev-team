@@ -1,5 +1,5 @@
-# iOS 平台经验
+# iOS Platform Patterns
 
-内存管理、App Store 审核、推送通知、后台任务、隐私权限等。
+Memory management, App Store review, push notifications, background tasks, privacy permissions, etc.
 
-**使用模板**：`../_TEMPLATE.md`
+**Use template**: `../_TEMPLATE.md`

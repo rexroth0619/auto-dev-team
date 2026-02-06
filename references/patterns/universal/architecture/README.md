@@ -1,7 +1,7 @@
-# 架构模式 Pattern
+# Architecture Patterns
 
-分层、模块化、依赖注入、事件驱动、插件化等通用原理。
+Layering, modularization, dependency injection, event-driven, plugin architecture, and other universal principles.
 
-**典型场景**：代码组织、模块解耦、可扩展性设计
+**Typical scenarios**: Code organization, module decoupling, extensibility design
 
-**使用模板**：`../_TEMPLATE.md`
+**Use template**: `../_TEMPLATE.md`

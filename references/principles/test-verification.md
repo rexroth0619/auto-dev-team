@@ -1,35 +1,35 @@
-# 测试验证机制（即时验证）
+# Test Verification Mechanism (Instant Verification)
 
-> 目标：**当下验证**，快速发现问题并给出证据。
+> Goal: **Verify now** — catch issues quickly, provide evidence.
 
-## 触发时机（强制）
+## Trigger Conditions (Mandatory)
 
-- 任何代码更新（Step / Debug / Hotfix / Refactor / Optimize / Fix / Feat）
+- Any code change (Step / Debug / Hotfix / Refactor / Optimize / Fix / Feat)
 
-## 核心规则
+## Core Rules
 
-- **主 Agent 自己验证**（不调用测试 Subagent）
-- **立刻执行**：写完代码当场验证
-- **覆盖最小集**：核心逻辑 + 1 个边界条件
-- **失败重试**：最多 3 次，仍失败请求人工介入
-- **必须有证据**：命令 + 输出/结果
+- **Primary Agent verifies directly** (no testing Subagent)
+- **Execute immediately**: verify on the spot after writing code
+- **Minimum coverage**: core logic + 1 boundary condition
+- **Retry on failure**: max 3 times; then request human intervention
+- **Evidence required**: command + output/result
 
-## 验证方式（按快优先）
+## Verification Methods (Prioritize Speed)
 
-1. 终端直跑（CLI / curl / node -e / python -c）
-2. 临时脚本（验证后删除）
-3. 用户手动确认（UI/体验/外部系统）
+1. Run directly in terminal (CLI / curl / node -e / python -c)
+2. Temporary script (delete after verification)
+3. User manual confirmation (UI/UX/external systems)
 
-## 输出格式（必须）
+## Output Format (Required)
 
 ```
-🧪 即时验证
-方式: [命令/脚本/用户确认]
-结果: [通过/失败/无法执行]
-证据: [关键输出或原因]
+🧪 Instant Verification
+Method: [command/script/user confirmation]
+Result: [pass/fail/unable to execute]
+Evidence: [key output or reason]
 ```
 
-## 禁止行为
+## Prohibited Actions
 
-- ❌ 跳过验证直接 commit
-- ❌ 只有结论没有证据
+- ❌ Skip verification and commit directly
+- ❌ Conclusions without evidence

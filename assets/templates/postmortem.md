@@ -1,27 +1,27 @@
-# 经验库 (Postmortem)
+# Postmortem Log
 
-> ⚠️ 保持简洁：只记录关键信息。Debug 后必须记录，下次先查。
+> ⚠️ Key info only. Log after debugging; check here first next time.
 
 ---
 
 ## Bug-YYYY-MM-DD-001
-**关键词**: `keyword1`, `keyword2` <!-- 便于搜索 -->
+**Keywords**: `keyword1`, `keyword2` <!-- For searchability -->
 
-### 症状
-<!-- 用户看到什么现象 -->
+### Symptoms
+<!-- What the user observed -->
 
-### 根因
-<!-- 技术上是什么问题 -->
+### Root Cause
+<!-- What went wrong technically -->
 
-### 修复
-<!-- 改了什么 -->
+### Fix
+<!-- What was changed -->
 
-### 教训
-<!-- 下次如何避免 - ⚠️ 必须是抽象的通用经验，不是具体代码行号 -->
+### Lessons Learned
+<!-- How to avoid next time — ⚠️ Abstract, generalizable insights only, not specific line numbers -->
 
-### 关联文件
-<!-- 相关模块/文件 -->
+### Related Files
+<!-- Relevant modules/files -->
 
 ---
 
-<!-- 复制上面模板添加新条目 -->
+<!-- Copy template above to add new entries -->

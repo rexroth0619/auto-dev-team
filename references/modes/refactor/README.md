@@ -1,181 +1,181 @@
-# Refactor 模式 (代码重构)
+# Refactor Mode (Code Refactoring)
 
-> 适用: 代码太乱、想整理、想重构 | 产出: current_steps.md
+> Applies to: Messy code, reorganize, refactor | Output: current_steps.md
 
-## AI 必须主动读取
+## AI Must Proactively Read
 
-进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
-- `docs/project-map.md` - 了解项目结构
-- 用户提到的目标文件
+On entry, AI must read (without user providing):
+- `docs/project-map.md` - Project structure
+- Target files mentioned by user
 
-## 流程
+## Workflow
 
-### Phase 1: 异味识别
+### Phase 1: Code Smell Identification
 ```
-用户: [描述重构目标]
+User: [Describes refactoring goal]
 
-AI:   0. 主动读取 project-map.md 和目标文件
+AI:   0. Read project-map.md and target files
 
-AI:   分析并输出:
+AI:   Analyze and output:
       
-      🔍 代码异味:
-      - [ ] 文件过长 (>300行)
-      - [ ] 函数过长 (>50行)
-      - [ ] 职责混乱
-      - [ ] 重复代码 → 考虑抽象提取
-      - [ ] 命名不清
+      🔍 Code Smells:
+      - [ ] File too long (>300 lines)
+      - [ ] Function too long (>50 lines)
+      - [ ] Mixed responsibilities
+      - [ ] Duplicate code → Consider abstraction
+      - [ ] Unclear naming
       
-      🔷 抽象提取机会 (如适用):
-      - [ ] 发现可抽象的中性逻辑
-      - [ ] 相同模式出现 3+ 次
+      🔷 Abstraction Opportunities (if applicable):
+      - [ ] Abstractable neutral logic found
+      - [ ] Same pattern appears 3+ times
       
-      如果是"抽象提取"类型重构:
-      → 用三问法则评估:
-         Q1: 中性动作 or 业务特化?
-         Q2: 未来其他场景会用吗?
-         Q3: 抽象后 API 更简单吗?
+      If goal is "abstraction extraction":
+      → Evaluate with Rule of Three:
+         Q1: Neutral or business-specific?
+         Q2: Will other scenarios use it?
+         Q3: Is the API simpler after abstraction?
 ```
 
-### Phase 2: 影响范围分析
+### Phase 2: Impact Scope Analysis
 ```
-AI:   1. 扫描直接调用点 → 列出 文件|行号|场景|风险
-      2. 检查间接影响 (第2层依赖)
-      3. 影响范围评估: 🟢小 / 🟡中 / 🔴大
+AI:   1. Scan direct call sites → List file | line | scenario | risk
+      2. Check indirect impact (2nd-level dependencies)
+      3. Impact assessment: 🟢Small / 🟡Medium / 🔴Large
       
-      "影响范围: [大/中/小]，确认继续？"
+      "Impact scope: [Large/Medium/Small], confirm to proceed?"
 ```
 
-### Phase 3: 方案设计
+### Phase 3: Plan Design
 ```
-AI:   📋 重构方案:
-      1. [具体改动]
-      2. [具体改动]
+AI:   📋 Refactoring Plan:
+      1. [Specific change]
+      2. [Specific change]
       
-      🛡️ 向后兼容策略:
-      - [如何保证旧调用不挂]
+      🛡️ Backward Compatibility:
+      - [How to ensure existing callers unbroken]
       
-      ✅ 回归测试清单:
-      1. [验证点1]
-      2. [验证点2]
+      ✅ Regression Checklist:
+      1. [Verification point 1]
+      2. [Verification point 2]
       
-      "确认方案？"
+      "Confirm plan?"
 ```
 
-### Phase 4: 渐进执行 (增量可测)
+### Phase 4: Incremental Execution (Incremental Testable)
 ```
-AI:   生成 Step 计划，写入 current_steps.md，包含:
+AI:   Generate Step plan, write to current_steps.md:
       
-      ## 关键决策 (防遗忘)
-      - **向后兼容策略**: [具体策略]
-      - **回归测试点**: [每步后要验证什么]
-      - **Log 标识**: [REFACTOR-{目标}]
+      ## Key Decisions (prevent forgetting)
+      - **Backward compatibility**: [Strategy]
+      - **Regression test points**: [What to verify per step]
+      - **Log identifier**: [REFACTOR-{target}]
       
-      执行要求:
-      - 每步只改一个模块
-      - 每步必须保持系统可运行 (增量重构)
-      - 每步插入 [REFACTOR-{目标}-Step{N}] log 验证等价性
-      - 每步后立即验证回归清单 (通过 log 对比重构前后)
-        ⚠️ 禁止 "Step 1: 提取函数, Step 2: 测试" → 应该 "Step 1: 提取函数并验证等价"
-      - 每步产出可测标准: 重构前后 log 输出完全一致
-      - 最后一步清理 [REFACTOR-*] log
-      - 完成后自动更新 project-map.md
-        输出: "📝 已自动更新: project-map.md - [模块变化简述]"
+      Execution requirements:
+      - Each step modifies only one module
+      - Each step keeps system runnable (incremental refactoring)
+      - Each step inserts [REFACTOR-{target}-Step{N}] log for equivalence
+      - Immediate regression verification after each step (compare via logs)
+        ⚠️ Prohibited: "Step 1: Extract function, Step 2: Test" → Should be "Step 1: Extract function and verify equivalence"
+      - Testable output per step: Pre/post log output must be identical
+      - Last step cleans up [REFACTOR-*] logs
+      - Auto-update project-map.md on completion
+        Output: "📝 Auto-updated: project-map.md - [Module change summary]"
 ```
 
-## 强制规则
+## Mandatory Rules
 
-- 必须输出调用清单
-- 必须说明向后兼容策略
-- 必须列出回归测试点
-- 高风险调用点需用户二次确认
-- 抽象提取后必须更新 module-registry.md
+- Must output call site list
+- Must explain backward compatibility strategy
+- Must list regression test points
+- High-risk call sites require user re-confirmation
+- Must update module-registry.md after abstraction extraction
 
-## 抽象提取重构 (特殊类型)
-
-```
-当 Refactor 目标是"抽象提取"时:
-
-1. 识别所有重复点
-2. 设计统一 API (遵循三问法则)
-3. 提取到独立文件/模块
-4. 替换所有调用点
-5. 更新文档:
-   - module-registry.md (新增 Utility)
-   - project-map.md (标注新通用能力)
-
-输出: "📝 已自动更新: module-registry.md - 新增 [Utility名]"
-```
-
-## 等价性验证
+## Abstraction Extraction Refactoring (Special Type)
 
 ```
-重构完成后，必须通过 log 对比验证:
-1. 原有功能行为完全不变
-   → 对比重构前后 log 输出是否一致
-2. 原有调用方式仍可用
-   → [REFACTOR-{目标}] log 显示所有调用路径正常
-3. 无新增副作用
-   → log 中无意外的额外操作
+When goal is "abstraction extraction":
+
+1. Identify all duplication points
+2. Design unified API (Rule of Three)
+3. Extract to independent file/module
+4. Replace all call sites
+5. Update documentation:
+   - module-registry.md (add new Utility)
+   - project-map.md (annotate new generic capability)
+
+Output: "📝 Auto-updated: module-registry.md - Added [Utility name]"
 ```
 
-## 模式切换
-
-如发现需要新功能支撑重构 → "建议暂停，先实现 xxx 功能后再继续重构"
-
-## 阶段结束选项
-
-### Phase 2 结束
-```
-📍 当前: 影响范围分析完成，共影响 [N] 个文件，风险 [🟢/🟡/🔴]
-📌 下一步:
-[1] 确认 - 进入方案设计，制定重构策略
-[2] 缩小范围 - 减少本次重构涉及的文件
-[3] 详情 - 查看具体调用点和风险明细
-[0] 取消
-```
-
-### Phase 3.9: ⭐ 自动会诊（强制）
-
-**方案输出后，必须自动调用 Critique Subagent 进行独立审查**
+## Equivalence Verification
 
 ```
-AI:   1. 生成重构方案（上一步）
-      2. ⭐ 自动调用 Critique Subagent
-         - 传递：【用户原始重构目标】+ 重构方案、影响范围、向后兼容策略
-         - 重点检查：是最简方案吗？会不会改太多？有没有更安全的方式？
-      3. Subagent 执行两阶段审查:
+After refactoring, verify via log comparison:
+1. Existing behavior completely unchanged
+   → Compare pre/post log output for consistency
+2. Existing call patterns still work
+   → [REFACTOR-{target}] log shows all call paths healthy
+3. No new side effects
+   → No unexpected additional operations in logs
+```
+
+## Mode Switch
+
+New functionality needed for refactoring → "Suggest pausing, implement xxx first, then continue refactoring"
+
+## Phase End Options
+
+### Phase 2 End
+```
+📍 Current: Impact analysis complete, affects [N] files, risk [🟢/🟡/🔴]
+📌 Next:
+[1] Confirm - Proceed to plan design
+[2] Narrow scope - Reduce files involved
+[3] Details - View specific call sites and risk breakdown
+[0] Cancel
+```
+
+### Phase 3.9: ⭐ Auto Consultation (Mandatory)
+
+**After outputting plan, must auto-invoke Critique Subagent for review**
+
+```
+AI:   1. Generate refactoring plan (previous step)
+      2. ⭐ Auto-invoke Critique Subagent
+         - Pass: [User's refactoring goal] + plan, impact scope, backward compatibility
+         - Focus: Simplest approach? Scope too large? Safer way?
+      3. Subagent two-phase review:
          
-         阶段 A: 需求澄清检查
-         ├── 用户的重构目标是否明确？
-         ├── 重构范围是否需要进一步确认？
-         ├── 是否有隐含的业务约束没有说明？
-         └── ⚠️ 有疑问 → 暂停，先问用户
+         Phase A: Requirement Clarification
+         ├── Refactoring goal clear?
+         ├── Scope needs further confirmation?
+         ├── Implicit business constraints not stated?
+         └── ⚠️ Questions remain → Pause, ask user first
          
-         阶段 B: 方案审查（澄清通过后）
-         └── 是最简方案吗？会不会改太多？有没有更安全的方式？
+         Phase B: Plan Review (after clarification passes)
+         └── Simplest approach? Scope too large? Safer way?
          
-      4. 输出会诊报告
-      5. 输出「原计划 + 修订计划（若有）」
-      6. 等待用户选择执行哪一个
+      4. Output consultation report
+      5. Output "Original plan + Revised plan (if any)"
+      6. Wait for user selection
 ```
 
-**⛔ 禁止跳过会诊直接让用户选择执行**
-**⛔ 禁止会诊后直接执行，必须等待用户选择**
-**⛔ 禁止在重构目标有疑问时直接输出方案选项**
+**⛔ Do not skip consultation and let user choose execution directly**
+**⛔ Do not execute directly after consultation; must wait for user selection**
+**⛔ Do not output plan options when refactoring goal has open questions**
 
-### Phase 3 结束
+### Phase 3 End
 ```
-📍 当前: 重构方案已制定，共 [N] 步，向后兼容策略是 [策略简述]
+📍 Current: Plan finalized, [N] steps, backward compatibility: [strategy summary]
 
 ━━━━━━━━━━━━━━━━━━━━
-🏥 会诊报告（Critique Subagent）
+🏥 Consultation Report (Critique Subagent)
 ━━━━━━━━━━━━━━━━━━━━
-[Subagent 自动审查结果]
+[Subagent auto-review results]
 ━━━━━━━━━━━━━━━━━━━━
 
-📌 下一步:
-[1] 执行原计划（进入 autoDevTeam/step 流程）- 逐步执行，每步验证回归
-[2] 执行修订计划（进入 autoDevTeam/step 流程）- 逐步执行，每步验证回归
-[3] 信任模式（进入 autoDevTeam/step 流程）- 连续执行，完成后统一验证
-[0] 取消
+📌 Next:
+[1] Execute original plan (enter autoDevTeam/step workflow) - Step-by-step, verify regression each step
+[2] Execute revised plan (enter autoDevTeam/step workflow) - Step-by-step, verify regression each step
+[3] Trust mode (enter autoDevTeam/step workflow) - Continuous execution, unified verification on completion
+[0] Cancel
 ```

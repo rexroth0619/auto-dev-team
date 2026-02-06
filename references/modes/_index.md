@@ -1,78 +1,78 @@
-# 模式索引
+# Mode Index
 
-> 根据用户意图匹配模式，确定后只读取对应目录的 README.md
+> Match mode by user intent; once determined, read only that directory's README.md
 
-## 匹配规则（按顺序，命中即停）
+## Matching Rules (in order, first match wins)
 
-| # | 模式 | 触发词/场景 | 读取路径 |
-|---|------|-------------|----------|
-| 1 | Hotfix | "线上"/"紧急"/"生产环境"/"赶紧"/"马上修" | `hotfix/README.md` |
-| 2 | Debug | "报错"/"bug"/"不正常"/"崩溃"/"出问题"/"不工作" | `debug/README.md` |
-| 3 | FastTrack | 明确小改动 ≤2文件（改文案/调样式/小修复） | `fasttrack/README.md` |
-| 4 | Refactor | "重构"/"整理"/"代码太乱"/"拆分"/"提取" | `refactor/README.md` |
-| 5 | Optimize | "太慢"/"优化"/"性能"/"加速"/"卡顿" | `optimize/README.md` |
-| 6 | Cleanup | "删掉"/"没用的代码"/"冗余"/"清理" | `cleanup/README.md` |
-| 7 | Tester | "写测试"/"单元测试"/"加测试"/"测试覆盖" | `tester/README.md` |
-| 8 | Survey | "了解项目"/"项目结构"/"刚接手"/"熟悉代码" | `survey/README.md` |
-| 9 | Explain | "这段代码干嘛的"/"怎么工作的"/"解释一下" | `explain/README.md` |
-| 10 | Architect | "做一个"/"实现"/"新功能"/"开发"/"加一个" | `architect/README.md` |
+| # | Mode | Trigger Words/Scenarios | Read Path |
+|---|------|-------------------------|----------|
+| 1 | Hotfix | "production"/"urgent"/"prod issue"/"emergency"/"fix now" | `hotfix/README.md` |
+| 2 | Debug | "error"/"bug"/"not working"/"crash"/"broken"/"failing" | `debug/README.md` |
+| 3 | FastTrack | Clearly small change ≤2 files (copy change/style tweak/minor fix) | `fasttrack/README.md` |
+| 4 | Refactor | "refactor"/"reorganize"/"messy code"/"split"/"extract" | `refactor/README.md` |
+| 5 | Optimize | "too slow"/"optimize"/"performance"/"speed up"/"laggy" | `optimize/README.md` |
+| 6 | Cleanup | "remove"/"dead code"/"redundant"/"clean up" | `cleanup/README.md` |
+| 7 | Tester | "write tests"/"unit test"/"add tests"/"test coverage" | `tester/README.md` |
+| 8 | Survey | "understand project"/"project structure"/"just inherited"/"familiarize with codebase" | `survey/README.md` |
+| 9 | Explain | "what does this code do"/"how does it work"/"explain this" | `explain/README.md` |
+| 10 | Architect | "build a"/"implement"/"new feature"/"develop"/"add a" | `architect/README.md` |
 
-**Step 模式**：不由用户直接触发，而是在 Architect/Refactor/Optimize 生成计划后进入执行阶段时使用 → `step/README.md`
+**Step Mode**: Not user-triggered; entered when Architect/Refactor/Optimize generates a plan → `step/README.md`
 
-## ⭐ 通用前置步骤（代码改动模式必须执行）
+## ⭐ Universal Pre-Steps (mandatory for code-change modes)
 
-**涉及代码改动的模式**（Architect / FastTrack / Debug / Refactor / Optimize / Hotfix）进入前：
+**Code-change modes** (Architect / FastTrack / Debug / Refactor / Optimize / Hotfix) must execute before entering:
 
-1. 读取 `docs/context-snapshot.md` → 最近做了什么功能？
-2. 执行 `git log -5 --oneline` → 最近 5 次提交是什么？
-3. 回答：**最近改动和本次任务有没有关联？**
-   - 新功能：是否和最近改动有冲突/依赖？
-   - Debug：是否由最近改动引起？
-   - 小改动：是否会影响最近上线的功能？
+1. Read `docs/context-snapshot.md` → What was recently developed?
+2. Run `git log -5 --oneline` → Last 5 commits?
+3. Answer: **Any correlation between recent changes and this task?**
+   - New feature: Conflicts/dependencies with recent changes?
+   - Debug: Caused by recent changes?
+   - Minor change: Could it affect recently shipped features?
 
-⛔ **禁止跳过此步骤直接进入模式**
+⛔ **Do not skip this step and jump directly into a mode**
 
-**不需要执行的模式**：Survey、Explain、Tester、Cleanup（只读或不涉及功能改动）
+**Exempt modes**: Survey, Explain, Tester, Cleanup (read-only or no functional changes)
 
-## 读取规则
+## Reading Rules
 
-1. 读取本索引后，根据用户意图匹配上表
-2. **执行通用前置步骤**（如适用）
-3. **确定唯一模式后**，只读取该模式的 `README.md`
-4. ⛔ 禁止同时读取多个模式的 README.md
-5. ⛔ 禁止"先读一下看看是不是"
+1. After reading this index, match user intent to the table above
+2. **Execute universal pre-steps** (if applicable)
+3. **Once a mode is determined**, read only that mode's `README.md`
+4. ⛔ Do not read multiple mode README.md files simultaneously
+5. ⛔ Do not "read first to see if it matches"
 
-## 模式简介
+## Mode Overview
 
 ### Hotfix ⚡
-紧急止血，最小改动，先修后复盘。适用于线上问题、紧急修复。
+Emergency triage — minimal change, fix first, postmortem later.
 
 ### Debug 🔍
-系统诊断，先检查后假设，确诊才开方。适用于 bug、报错、功能异常。
+Systematic diagnosis — examine before hypothesizing, prescribe only after confirmed diagnosis.
 
 ### FastTrack 🏃
-快速小改，≤2文件 ≤30行，超限自动升级 Architect。适用于改文案、调样式、小修复。
+Quick minor change — ≤2 files ≤30 lines, auto-escalates to Architect if exceeded.
 
 ### Refactor 🔧
-代码重构，影响分析，向后兼容，增量验证。适用于代码整理、结构优化。
+Code restructuring — impact analysis, backward compatibility, incremental verification.
 
 ### Optimize ⚡
-性能优化，先诊断后优化，一次一个点。适用于程序太慢、性能问题。
+Performance optimization — diagnose before optimizing, one bottleneck at a time.
 
 ### Cleanup 🧹
-清理冗余，确认无用，安全删除。适用于删除无用代码、清理冗余。
+Remove redundancy — confirm unused, delete safely.
 
 ### Tester 🧪
-添加测试，可测性分析，核心逻辑优先。适用于写单元测试、增加测试覆盖。
+Add tests — testability analysis, core logic first.
 
 ### Survey 🗺️
-项目摸底，结构扫描，生成文档。适用于刚接手项目、了解项目结构。
+Project reconnaissance — structure scan, generate documentation.
 
 ### Explain 📖
-代码解释，追踪流程，通俗说明。适用于理解某段代码如何工作。
+Code explanation — trace call flow, explain in plain terms.
 
 ### Architect 🏗️
-新功能开发，可行性评估，增量可测拆分。适用于开发新功能、实现新需求。
+New feature development — feasibility assessment, incremental testable breakdown.
 
 ### Step 📋
-步骤执行模式，由 Architect/Refactor/Optimize 计划确认后进入。逐步执行，每步验证。
+Step execution — entered after plan confirmation. Execute step by step, verify each.

@@ -1,91 +1,91 @@
-# 增量可测原则
+# Incremental Testability Principle
 
-> 所有多步骤任务必须遵守增量可测原则，每步必须产出可独立验证的成果。
+> All multi-step tasks must follow incremental testability — each step produces an independently verifiable deliverable.
 
-## 核心要求
+## Core Requirements
 
-1. 每步完成后，系统必须处于可运行状态
-2. 每步必须产出可验证的模块/功能/输出
-3. 每步必须有对应的 log 证明其正确性
-4. 禁止积攒多步改动到最后验证
+1. System must remain runnable after each step
+2. Each step produces a verifiable module/feature/output
+3. Each step has logs proving correctness
+4. Accumulating multiple steps for final verification is prohibited
 
-## 判断标准
+## Judgment Criteria
 
-**问**: 如果只做到这一步就停止，能验证这步是对的吗？
-- ✅ 能 → 步骤拆分合理
-- ❌ 不能 → 步骤拆分有问题
+**Ask**: If we stopped after this step, could we verify it's correct?
+- ✅ Yes → Decomposition is sound
+- ❌ No → Re-decompose
 
-## 好的拆分示例 (可独立验证)
+## Good Decomposition Examples (Independently Verifiable)
 
-### ✅ Step 1: 实现数据转换函数
-- **产出**: transformData() 函数
-- **验证**: 单元测试 / log 输入输出
-- **可测**: 完全独立
+### ✅ Step 1: Implement Data Transformation Function
+- **Deliverable**: transformData() function
+- **Verification**: Unit test / log input-output
+- **Testable**: Fully independent
 
-### ✅ Step 2: 实现 API 封装
-- **产出**: fetchUserData() 函数
-- **验证**: mock 数据测试 / log 请求响应
-- **可测**: 完全独立
+### ✅ Step 2: Implement API Wrapper
+- **Deliverable**: fetchUserData() function
+- **Verification**: Mock data test / log request-response
+- **Testable**: Fully independent
 
-### ✅ Step 3: 集成到 UI
-- **产出**: 完整功能
-- **验证**: UI 渲染 + 交互 / log 完整流程
-- **可测**: 完全独立
+### ✅ Step 3: Integrate into UI
+- **Deliverable**: Complete feature
+- **Verification**: UI rendering + interaction / log full flow
+- **Testable**: Fully independent
 
-## 坏的拆分示例 (无法独立验证)
+## Bad Decomposition Examples (Not Independently Verifiable)
 
-### ❌ Step 1: 定义类型和接口
-- **问题**: 只有类型定义，无法运行验证
-- **正确**: 合并到第一个实现步骤中
+### ❌ Step 1: Define Types and Interfaces
+- **Problem**: Only type definitions, nothing runnable
+- **Correct**: Merge into the first implementation step
 
-### ❌ Step 2: 实现前半部分逻辑
-- **问题**: 不完整，无法验证正确性
-- **正确**: 拆分成完整的子功能
+### ❌ Step 2: Implement First Half of Logic
+- **Problem**: Incomplete, correctness unverifiable
+- **Correct**: Decompose into complete sub-features
 
-### ❌ Step 3: 补全剩余逻辑
-### ❌ Step 4: 测试整体功能
-- **问题**: 积攒到最后验证
-- **正确**: 每步都应该可测
+### ❌ Step 3: Complete Remaining Logic
+### ❌ Step 4: Test Overall Feature
+- **Problem**: Verification deferred to end
+- **Correct**: Each step should be testable
 
-## 重构场景的增量可测
+## Incremental Testability in Refactoring
 
-### ✅ 正确做法
+### ✅ Correct Approach
 ```
-Step 1: 提取函数 A 并验证等价性
-- 产出: 新函数 + 旧函数
-- 验证: 对比 log，输出完全一致
+Step 1: Extract function A and verify equivalence
+- Deliverable: new function + old function
+- Verification: compare logs, output is identical
    
-Step 2: 替换调用点 X 并验证
-- 产出: 更新的调用
-- 验证: 功能行为不变，log 一致
+Step 2: Replace call site X and verify
+- Deliverable: updated call
+- Verification: behavior unchanged, logs consistent
 ```
 
-### ❌ 错误做法
+### ❌ Wrong Approach
 ```
-Step 1: 提取 3 个函数
-Step 2: 统一测试
-- 问题: 无法定位哪个函数有问题
-```
-
-## 优化场景的增量可测
-
-### ✅ 正确做法
-```
-Step 1: 添加缓存机制
-- 产出: 缓存模块
-- 验证: log 显示命中/未命中，对比请求次数
+Step 1: Extract 3 functions
+Step 2: Test all at once
+- Problem: cannot pinpoint which function has issues
 ```
 
-### ❌ 错误做法
+## Incremental Testability in Optimization
+
+### ✅ Correct Approach
 ```
-Step 1: 添加缓存
-Step 2: 优化算法
-Step 3: 测试整体性能
-- 问题: 无法分离各优化点的效果
+Step 1: Add caching mechanism
+- Deliverable: cache module
+- Verification: logs show hit/miss, compare request counts
 ```
 
-## 执行原则
+### ❌ Wrong Approach
+```
+Step 1: Add caching
+Step 2: Optimize algorithm
+Step 3: Test overall performance
+- Problem: cannot isolate the effect of each optimization
+```
 
-- 如果发现步骤无法独立验证 → **立即停止，重新拆分**
-- 如果用户说 "先实现，最后测试" → **拒绝，解释增量可测的重要性**
-- 信任模式下仍需每步可测，只是不等确认
+## Execution Principles
+
+- If a step cannot be independently verified → **stop and re-decompose**
+- If user says "implement first, test last" → **refuse; explain incremental testability**
+- Trust mode still requires each step to be testable — just without waiting for confirmation

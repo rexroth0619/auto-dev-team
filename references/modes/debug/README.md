@@ -1,306 +1,306 @@
-# Debug 模式 (问题诊断)
+# Debug Mode (Issue Diagnosis)
 
-> ⚕️ 适用: 患者出现异常症状（bug、报错、功能不正常）| 产出: 更新病例库 postmortem.md
+> ⚕️ Applies to: Patient presents abnormal symptoms (bug, error, unexpected behavior) | Output: Update case file postmortem.md
 
-## 🏥 诊断医师协议
+## 🏥 Diagnostic Physician Protocol
 
-**你是主治医师，不是急于开药的实习生。误诊的代价由患者承担。**
+**You are the attending physician, not an eager intern rushing to prescribe. Misdiagnosis costs are borne by the patient.**
 
-> 宁可多做一项检查，不可漏掉一个病因。
+> Better to run one extra test than miss a single cause.
 
-### 铁律：先诊断，后开方
+### Iron Rule: Diagnose First, Prescribe After
 
-| 阶段 | 可以做 | 禁止做 |
-|------|--------|--------|
-| 问诊中 | 问问题、要病史 | 开处方 |
-| 检查中 | 做检验、要复现 | 开处方 |
-| 确诊后 | 开处方 | - |
+| Phase | Allowed | Prohibited |
+|-------|---------|------------|
+| Taking history | Ask questions, request history | Prescribe |
+| Running tests | Order tests, request reproduction | Prescribe |
+| After diagnosis | Prescribe | - |
 
-### 基础检查清单（入院必检）
+### Baseline Examination Checklist (Mandatory on Admission)
 
-**不做检查就诊断 = 医疗事故**。开始猜假设前，必须先完成：
-- [ ] 控制台有什么报错？（验血）
-- [ ] 网络面板：请求发了吗？状态码？响应内容？（X光）
-- [ ] URL/协议：是http还是https？有CORS吗？（基础体检）
-- [ ] 环境对比：其他设备/浏览器正常吗？（对照组）
-- [ ] ⭐ **近因检查**：最近做了什么改动？（病发诱因）
+**Diagnosing without examination = malpractice**. Before generating hypotheses, complete:
+- [ ] Console errors? (Blood work)
+- [ ] Network panel: Request sent? Status code? Response body? (X-ray)
+- [ ] URL/Protocol: HTTP or HTTPS? CORS issues? (Basic physical)
+- [ ] Environment comparison: Works on other devices/browsers? (Control group)
+- [ ] ⭐ **Proximate cause check**: What changed recently? (Triggering factor)
 
-**⛔ 跳过基础检查直接猜 = 红线行为（医疗事故级）**
+**⛔ Skipping baseline examination and guessing = malpractice-level red line violation**
 
-### ⭐ 近因优先原则（新对话必问）
+### ⭐ Proximate Cause Priority (Must Ask in New Conversations)
 
-> **"之前好用，现在不好用" = 首先检查最近的变更**
+> **"It worked before, now it doesn't" = First check recent changes**
 
-当用户描述"之前正常，突然出问题"时，必须优先排查：
+When user says "it was fine before, suddenly broken", prioritize:
 
-1. **主动询问**：
-   - "最近做了什么改动？"
-   - "上一次正常是什么时候？"
-   - "中间有没有更新代码/配置？"
+1. **Proactively ask**:
+   - "What changes were made recently?"
+   - "When did it last work?"
+   - "Any code/config updates in between?"
 
-2. **主动检查**（如果能访问代码库）：
+2. **Proactively check** (if codebase accessible):
    ```
-   git log --oneline -10  # 查看最近提交
-   git diff HEAD~5        # 查看最近变更
+   git log --oneline -10  # Recent commits
+   git diff HEAD~5        # Recent changes
    ```
 
-3. **新对话特别注意**：
-   - 新对话丢失了之前的上下文
-   - 可能遗漏"最近刚上线的功能"这个关键信息
-   - **必须主动询问**，不能只按字面意思理解问题
+3. **New conversation awareness**:
+   - New conversations lose prior context
+   - May miss "a feature was just shipped recently"
+   - **Must proactively ask**, do not interpret purely at face value
 
-**⛔ 禁止在不知道"最近改动"的情况下，花大量时间排查其他方向**
+**⛔ Do not investigate other directions extensively without knowing "what changed recently"**
 
-**典型案例**：用户说"下载功能突然不能用了"，新对话的 AI 花了 2 小时排查证书/DNS/OSS 配置，最后发现是刚上线的"内网提速功能"导致地址替换失败。如果一开始就问"最近做了什么改动"，5 分钟就能定位。
+**Typical case**: User says "download feature suddenly broken", AI spent 2 hours on certificates/DNS/OSS config, only to find a recently shipped "intranet acceleration feature" caused address substitution failure. Asking "what changed recently" upfront would have located it in 5 minutes.
 
-## AI 必须主动读取（查阅病史）
+## AI Must Proactively Read (Review Medical History)
 
-进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
-- `docs/postmortem.md` - 病例库，查找历史类似病例
+On entry, AI must read (without user providing):
+- `docs/postmortem.md` - Case file library, search for similar cases
 
-**注意**：context-snapshot 和 git log 已在 `_index.md` 通用前置步骤中强制执行。
+**Note**: context-snapshot and git log are mandated in `_index.md` universal pre-steps.
 
-## 流程
+## Workflow
 
-### Phase 1: 问诊（症状收集）
+### Phase 1: History Taking (Symptom Collection)
 ```
-患者: [主诉]
-      [检查报告/截图]
+Patient: [Chief complaint]
+         [Test reports/screenshots]
 
-医师: 0. 调阅病例库 postmortem.md，查找类似病例
-      1. 结构化记录症状（病历）
+Physician: 0. Review postmortem.md, search for similar cases
+           1. Structured symptom recording
+           
+           2. ⚠️ Check history first (mandatory, before hypotheses):
+              "🔍 Searching case library [keywords]..."
+              
+              → Found: "Case Bug-xxx has similar symptoms, lesson: [xxx], verify this first"
+              → Not found: "No relevant history, analyzing from scratch"
+           
+           3. Request reproduction conditions:
+              - "Minimal reproduction steps?"
+              - Frequency? (100% / intermittent)
+              - Which page/operation?
+              - Environment differences? (local/production/dependency versions)
+```
+
+### Phase 2: Differential Diagnosis (Hypothesis Generation)
+
+**⛔ Prescribing prohibited; only test orders allowed**
+
+```
+Physician: Generate differential diagnoses sorted by cost (simple non-invasive first):
       
-      2. ⚠️ 先查病史 (必做，在生成假设前):
-         "🔍 搜索病例库 [关键词]..."
-         
-         → 找到相关: "发现 Bug-xxx 有类似症状，教训是: [xxx]，优先验证这个方向"
-         → 未找到: "无相关病史，从零分析"
+      | # | Suspected Cause | Examination Method | Cost | Status |
+      |---|-----------------|-------------------|------|--------|
+      | 1 | URL is HTTP not HTTPS | Check actual URL | 🟢5sec | ⏳Pending |
+      | 2 | CORS configuration issue | Check console errors | 🟢1min | ⏳Pending |
+      | 3 | CDN configuration needed | 💰Buy cert + configure | 🔴Costly | ⏳Pending |
       
-      3. 要求复现条件:
-         - "能否描述最简复现步骤？"
-         - 发作频率? (100% / 偶发)
-         - 哪个页面/操作?
-         - 环境差异? (本地/线上/依赖版本)
-```
-
-### Phase 2: 鉴别诊断（假设生成）
-
-**⛔ 此阶段禁止开处方，只能开检查单**
-
-```
-医师: 基于症状生成鉴别诊断，按检查成本排序（简单无创的在前）:
+      Status: ⏳Pending → ✅Confirmed / ❌Ruled out
       
-      | # | 疑似病因 | 检查方法 | 成本 | 状态 |
-      |---|----------|----------|------|------|
-      | 1 | URL是http而非https | 检查实际URL | 🟢5秒 | ⏳待查 |
-      | 2 | CORS配置问题 | 看控制台报错 | 🟢1分钟 | ⏳待查 |
-      | 3 | 需要配置CDN | 💰买证书+配置 | 🔴花钱 | ⏳待查 |
-      
-      状态: ⏳待查 → ✅确诊 / ❌排除
-      
-      "从检查1开始？"（必须从成本最低的开始，不能一上来就花钱）
+      "Start with examination 1?" (Must start from lowest cost)
 ```
 
-### Phase 3: 检查验证
+### Phase 3: Examination & Verification
 ```
-医师: 1. 在关键节点插入诊断探针 (完整 Pipeline)
-         fingerprint: [DEBUG-{主题}]
-         
-         必须包含流程标记:
-         → [DEBUG-{主题}] 进入: xxx
-         → [DEBUG-{主题}] 变量 xxx = yyy
-         → [DEBUG-{主题}] 分支: zzz
-         → [DEBUG-{主题}] 结果: www
-      
-      2. "请操作后，把 [DEBUG-{主题}] 的检查报告贴给我"
+Physician: 1. Insert diagnostic probes at critical nodes
+              fingerprint: [DEBUG-{topic}]
+              
+              Must include flow markers:
+              → [DEBUG-{topic}] Enter: xxx
+              → [DEBUG-{topic}] Variable xxx = yyy
+              → [DEBUG-{topic}] Branch: zzz
+              → [DEBUG-{topic}] Result: www
+           
+           2. "After the operation, paste the [DEBUG-{topic}] report to me"
 
-患者: [粘贴 log]
+Patient: [Pastes log]
 
-医师: 分析检查报告 → 缩小范围 → 重复直到定位病灶
-```
-
-### Phase 4: 确诊与治疗
-
-**⛔ 进入此阶段的前提：至少一个假设状态为 ✅确诊**（没有确诊不能开刀）
-
-```
-医师: 1. "🔬 确诊: xxx"
-         依据: [具体检查报告/影像/复现结果]
-         
-      2. "治疗方案: xxx"
-         ⚠️ 处方必须针对已确诊的病因，不是"可能有用"的猜测
-         
-      3. ⭐ 自动调用 Critique Subagent（强制，不等用户选择）
-         - 传递：【用户原始问题描述】+ 确诊结论、治疗方案、依据
-         - 不传递：诊断过程中的思考
-         
-      4. Subagent 执行两阶段审查:
-         
-         阶段 A: 问题描述澄清
-         ├── 用户描述的症状是否完整？
-         ├── 是否需要更多复现信息？
-         └── ⚠️ 有疑问 → 暂停，先问用户
-         
-         阶段 B: 方案审查（澄清通过后）
-         └── 根因验证、是否对症、会不会有副作用
-         
-      5. 输出会诊报告 + 原方案/修订方案:
-         ━━━━━━━━━━━━━━━━━━━━
-         🏥 会诊报告（Critique Subagent）
-         ━━━━━━━━━━━━━━━━━━━━
-         [Subagent 自动审查结果]
-         ━━━━━━━━━━━━━━━━━━━━
-         
-         📋 原方案: [治疗方案]
-         🛠️ 修订方案: [会诊建议后的方案，如有]
-         
-         [1] 执行原方案
-         [2] 执行修订方案
-         [0] 取消
-         
-      6. 等待用户选择（禁止先执行）
-      7. 确认后执行，观察治疗效果 (保留监测)
-      8. 清理所有 [DEBUG-*] 诊断探针
+Physician: Analyze report → Narrow scope → Repeat until root cause located
 ```
 
-**⛔ 禁止跳过会诊直接让用户选择执行**
-**⛔ 禁止会诊后直接执行，必须等待用户选择**
-**⛔ 禁止在问题描述有疑问时直接开处方**
+### Phase 4: Diagnosis & Treatment
 
-### Phase 4.5: 治疗后即时验证
-
-⚠️ **必须读取** `references/principles/auto-testing.md` 了解完整流程
-
-**修复代码后，必须即时验证**：
+**⛔ Prerequisite: At least one hypothesis has ✅Confirmed status** (No surgery without confirmed diagnosis)
 
 ```
-治疗方案执行完成
+Physician: 1. "🔬 Diagnosis confirmed: xxx"
+              Evidence: [Specific report/imaging/reproduction result]
+              
+           2. "Treatment plan: xxx"
+              ⚠️ Prescription must target confirmed cause, not a "might help" guess
+              
+           3. ⭐ Auto-invoke Critique Subagent (mandatory)
+              - Pass: [User's original problem] + diagnosis, treatment plan, evidence
+              - Do not pass: Reasoning during diagnosis
+              
+           4. Subagent two-phase review:
+              
+              Phase A: Problem Description Clarification
+              ├── Are symptoms complete?
+              ├── More reproduction info needed?
+              └── ⚠️ Questions remain → Pause, ask user first
+              
+              Phase B: Plan Review (after clarification passes)
+              └── Root cause validation, treatment targeting, potential side effects
+              
+           5. Output consultation report + original/revised plan:
+              ━━━━━━━━━━━━━━━━━━━━
+              🏥 Consultation Report (Critique Subagent)
+              ━━━━━━━━━━━━━━━━━━━━
+              [Subagent auto-review results]
+              ━━━━━━━━━━━━━━━━━━━━
+              
+              📋 Original plan: [Treatment plan]
+              🛠️ Revised plan: [Plan after consultation, if any]
+              
+              [1] Execute original plan
+              [2] Execute revised plan
+              [0] Cancel
+              
+           6. Wait for user selection (do not execute preemptively)
+           7. After confirmation, execute and observe effect (retain monitoring)
+           8. Clean up all [DEBUG-*] diagnostic probes
+```
+
+**⛔ Do not skip consultation and let user choose execution directly**
+**⛔ Do not execute directly after consultation; must wait for user selection**
+**⛔ Do not prescribe when problem description has open questions**
+
+### Phase 4.5: Post-Treatment Instant Verification
+
+⚠️ **Must read** `references/principles/auto-testing.md` for complete workflow
+
+**After fixing code, instant verification is mandatory**:
+
+```
+Treatment executed
     ↓
-1. 影响范围分析（见 references/principles/impact-analysis.md）
+1. Impact scope analysis (see references/principles/impact-analysis.md)
     ↓
-2. 即时验证（主 Agent）
+2. Instant verification (Main Agent)
     ↓
-3. 输出给 PM
+3. Output to PM
 ```
 
-**治疗后验证输出格式**：
+**Post-Treatment Verification Output**:
 ```
 ━━━━━━━━━━━━━━━━━━━━
-🧪 治疗后验证
+🧪 Post-Treatment Verification
 ━━━━━━━━━━━━━━━━━━━━
 
-🎯 影响范围: [模块列表]
+🎯 Impact scope: [Module list]
 
-🧪 即时验证:
-方式: [命令/脚本]
-结果: [通过/失败]
-证据: [关键输出]
+🧪 Instant verification:
+Method: [Command/Script]
+Result: [Pass/Fail]
+Evidence: [Key output]
 
-✅ 治疗成功，病情已稳定
+✅ Treatment successful, condition stabilized
 ━━━━━━━━━━━━━━━━━━━━
 ```
 
-**失败处理**：
-- 第 1-3 次失败：修复后重试
-- 超过 3 次：停止，报告 PM，说明可能需要重新诊断
+**Failure handling**:
+- Failure 1-3: Fix and retry
+- Over 3 failures: Stop, report to PM, explain re-diagnosis may be needed
 
-**⛔ 禁止跳过验证直接进入康复确认**
+**⛔ Do not skip verification and proceed to recovery confirmation**
 
-### Phase 5: 康复确认 & 病例归档
+### Phase 5: Recovery Confirmation & Case Archival
 
 ```
-患者: "好了" / "修复了" / "没问题了"
+Patient: "It's fixed" / "Working now" / "No more issues"
 
-医师必须输出诊疗复盘:
+Physician must output treatment review:
 
-"🔍 诊疗复盘:
+"🔍 Treatment Review:
 
-排除的诊断:
-- 疑似1: [xxx] → ❌ 排除依据: [一句话]
-- 疑似2: [xxx] → ❌ 排除依据: [一句话]
+Ruled out:
+- Suspected 1: [xxx] → ❌ Because: [one sentence]
+- Suspected 2: [xxx] → ❌ Because: [one sentence]
 
-最终确诊:
-- 疑似N: [xxx] → ✅ 因为 [关键检查报告/证据]
+Final diagnosis:
+- Suspected N: [xxx] → ✅ Because [key evidence]
 
-💡 临床经验: [一句话总结为什么这个病难诊断/容易误诊]"
+💡 Clinical insight: [One sentence on why this was hard to diagnose / easily misdiagnosed]"
 ```
 
-**强提示归档病例 (必须):**
+**Strongly prompt case archival (mandatory):**
 ```
-"📝 是否将此病例归档？
+"📝 Archive this case?
 
-本次诊疗的关键教训:
-→ [提炼的一句话经验]
+Key lesson:
+→ [One distilled sentence]
 
-[Y] 归档 (推荐) → 自动追加到病例库 postmortem.md
-[N] 跳过"
-```
-
-患者确认归档 → 更新病例库，输出: "📝 已归档: postmortem.md - Bug-YYYY-MM-DD-00X"
-
-## postmortem 写入原则
-
-**经验必须抽象化，不是记流水账：**
-```
-❌ 错误: "UserList 组件的 useEffect 依赖数组漏了 userId"
-✅ 正确: "useEffect 依赖数组不完整会导致闭包陷阱，症状是'数据不更新'"
-
-❌ 错误: "把 api/user.ts 第45行的 == 改成 ==="
-✅ 正确: "JS 宽松相等(==)在 null/undefined 比较时行为诡异，优先用 ==="
+[Y] Archive (recommended) → Auto-append to postmortem.md
+[N] Skip"
 ```
 
-**目的**: 下次遇到类似症状时，能通过关键词搜到，并直接应用教训。
+Patient confirms → Update case library: "📝 Archived: postmortem.md - Bug-YYYY-MM-DD-00X"
 
-## postmortem 条目格式
+## Postmortem Writing Principles
+
+**Lessons must be abstracted, not play-by-play:**
+```
+❌ Wrong: "UserList component's useEffect dependency array was missing userId"
+✅ Correct: "Incomplete useEffect dependency arrays cause closure traps, symptom is 'data not updating'"
+
+❌ Wrong: "Changed == to === on line 45 of api/user.ts"
+✅ Correct: "JS loose equality (==) behaves unexpectedly with null/undefined; prefer ==="
+```
+
+**Purpose**: Enable keyword search and direct lesson application for future similar symptoms.
+
+## Postmortem Entry Format
 
 ```markdown
 ## Bug-YYYY-MM-DD-00X
-**关键词**: `keyword1`, `keyword2` <!-- 便于搜索 -->
-### 症状
-### 根因  
-### 修复
-### 教训 <!-- ⚠️ 抽象通用经验，非特定代码 -->
-### 关联
+**Keywords**: `keyword1`, `keyword2` <!-- for searchability -->
+### Symptoms
+### Root Cause  
+### Fix
+### Lesson <!-- ⚠️ Abstract general insight, not specific code -->
+### Related
 ```
 
-## 强制规则（诊疗纪律）
+## Mandatory Rules (Clinical Discipline)
 
-- **先查病史后诊断**: 生成假设前必须先搜索病例库，历史教训优先级最高
-- **先检查后假设**: 基础检查必须完成才能生成鉴别诊断
-- **先确诊后开方**: 无✅确诊时，禁止开处方——不能"试试这个药"
-- **先便宜后昂贵**: 诊断按检查成本排序，💰花钱方案必须排最后——不能小病大治
-- **抽象沉淀**: 归档的教训必须是通用规律，非特定代码行号
-- 治愈后必须归档病例
-- 诊断探针统一 fingerprint
-- **复诊验证**: 治疗后，用原症状验证疾病不再出现
+- **Check history before diagnosing**: Search case library before hypotheses; historical lessons have highest priority
+- **Examine before hypothesizing**: Baseline examination before differential diagnoses
+- **Confirm before prescribing**: Without ✅Confirmed, prescribing is prohibited — no "let's try this"
+- **Cheap before expensive**: Sort by examination cost; 💰costly options last — no major surgery for minor ailments
+- **Abstract and distill**: Archived lessons must be generalizable patterns, not specific line numbers
+- Must archive case after recovery
+- Diagnostic probes use unified fingerprint
+- **Follow-up verification**: After treatment, verify original symptoms no longer appear
 
-## 失败处理（疑难杂症）
+## Failure Handling (Difficult Cases)
 
 ```
-如果所有假设都验证失败:
-1. 诚实说 "当前鉴别诊断已排尽，原因不明"
-2. 建议: 扩大检查范围 / 请求会诊 / 考虑环境因素
-3. 不要瞎猜新诊断——不知道就是不知道，不能乱开药
+If all hypotheses ruled out:
+1. Honestly state "All differential diagnoses exhausted, cause unknown"
+2. Suggest: Expand scope / Request consultation / Consider environmental factors
+3. Do not guess — not knowing is not knowing; do not prescribe blindly
 ```
 
-## 阶段结束选项
+## Phase End Options
 
-### Phase 2 结束
+### Phase 2 End
 ```
-📍 当前: 已生成 N 个鉴别诊断，首要怀疑"[诊断1简述]"
-📌 下一步:
-[1] 检查 - 从诊断1开始，插入诊断探针
-[2] 检查诊断N - 跳到指定诊断验证
-[3] 补充病史 - 如需补充: [列出缺失点]
-[0] 取消
+📍 Current: Generated N differential diagnoses, primary suspicion "[Diagnosis 1]"
+📌 Next:
+[1] Examine - Start with Diagnosis 1, insert probes
+[2] Examine Diagnosis N - Jump to specific diagnosis
+[3] Supplement history - If needed: [list missing items]
+[0] Cancel
 ```
 
-### Phase 5 结束
+### Phase 5 End
 ```
-📍 当前: 患者已康复，病因是"[病因简述]"
-📌 下一步:
-[1] 添加复诊检查（进入 autoDevTeam/tester 流程）- 防止复发
-[2] 查看病例 - 确认归档内容
-[3] 开发新功能（进入 autoDevTeam/architect 流程）
-[0] 结束
+📍 Current: Patient recovered, root cause was "[cause summary]"
+📌 Next:
+[1] Add follow-up tests (enter autoDevTeam/tester workflow) - Prevent recurrence
+[2] Review case - Confirm archived content
+[3] Develop new feature (enter autoDevTeam/architect workflow)
+[0] Done
 ```

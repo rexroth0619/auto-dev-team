@@ -1,5 +1,5 @@
-# 后端平台经验
+# Backend Platform Patterns
 
-数据库连接池、负载均衡、服务发现、容器化、日志监控等。
+Connection pooling, load balancing, service discovery, containerization, logging & monitoring, etc.
 
-**使用模板**：`../_TEMPLATE.md`
+**Use template**: `../_TEMPLATE.md`

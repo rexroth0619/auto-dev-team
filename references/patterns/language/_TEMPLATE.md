@@ -1,59 +1,59 @@
-# [语言]: [经验名称]
+# [Language]: [Pattern Name]
 
-> 一句话：这个语言特有的什么问题/技巧
+> One-liner: language-specific problem/technique addressed
 
-## 适用版本
+## Applicable Versions
 
-| 维度 | 版本 |
-|------|------|
-| 语言版本 | X.x+ |
-| 相关框架 | Framework X.x (可选) |
+| Dimension | Version |
+|-----------|---------|
+| Language version | X.x+ |
+| Related framework | Framework X.x (optional) |
 
-## 背景
+## Background
 
 <!-- 
-为什么这个问题在这个语言上特殊？
-- 语言特性导致
-- 运行时特性导致
-- 生态系统惯例导致
+Why is this problem language-specific?
+- Language features
+- Runtime characteristics
+- Ecosystem conventions
 -->
 
-## 陷阱 / 常见错误
+## Pitfalls / Common Mistakes
 
 <!-- 
-展示错误的写法，解释为什么错
--->
-
-```language
-// ❌ 错误示例
-[错误代码]
-
-// 问题：[为什么这样写有问题]
-```
-
-## 正确做法
-
-<!-- 
-展示正确的写法，解释为什么对
+Incorrect approach + why it's wrong
 -->
 
 ```language
-// ✅ 正确示例
-[正确代码]
+// ❌ Incorrect example
+[incorrect code]
 
-// 说明：[为什么这样写更好]
+// Problem: [why this is problematic]
 ```
 
-## 延伸
+## Correct Approach
 
-<!-- 可选：进阶技巧或相关知识 -->
+<!-- 
+Correct approach + why it works
+-->
 
-## 关联
+```language
+// ✅ Correct example
+[correct code]
 
-- 通用原理: `universal/xxx/yyy.md` (如有)
-- 相关经验: `language/xxx/zzz.md` (如有)
+// Explanation: [why this is better]
+```
+
+## Further Reading
+
+<!-- Optional: advanced techniques or related knowledge -->
+
+## Related
+
+- Universal principle: `universal/xxx/yyy.md` (if applicable)
+- Related pattern: `language/xxx/zzz.md` (if applicable)
 
 ---
-*标签*: `tag1`, `tag2`
-*创建时间*: YYYY-MM-DD
-*验证状态*: 已验证 / 待验证
+*Tags*: `tag1`, `tag2`
+*Created*: YYYY-MM-DD
+*Verification status*: Verified / Unverified

@@ -1,136 +1,136 @@
-# Survey 模式 (项目测绘)
+# Survey Mode (Project Reconnaissance)
 
-> 适用: 刚接手项目、想了解项目结构 | 产出: project-map.md, module-registry.md, 抽象机会清单
+> Applies to: Just inherited a project, want to understand structure | Output: project-map.md, module-registry.md, abstraction opportunity list
 
-## AI 必须主动执行
+## AI Must Proactively Execute
 
-进入此模式时，AI 主动扫描项目结构，无需用户提供任何文件。
+On entry, AI scans project structure without user providing any files.
 
-## 流程
+## Workflow
 
-### Phase 1: 结构扫描
+### Phase 1: Structure Scan
 ```
-AI:   扫描项目，输出:
+AI:   Scan project, output:
       
-      📁 目录结构:
+      📁 Directory Structure:
       src/
-      ├── app/      # [推测职责]
-      ├── utils/    # [推测职责]
+      ├── app/      # [Inferred responsibility]
+      ├── utils/    # [Inferred responsibility]
       └── ...
       
-      📊 文件统计:
-      - 总文件数: X
-      - 最大文件: xxx (Y行)
-      - 入口文件: xxx
+      📊 File Statistics:
+      - Total files: X
+      - Largest file: xxx (Y lines)
+      - Entry point: xxx
 ```
 
-### Phase 2: 模块分析
+### Phase 2: Module Analysis
 ```
-AI:   逐模块分析:
+AI:   Per-module analysis:
       
-      | 模块 | 职责 | 依赖 | 健康度 |
-      |------|------|------|--------|
-      | A    | xxx  | B,C  | 🟢良好 |
-      | B    | xxx  | C    | 🟡一般 |
-      | C    | xxx  | -    | 🔴较差 |
+      | Module | Responsibility | Dependencies | Health |
+      |--------|---------------|--------------|--------|
+      | A      | xxx           | B,C          | 🟢Good |
+      | B      | xxx           | C            | 🟡Fair |
+      | C      | xxx           | -            | 🔴Poor |
 ```
 
-### Phase 2.5: 抽象机会识别 (Rule of Three)
+### Phase 2.5: Abstraction Opportunity Identification (Rule of Three)
 ```
-AI:   扫描项目，识别重复/相似的代码模式:
+AI:   Scan for duplicate/similar patterns:
       
-      🔷 抽象机会清单:
-      | 发现 | 出现位置 | 出现次数 | 抽象建议 | 优先级 |
-      |------|----------|----------|----------|--------|
-      | 相似的校验逻辑 | a.ts, b.ts, c.ts | 3次 | 提取为 validateXxx() | P1 |
-      | 重复的数据转换 | x.ts, y.ts | 2次 | 暂不抽象，标记观察 | - |
-      | 通用的遍历模式 | 多处 | 5次 | 提取为 traverseXxx() | P0 |
+      🔷 Abstraction Opportunity List:
+      | Finding | Locations | Occurrences | Suggestion | Priority |
+      |---------|-----------|-------------|------------|----------|
+      | Similar validation logic | a.ts, b.ts, c.ts | 3x | Extract as validateXxx() | P1 |
+      | Duplicate data transform | x.ts, y.ts | 2x | Do not abstract yet, observe | - |
+      | Generic traversal pattern | Multiple places | 5x | Extract as traverseXxx() | P0 |
       
-      判定标准:
-      - 3+ 次出现 → 必须抽象 (标记优先级)
-      - 2 次出现 → 标记观察，暂不抽象
-      - 1 次出现 → 忽略
+      Criteria:
+      - 3+ occurrences → Must abstract (assign priority)
+      - 2 occurrences → Flag for observation
+      - 1 occurrence → Ignore
 ```
 
-### Phase 3: 技术债识别
+### Phase 3: Tech Debt Identification
 ```
-AI:   🔍 技术债清单:
+AI:   🔍 Tech Debt List:
       
-      | 优先级 | 位置 | 问题 | 建议 |
-      |--------|------|------|------|
-      | P0 | utils.ts | 523行 | 拆分 |
+      | Priority | Location | Issue | Suggestion |
+      |----------|----------|-------|-----------|
+      | P0 | utils.ts | 523 lines | Split |
       | P1 | xxx | xxx | xxx |
       
-      🔷 抽象相关技术债:
-      | 优先级 | 问题 | 建议 |
-      |--------|------|------|
-      | P0 | 3处重复的扫描逻辑 | 抽象为 ScanUtility |
-      | P1 | 多处相似的格式化 | 抽象为 Formatter |
+      🔷 Abstraction-Related Tech Debt:
+      | Priority | Issue | Suggestion |
+      |----------|-------|-----------|
+      | P0 | 3 duplicate scan logic instances | Abstract as ScanUtility |
+      | P1 | Multiple similar formatters | Abstract as Formatter |
 ```
 
-### Phase 4: 输出文档
+### Phase 4: Output Documentation
 ```
-AI:   1. 生成/更新 project-map.md
-      2. 生成/更新 module-registry.md
-      3. "建议首要处理: [xxx]"
-```
-
-### Phase 4.5: PM 摘要 (自适应)
-
-**触发条件**: 用户使用业务语言或首次接触项目时自动附加
-
-```
-📊 项目概览
-
-这是什么: [一句话描述项目做什么]
-技术栈: [主要技术，用通俗语言]
-项目规模: 小型 / 中型 / 大型
-健康度: 🟢良好 / 🟡一般 / 🔴需要关注
-
-主要风险:
-1. [用业务语言描述]
-2. [用业务语言描述]
-
-建议: [下一步应该做什么]
+AI:   1. Generate/Update project-map.md
+      2. Generate/Update module-registry.md
+      3. "Top priority: [xxx]"
 ```
 
-**跳过条件**: 用户明确表示熟悉项目，或主动说"只看技术细节"
+### Phase 4.5: PM Summary (Adaptive)
 
-### Phase 5: 禁止区域配置 (首次)
-
-**触发条件**: 项目首次 Survey 且未配置 `docs/forbidden-zones.md`
+**Trigger**: User uses business language or is new to the project
 
 ```
-AI:   "🔒 是否配置禁止区域？
+📊 Project Overview
+
+What it is: [One-sentence description]
+Tech stack: [Main technologies, plain language]
+Scale: Small / Medium / Large
+Health: 🟢Good / 🟡Fair / 🔴Needs attention
+
+Main risks:
+1. [Business language]
+2. [Business language]
+
+Suggestion: [What to do next]
+```
+
+**Skip**: User states familiarity, or says "just the technical details"
+
+### Phase 5: Forbidden Zones Configuration (First Time)
+
+**Trigger**: First Survey and `docs/forbidden-zones.md` not configured
+
+```
+AI:   "🔒 Configure forbidden zones?
       
-      禁止区域 = AI 不能自动修改的文件/目录
+      Forbidden zones = Files/directories AI cannot auto-modify
       
-      常见配置:
-      - .env* (环境变量)
-      - migrations/ (数据库迁移)
-      - 核心配置文件
+      Common configurations:
+      - .env* (environment variables)
+      - migrations/ (database migrations)
+      - Core configuration files
       
-      [1] 配置 - 创建 docs/forbidden-zones.md
-      [2] 跳过 - 不需要限制
+      [1] Configure - Create docs/forbidden-zones.md
+      [2] Skip - No restrictions needed
       "
 ```
 
-## 产出物
+## Deliverables
 
-- project-map.md (架构地图)
-- module-registry.md (组件清单)
-- 技术债优先级清单
-- forbidden-zones.md (可选，首次配置)
+- project-map.md (Architecture map)
+- module-registry.md (Component registry)
+- Tech debt priority list
+- forbidden-zones.md (Optional, first-time)
 
-## 测绘完成后选项
+## Reconnaissance Completion Options
 
 ```
-📍 当前: 测绘完成，发现 [N] 项技术债，[M] 个抽象机会
-📌 下一步:
-[1] 处理技术债（进入 autoDevTeam/refactor 流程）- 处理 P0 技术债: [简述最优先项]
-[2] 抽象提取（进入 autoDevTeam/refactor 流程）- 提取重复代码: [简述抽象机会]
-[3] 开发新功能（进入 autoDevTeam/architect 流程）
-[4] 清理代码（进入 autoDevTeam/cleanup 流程）- 清理死代码和冗余依赖
-[5] 配置禁止区域 - 设置 AI 不能自动修改的文件（首次推荐）
-[0] 结束
+📍 Current: Reconnaissance complete, [N] tech debt items, [M] abstraction opportunities
+📌 Next:
+[1] Address tech debt (enter autoDevTeam/refactor workflow) - P0: [brief description]
+[2] Extract abstractions (enter autoDevTeam/refactor workflow) - Duplicate code: [brief description]
+[3] Develop new feature (enter autoDevTeam/architect workflow)
+[4] Clean up code (enter autoDevTeam/cleanup workflow) - Dead code and redundant dependencies
+[5] Configure forbidden zones - Set files AI cannot auto-modify (recommended first time)
+[0] Done
 ```

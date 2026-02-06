@@ -1,5 +1,5 @@
-# Web 平台经验
+# Web Platform Patterns
 
-浏览器兼容、性能优化、SSR/CSR、PWA、安全策略等。
+Browser compatibility, performance optimization, SSR/CSR, PWA, security policies, etc.
 
-**使用模板**：`../_TEMPLATE.md`
+**Use template**: `../_TEMPLATE.md`

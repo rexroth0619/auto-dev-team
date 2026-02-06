@@ -1,91 +1,91 @@
-# 检查点机制
+# Checkpoint Mechanism
 
-> 每次改动前创建 git 检查点，确保随时可回退
+> Create a git checkpoint before every change to ensure rollback is always possible.
 
-## 检查点命名规范
+## Checkpoint Naming Convention
 
 ```
-git add -A && git commit -m "SPEC-{类型}: {描述}"
+git add -A && git commit -m "SPEC-{type}: {description}"
 ```
 
-### 类型定义
+### Type Definitions
 
-| 类型 | 使用场景 | 示例 |
+| Type | Use Case | Example |
 |------|----------|------|
-| `Step{N}-before` | Step 执行前 | `SPEC-Step2-before: 添加按钮组件` |
-| `Quick` | FastTrack 执行前 | `SPEC-Quick: 改按钮颜色` |
-| `Hotfix-before` | Hotfix 执行前 | `SPEC-Hotfix-before: 修复崩溃` |
-| `Cleanup-before` | Cleanup 执行前 | `SPEC-Cleanup-before: 删除死代码` |
-| `Optimize-before` | Optimize 执行前 | `SPEC-Optimize-before: 优化渲染` |
-| `Refactor-before` | Refactor 执行前 | `SPEC-Refactor-before: 提取函数` |
-| `Complete` | 任务完成后 | `SPEC-Complete: 用户登录功能` |
-| `Save` | 用户临时保存 | `SPEC-Save: 用户更改` |
+| `Step{N}-before` | Before Step execution | `SPEC-Step2-before: add button component` |
+| `Quick` | Before FastTrack execution | `SPEC-Quick: change button color` |
+| `Hotfix-before` | Before Hotfix execution | `SPEC-Hotfix-before: fix crash` |
+| `Cleanup-before` | Before Cleanup execution | `SPEC-Cleanup-before: remove dead code` |
+| `Optimize-before` | Before Optimize execution | `SPEC-Optimize-before: optimize rendering` |
+| `Refactor-before` | Before Refactor execution | `SPEC-Refactor-before: extract function` |
+| `Complete` | After task completion | `SPEC-Complete: user login feature` |
+| `Save` | User-initiated save | `SPEC-Save: user changes` |
 
-## 常用命令
+## Common Commands
 
-### 创建检查点
+### Create Checkpoint
 ```bash
-git add -A && git commit -m "SPEC-{类型}: {描述}"
+git add -A && git commit -m "SPEC-{type}: {description}"
 ```
 
-### 回滚到检查点
+### Rollback to Checkpoint
 ```bash
-git reset --hard SPEC-{检查点名}
+git reset --hard SPEC-{checkpoint-name}
 ```
 
-### 查看所有检查点
+### List All Checkpoints
 ```bash
 git log --oneline | grep SPEC
 ```
 
-## Git 失败处理
+## Git Failure Handling
 
-当 git 操作失败时:
-
-```
-→ "检测到未保存的更改，是否先提交？"
-→ 用户确认后: git commit -m "SPEC-Save: 用户更改"
-```
-
-## 检查点使用场景
-
-### 1. Step 执行
+When a git operation fails:
 
 ```
-每步开始前:
-git commit -m "SPEC-Step{N}-before: {步骤描述}"
-
-任务完成后:
-git commit -m "SPEC-Complete: {任务名}"
+→ "Unsaved changes detected. Commit first?"
+→ After user confirms: git commit -m "SPEC-Save: user changes"
 ```
 
-### 2. 快速修改
+## Checkpoint Usage Scenarios
+
+### 1. Step Execution
 
 ```
-FastTrack（快速小改）执行前:
-git commit -m "SPEC-Quick: {改动描述}"
+Before each step:
+git commit -m "SPEC-Step{N}-before: {step description}"
+
+After task completion:
+git commit -m "SPEC-Complete: {task name}"
 ```
 
-### 3. 紧急修复
+### 2. Quick Modifications
 
 ```
-Hotfix 执行前:
-git commit -m "SPEC-Hotfix-before: {问题描述}"
+Before FastTrack execution:
+git commit -m "SPEC-Quick: {change description}"
 ```
 
-### 4. 回滚操作
+### 3. Emergency Fixes
 
 ```
-用户说 "回退" / "撤销":
-1. 列出最近的检查点
-2. 确认回退目标
-3. 执行: git reset --hard SPEC-{检查点}
-4. 报告回退完成
+Before Hotfix execution:
+git commit -m "SPEC-Hotfix-before: {issue description}"
 ```
 
-## 检查点原则
+### 4. Rollback Operations
 
-1. **改动前必建**: 任何代码改动前都要创建检查点
-2. **描述要清晰**: 检查点描述要能回忆起改动内容
-3. **粒度要合适**: 一个检查点对应一个逻辑单元
-4. **保持可回退**: 确保任何时候都能回到安全状态
+```
+When user says "rollback" / "undo":
+1. List recent checkpoints
+2. Confirm rollback target
+3. Execute: git reset --hard SPEC-{checkpoint}
+4. Report rollback complete
+```
+
+## Checkpoint Principles
+
+1. **Always create before changes**: Checkpoint before any code modification
+2. **Clear descriptions**: Must recall the change content
+3. **Appropriate granularity**: One checkpoint per logical unit
+4. **Maintain rollback capability**: Ensure a safe state is always reachable

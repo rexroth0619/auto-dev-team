@@ -1,7 +1,7 @@
-# 并发场景 Pattern
+# Concurrency Patterns
 
-排队、限流、锁、竞态处理、线程安全等通用原理。
+Queuing, rate limiting, locking, race conditions, thread safety, and other universal principles.
 
-**典型场景**：高并发请求、资源竞争、任务调度
+**Typical scenarios**: High-concurrency requests, resource contention, task scheduling
 
-**使用模板**：`../_TEMPLATE.md`
+**Use template**: `../_TEMPLATE.md`

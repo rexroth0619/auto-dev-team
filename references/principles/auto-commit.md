@@ -1,109 +1,109 @@
-# 自动 Git Commit 机制
+# Automatic Git Commit Mechanism
 
-> ⚕️ 每次手术完成后自动存档——确保改动可追溯、可回退
+> ⚕️ Archive after every surgery — ensure all changes are traceable and reversible.
 
-## 机制说明
+## Mechanism
 
-**规则**：每次方案开发/修复完成后，**必须自动 commit 并推送**，不再是可选项。
+**Rule**: After every implementation/fix completes, **auto-commit and push** — non-optional.
 
-## 触发时机
+## Trigger Conditions
 
-- 新功能开发完成
-- Bug 修复完成
-- 重构完成
-- 优化完成
-- 任何代码改动完成
+- New feature complete
+- Bug fix complete
+- Refactoring complete
+- Optimization complete
+- Any code change complete
 
-## 执行流程
+## Execution Flow
 
 ```
-1. 读取 `docs/path.md` 获取 git 配置（远程仓库、分支策略）
+1. Read `docs/path.md` for git config (remote repo, branch strategy)
 2. git add -A
-3. git commit -m "{类型}: {一句话描述}"
-4. git push（推送到 path.md 中配置的远程仓库）
-5. 输出: 🔄 已提交: {commit hash} → {远程仓库}
+3. git commit -m "{type}: {one-line description}"
+4. git push (to remote configured in path.md)
+5. Output: 🔄 Committed: {commit hash} → {remote repo}
 ```
 
-## Commit 类型
+## Commit Types
 
-| 类型 | 场景 | 示例 |
+| Type | Scenario | Example |
 |------|------|------|
-| `feat` | 新功能 | `feat: 添加用户登录功能` |
-| `fix` | Bug 修复 | `fix: 修复下载失败问题` |
-| `refactor` | 重构 | `refactor: 提取公共验证逻辑` |
-| `perf` | 性能优化 | `perf: 优化数据库查询` |
-| `docs` | 文档更新 | `docs: 更新 API 文档` |
-| `chore` | 配置/依赖更新 | `chore: 升级依赖版本` |
+| `feat` | New feature | `feat: add user login` |
+| `fix` | Bug fix | `fix: resolve download failure` |
+| `refactor` | Refactoring | `refactor: extract shared validation logic` |
+| `perf` | Performance optimization | `perf: optimize database queries` |
+| `docs` | Documentation update | `docs: update API documentation` |
+| `chore` | Config/dependency update | `chore: upgrade dependency versions` |
 
-## Commit 消息格式
+## Commit Message Format
 
 ```
-{类型}: {一句话描述}
+{type}: {one-line description}
 
-- 改动1
-- 改动2
+- change 1
+- change 2
 ```
 
-**示例**：
+**Example**:
 ```
-feat: 添加风控待处理状态
+feat: add risk-control pending status
 
-- 新增 pending 状态到 RiskControlModel
-- 水印追踪匹配订单自动加入 pending 列表
-- 支持风控/永封/忽略操作
+- Add pending status to RiskControlModel
+- Auto-add watermark-tracked matched orders to pending list
+- Support risk-control/permanent-ban/ignore actions
 ```
 
-## 任务完成报告格式
+## Task Completion Report Format
 
 ```
 ━━━━━━━━━━━━━━━━━━━━
-✅ 已完成: [一句话描述]
-📁 改动: [文件列表]
-🔄 已提交: [commit hash] → [远程仓库]
+✅ Completed: [one-line description]
+📁 Changed: [file list]
+🔄 Committed: [commit hash] → [remote repo]
 ━━━━━━━━━━━━━━━━━━━━
-📌 下一步:
-[1] [最相关的下一步]
-[2] [次相关的下一步]
-[3] 📸 保存快照后结束
-[0] 直接结束
+📌 Next steps:
+[1] [most relevant next step]
+[2] [second most relevant next step]
+[3] 📸 Save snapshot and finish
+[0] End directly
 ━━━━━━━━━━━━━━━━━━━━
 ```
 
-## 异常处理
+## Error Handling
 
-| 情况 | 处理方式 |
+| Situation | Handling |
 |------|----------|
-| 无 `docs/path.md` | 提示用户先创建，使用模板 `assets/templates/path.md` |
-| 远程仓库未配置 | 提示用户在 `path.md` 中配置 Git 配置部分 |
-| push 失败 | 报告错误，保留本地 commit，提示手动处理 |
-| 冲突 | 停止自动流程，提示用户解决冲突后手动推送 |
-| 无改动 | 跳过 commit，正常输出任务完成报告 |
+| No `docs/path.md` | Prompt user to create via template `assets/templates/path.md` |
+| Remote repo not configured | Prompt user to configure Git section in `path.md` |
+| Push failed | Report error, preserve local commit, prompt manual resolution |
+| Conflict | Stop auto-flow, prompt user to resolve and push manually |
+| No changes | Skip commit, output task completion report as normal |
 
-## 平台注意事项
+## Platform Notes
 
 ### Windows PowerShell
 
-PowerShell 不支持 `&&` 链接命令，必须分开执行：
+PowerShell does not support `&&` chaining; execute separately:
 
 ```powershell
 git add -A
-git commit -m "feat: 简短描述"
+git commit -m "feat: brief description"
 git push origin main
 ```
 
 ### Linux / macOS
 
-可以链接执行：
+Chain commands:
 
 ```bash
-git add -A && git commit -m "feat: 简短描述" && git push origin main
+git add -A && git commit -m "feat: brief description" && git push origin main
 ```
 
-## 智能推荐（下一步）
+## Smart Recommendations (Next Steps)
 
-| 刚完成的任务 | 推荐下一步 |
+| Just Completed | Recommended Next Step |
 |-------------|-----------|
-| 修复 Bug | 添加测试、记录 postmortem |
-| 新增功能 | 添加测试 |
-| 小改动 (≤2文件) | 精简选项 |
-| 重构 | 运行测试验证 |
+| Bug fix | Add tests, write postmortem |
+| New feature | Add tests |
+| Small change (≤2 files) | Streamlined options |
+| Refactoring | Run tests to verify |

@@ -1,53 +1,53 @@
-# [Pattern 名称]
+# [Pattern Name]
 
-> 一句话：什么场景用这个 pattern
+> One-liner: scenario this pattern addresses
 
-## 适用范围
+## Scope
 
-| 维度 | 范围 |
-|------|------|
-| 语言 | 通用 |
-| 平台 | 通用 |
+| Dimension | Scope |
+|-----------|-------|
+| Language | Universal |
+| Platform | Universal |
 
-## 问题
+## Problem
 
 <!-- 
-用自然语言描述问题，不涉及具体语言
-- 遇到的具体挑战
-- 为什么常规方案不够用
+Describe in natural language, no specific language references
+- The challenge encountered
+- Why conventional approaches fall short
 -->
 
-## 方案（概念层）
+## Solution (Conceptual)
 
 <!-- 
-用伪代码或流程图描述核心思路
-不使用任何特定语言语法
+Core approach via pseudocode or flowcharts
+No specific language syntax
 -->
 
 ```
-[流程图或伪代码]
+[flowchart or pseudocode]
 ```
 
-## 关键决策点
+## Key Decision Points
 
-- **决策点 1**: [需要考虑的因素]
-- **决策点 2**: [需要考虑的因素]
+- **Decision 1**: [Factors]
+- **Decision 2**: [Factors]
 
-## 边界条件
+## Boundary Conditions
 
-- **不适用**: [什么情况下不用这个 pattern]
-- **规模边界**: [多大规模需要换方案]
-- **已知限制**: [这个方案的局限性]
+- **Not applicable**: [When not to use]
+- **Scale boundary**: [When an alternative is needed]
+- **Known limitations**: [Limitations of this approach]
 
-## 检查清单
+## Checklist
 
-使用此 pattern 前需确认：
+Confirm before applying:
 
-- [ ] 检查点 1
-- [ ] 检查点 2
-- [ ] 检查点 3
+- [ ] Checkpoint 1
+- [ ] Checkpoint 2
+- [ ] Checkpoint 3
 
 ---
-*标签*: `tag1`, `tag2`, `tag3`
-*创建时间*: YYYY-MM-DD
-*验证状态*: 已验证 / 待验证
+*Tags*: `tag1`, `tag2`, `tag3`
+*Created*: YYYY-MM-DD
+*Verification status*: Verified / Unverified

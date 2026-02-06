@@ -1,14 +1,14 @@
-# 项目架构地图
+# Project Architecture Map
 
-> ⚠️ 保持简洁：只记录关键信息，不啰嗦。每次重构/新增模块后更新。
+> ⚠️ Key info only. Update after each refactor or new module addition.
 
-## 项目概述
-<!-- 一句话描述项目做什么 -->
+## Project Overview
+<!-- One-sentence description -->
 
-## 技术栈
-<!-- 列出主要技术 -->
+## Tech Stack
+<!-- Major technologies -->
 
-## 目录结构
+## Directory Structure
 ```
 src/
 ├── app/          # 
@@ -17,33 +17,33 @@ src/
 └── ...
 ```
 
-## 核心模块
+## Core Modules
 
-### 模块A
-- **职责**: 
-- **入口**: 
-- **依赖**: 
-- **被依赖**: 
+### Module A
+- **Responsibility**: 
+- **Entry point**: 
+- **Dependencies**: 
+- **Dependents**: 
 
-### 模块B
-- **职责**: 
-- **入口**: 
-- **依赖**: 
-- **被依赖**: 
+### Module B
+- **Responsibility**: 
+- **Entry point**: 
+- **Dependencies**: 
+- **Dependents**: 
 
-## 数据流
+## Data Flow
 ```
-用户操作 → [模块A] → [模块B] → 输出
+User action → [Module A] → [Module B] → Output
 ```
 
-## 关键约定
-<!-- 项目特有的规则或约定 -->
+## Key Conventions
+<!-- Project-specific rules -->
 
-## 技术债清单
-| 优先级 | 位置 | 问题 | 建议 |
-|--------|------|------|------|
+## Tech Debt Tracker
+| Priority | Location | Issue | Recommendation |
+|----------|----------|-------|----------------|
 | P0 | | | |
 | P1 | | | |
 
 ---
-*最后更新: YYYY-MM-DD*
+*Last updated: YYYY-MM-DD*

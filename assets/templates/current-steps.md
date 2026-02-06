@@ -1,38 +1,38 @@
-# 当前任务
+# Current Task
 
-创建时间: YYYY-MM-DD HH:mm
+Created: YYYY-MM-DD HH:mm
 
-## 精炼需求
+## Refined Requirements
 
-[一句话需求]
+[One-sentence requirement]
 
-## 关键决策 (防遗忘，每步执行前必读)
+## Key Decisions (Anti-amnesia — read before each step)
 
-- **复用**: [要用的现有组件]
-- **抽象决策**: [是否抽象成通用 Utility]
-- **影响范围**: [会改哪些文件]
-- **边界处理**: [异常情况怎么办]
-- **Log 标识**: [DEV-{主题}]
+- **Reuse**: [Existing components to use]
+- **Abstraction**: [Whether to abstract into generic utility]
+- **Impact Scope**: [Files to modify]
+- **Edge Cases**: [How to handle exceptions]
+- **Log Identifier**: [DEV-{topic}]
 
-## 计划 (每步必须增量可测)
+## Plan (Each step must be incrementally testable)
 
-- [ ] 🌀 Step 1: xxx [可测产出: yyy]
-- [ ] 🌀 Step 2: xxx [可测产出: yyy]
-- [ ] 🌀 Step 3: xxx [可测产出: yyy]
+- [ ] 🌀 Step 1: xxx [Testable output: yyy]
+- [ ] 🌀 Step 2: xxx [Testable output: yyy]
+- [ ] 🌀 Step 3: xxx [Testable output: yyy]
 
-⚠️ 每步必须产出可独立验证的模块 + log，禁止积攒到最后验证
+⚠️ Each step must produce an independently verifiable module + logs. Never accumulate verification until the end.
 
-## 执行记录
+## Execution Log
 
 ### Step 1
-- 状态: 🌀待执行 / ✅完成 / ❌失败
-- 改动文件: 
-- 验证结果: 
+- Status: 🌀 Pending / ✅ Done / ❌ Failed
+- Modified files: 
+- Verification result: 
 
 ### Step 2
-- 状态: 🌀待执行
-- 改动文件: 
-- 验证结果: 
+- Status: 🌀 Pending
+- Modified files: 
+- Verification result: 
 
 ---
-*最后更新: YYYY-MM-DD HH:mm*
+*Last updated: YYYY-MM-DD HH:mm*

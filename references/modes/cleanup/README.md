@@ -1,70 +1,70 @@
-# Cleanup 模式 (代码清理)
+# Cleanup Mode (Code Cleanup)
 
-> 适用: 删除没用的代码、清理冗余 | 类型: 死代码/冗余依赖/临时代码
+> Applies to: Remove unused code, clean up redundancies | Types: Dead code / Redundant dependencies / Temporary code
 
-## AI 必须主动读取
+## AI Must Proactively Read
 
-进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
-- `docs/project-map.md` - 了解项目结构
+On entry, AI must read (without user providing):
+- `docs/project-map.md` - Project structure
 
-## 清理类型
+## Cleanup Types
 
-### 1. 死代码清理
+### 1. Dead Code
 ```
-AI:   扫描未使用的:
-      - 未调用的函数
-      - 未使用的变量
-      - 未使用的 import
-      - 注释掉的代码块
+AI:   Scan for unused:
+      - Uncalled functions
+      - Unused variables
+      - Unused imports
+      - Commented-out code blocks
       
-      📋 待清理:
-      | 文件 | 行号 | 类型 | 内容 |
-      |------|------|------|------|
+      📋 Pending cleanup:
+      | File | Line | Type | Content |
+      |------|------|------|---------|
       
-      "确认删除？"
+      "Confirm deletion?"
 ```
 
-### 2. 冗余依赖清理
+### 2. Redundant Dependencies
 ```
-AI:   检查依赖文件 (package.json / requirements.txt / go.mod / Cargo.toml):
-      - 未使用的依赖
-      - 重复的依赖
-      - 可合并的依赖
-```
-
-### 3. 临时代码清理
-```
-AI:   扫描:
-      - TODO/FIXME 注释
-      - 调试语句 (console.log / print / fmt.Println)
-      - 调试断点 (debugger / breakpoint())
-      - 临时 hardcode
+AI:   Check dependency files (package.json / requirements.txt / go.mod / Cargo.toml):
+      - Unused dependencies
+      - Duplicate dependencies
+      - Mergeable dependencies
 ```
 
-## 流程
-
+### 3. Temporary Code
 ```
-0. 创建检查点
-1. 扫描 → 输出清单
-2. 用户确认范围
-3. 逐项清理
-4. 验证 + 回滚 (参见检查点机制)
-5. 自动更新 module-registry.md (如删除了已注册组件)
+AI:   Scan for:
+      - TODO/FIXME comments
+      - Debug statements (console.log / print / fmt.Println)
+      - Debug breakpoints (debugger / breakpoint())
+      - Temporary hardcoded values
 ```
 
-## 安全规则
-
-- 删除前必须确认无调用
-- 批量删除需用户二次确认
-- 保留删除记录便于回退
-
-## 清理完成后选项
+## Workflow
 
 ```
-📍 当前: 已清理 [N] 项，删除了 [文件/代码行数] 
-📌 下一步:
-[1] 继续清理（继续 autoDevTeam/cleanup 流程）- 扫描其他类型的冗余代码
-[2] 开发新功能（进入 autoDevTeam/architect 流程）
-[3] 重构代码（进入 autoDevTeam/refactor 流程）- 进一步整理代码结构
-[0] 结束
+0. Create checkpoint
+1. Scan → Output list
+2. User confirms scope
+3. Clean up item by item
+4. Verify + Rollback (see checkpoint mechanism)
+5. Auto-update module-registry.md (if registered components removed)
+```
+
+## Safety Rules
+
+- Confirm no callers before deletion
+- Batch deletions require user re-confirmation
+- Retain deletion records for rollback
+
+## Cleanup Completion Options
+
+```
+📍 Current: Cleaned up [N] items, removed [files/lines of code]
+📌 Next:
+[1] Continue cleanup (continue autoDevTeam/cleanup workflow) - Scan for other redundant code types
+[2] Develop new feature (enter autoDevTeam/architect workflow)
+[3] Refactor code (enter autoDevTeam/refactor workflow) - Further organize code structure
+[0] Done
 ```

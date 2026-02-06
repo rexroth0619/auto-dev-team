@@ -1,5 +1,5 @@
-# Swift 经验
+# Swift Patterns
 
-ARC 内存管理、协议扩展、SwiftUI 状态管理、Combine 等。
+ARC memory management, protocol extensions, SwiftUI state, Combine, etc.
 
-**使用模板**：`../_TEMPLATE.md`
+**Use template**: `../_TEMPLATE.md`

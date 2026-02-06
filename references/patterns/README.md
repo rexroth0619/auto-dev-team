@@ -1,21 +1,21 @@
-# 编程经验库 (Patterns)
+# Programming Patterns Library
 
-> 可复用的编程经验，自动积累，自动检索，跨项目复用
+> Reusable patterns — auto-accumulated, auto-retrieved, cross-project
 
-## 目录结构
+## Directory Structure
 
 ```
 patterns/
-├── README.md                     # 本文件
+├── README.md                     # This file
 │
-├── universal/                    # 🌐 通用原理（语言/平台无关）
-│   ├── concurrency/              # 并发场景
-│   ├── performance/              # 性能优化
-│   ├── error-handling/           # 错误处理
-│   ├── data/                     # 数据处理
-│   └── architecture/             # 架构模式
+├── universal/                    # 🌐 Universal principles (language/platform agnostic)
+│   ├── concurrency/
+│   ├── performance/
+│   ├── error-handling/
+│   ├── data/
+│   └── architecture/
 │
-├── language/                     # 💻 语言特有经验
+├── language/                     # 💻 Language-specific patterns
 │   ├── typescript/
 │   ├── python/
 │   ├── java/
@@ -23,7 +23,7 @@ patterns/
 │   ├── kotlin/
 │   └── go/
 │
-└── platform/                     # 📱 平台特有经验
+└── platform/                     # 📱 Platform-specific patterns
     ├── web/
     ├── android/
     ├── ios/
@@ -31,188 +31,188 @@ patterns/
     └── desktop/
 ```
 
-## 三层分类说明
+## Three-Layer Classification
 
-| 层级 | 目录 | 内容 | 示例 |
-|------|------|------|------|
-| **通用原理** | `universal/` | 语言无关的设计思想 | 排队机制、缓存策略、重试模式 |
-| **语言经验** | `language/` | 特定语言的陷阱和技巧 | TS 的类型体操、Python 的 GIL |
-| **平台经验** | `platform/` | 特定平台的最佳实践 | Android ANR、iOS 内存管理 |
+| Layer | Directory | Content | Examples |
+|-------|-----------|---------|----------|
+| **Universal Principles** | `universal/` | Language-agnostic design concepts | Queuing, caching, retry patterns |
+| **Language Patterns** | `language/` | Language-specific pitfalls & techniques | TS type gymnastics, Python GIL |
+| **Platform Patterns** | `platform/` | Platform-specific best practices | Android ANR, iOS memory mgmt |
 
-## AI 检索逻辑
+## AI Retrieval Logic
 
 ```
-进入任务时:
-1. 识别任务领域（并发/性能/错误处理...）
-2. 识别项目语言和平台
-3. 按顺序搜索:
-   → universal/{领域}/     # 先看通用原理
-   → language/{语言}/      # 再看语言经验
-   → platform/{平台}/      # 最后看平台经验
-4. 综合后给出建议
+On task entry:
+1. Identify task domain (concurrency/performance/error-handling...)
+2. Identify project language and platform
+3. Search in order:
+   → universal/{domain}/     # Universal principles first
+   → language/{language}/    # Language patterns second
+   → platform/{platform}/   # Platform patterns last
+4. Synthesize recommendations
 ```
 
 ---
 
-## Pattern 文件格式
+## Pattern File Format
 
-### 通用原理格式 (`universal/`)
+### Universal Principles (`universal/`)
 
 ```markdown
-# [Pattern 名称]
+# [Pattern Name]
 
-> 一句话：什么场景用这个 pattern
+> One-liner: scenario this pattern addresses
 
-## 适用范围
+## Scope
 
-| 维度 | 范围 |
-|------|------|
-| 语言 | 通用 |
-| 平台 | 通用 |
+| Dimension | Scope |
+|-----------|-------|
+| Language | Universal |
+| Platform | Universal |
 
-## 问题
+## Problem
 
-[用自然语言描述问题，不涉及具体语言]
+[Describe the problem without referencing specific languages]
 
-## 方案（概念层）
+## Solution (Conceptual)
 
-[用伪代码或流程图描述核心思路]
+[Core approach via pseudocode or flowcharts]
 
-## 关键决策点
+## Key Decision Points
 
-- 决策点 1: [需要考虑的因素]
-- 决策点 2: [需要考虑的因素]
+- Decision 1: [Factors]
+- Decision 2: [Factors]
 
-## 边界条件
+## Boundary Conditions
 
-- 不适用: [什么情况下不用]
-- 规模边界: [多大规模需要换方案]
+- Not applicable: [When not to use]
+- Scale boundary: [When an alternative is needed]
 
-## 检查清单
+## Checklist
 
-- [ ] 检查点 1
-- [ ] 检查点 2
+- [ ] Checkpoint 1
+- [ ] Checkpoint 2
 
 ---
-*标签*: `tag1`, `tag2`
+*Tags*: `tag1`, `tag2`
 ```
 
-### 语言经验格式 (`language/`)
+### Language Patterns (`language/`)
 
 ```markdown
-# [语言]: [经验名称]
+# [Language]: [Pattern Name]
 
-> 一句话：这个语言特有的什么问题/技巧
+> One-liner: language-specific problem/technique addressed
 
-## 适用版本
+## Applicable Versions
 
-- 语言版本: X.x+
-- 相关框架: Framework X.x (可选)
+- Language version: X.x+
+- Related framework: Framework X.x (optional)
 
-## 背景
+## Background
 
-[为什么这个问题在这个语言上特殊]
+[Why this problem is language-specific]
 
-## 陷阱 / 常见错误
+## Pitfalls / Common Mistakes
 
-[错误示例 + 为什么错]
+[Incorrect examples + why they're wrong]
 
-## 正确做法
+## Correct Approach
 
-[正确代码示例]
+[Correct code examples]
 
-## 关联
+## Related
 
-- 通用原理: `universal/xxx/yyy.md` (如有)
-- 相关经验: `language/xxx/zzz.md` (如有)
+- Universal principle: `universal/xxx/yyy.md` (if applicable)
+- Related pattern: `language/xxx/zzz.md` (if applicable)
 
 ---
-*标签*: `tag1`, `tag2`
+*Tags*: `tag1`, `tag2`
 ```
 
-### 平台经验格式 (`platform/`)
+### Platform Patterns (`platform/`)
 
 ```markdown
-# [平台]: [经验名称]
+# [Platform]: [Pattern Name]
 
-> 一句话：这个平台特有的什么问题/最佳实践
+> One-liner: platform-specific problem/best practice addressed
 
-## 适用范围
+## Scope
 
-- 平台版本: Android 10+ / iOS 14+ / ...
-- 相关框架: React 18 / SwiftUI / ... (可选)
+- Platform version: Android 10+ / iOS 14+ / ...
+- Related framework: React 18 / SwiftUI / ... (optional)
 
-## 背景
+## Background
 
-[为什么这个问题在这个平台上特殊]
+[Why this problem is platform-specific]
 
-## 问题表现
+## Symptoms
 
-[用户/开发者会遇到什么症状]
+[What users/developers encounter]
 
-## 解决方案
+## Solution
 
-[最佳实践 + 代码示例]
+[Best practices + code examples]
 
-## 关联
+## Related
 
-- 通用原理: `universal/xxx/yyy.md` (如有)
-- 语言经验: `language/xxx/zzz.md` (如有)
+- Universal principle: `universal/xxx/yyy.md` (if applicable)
+- Language pattern: `language/xxx/zzz.md` (if applicable)
 
 ---
-*标签*: `tag1`, `tag2`
+*Tags*: `tag1`, `tag2`
 ```
 
 ---
 
-## 如何新增 Pattern
+## How to Add Patterns
 
-### 触发条件
+### Trigger Conditions
 
-任务完成后，AI 会判断：
-1. 是否解决了有代表性的问题？
-2. 方案是否经过验证？
-3. 能否复用到其他项目？
+After task completion, AI evaluates:
+1. Was a representative problem solved?
+2. Was the solution verified?
+3. Is it reusable across projects?
 
-### 分类决策
+### Classification Decision
 
 ```
-这个经验是...
-├── 语言无关的通用思想？ → universal/
-├── 某语言特有的陷阱/技巧？ → language/{语言}/
-└── 某平台特有的最佳实践？ → platform/{平台}/
+This pattern is...
+├── Language-agnostic universal concept? → universal/
+├── Language-specific pitfall/technique? → language/{language}/
+└── Platform-specific best practice? → platform/{platform}/
 ```
 
-### 命名规范
+### Naming Conventions
 
-- 文件名: `kebab-case.md`（如 `token-refresh.md`）
-- 避免使用特定业务名称
-- 使用动词或名词短语描述行为
+- Filename: `kebab-case.md` (e.g., `token-refresh.md`)
+- Avoid business-specific names
+- Use verb/noun phrases describing the behavior
 
 ---
 
-## 经验索引
+## Pattern Index
 
-> 以下索引会随着经验积累自动更新
+> Auto-updates as patterns accumulate
 
-### 通用原理 (universal/)
+### Universal Principles (universal/)
 
 #### architecture/
-- `internal-external-isolation.md` - 内外网隔离：内网优化功能不能让内网地址暴露给外网用户
+- `internal-external-isolation.md` - Internal/External Network Isolation: internal optimization must not expose internal addresses to external users
 
 #### concurrency/
-- (暂无)
+- (none yet)
 
 #### performance/
-- (暂无)
+- (none yet)
 
 #### error-handling/
-- (暂无)
+- (none yet)
 
-### 语言经验 (language/)
+### Language Patterns (language/)
 
-- (暂无)
+- (none yet)
 
-### 平台经验 (platform/)
+### Platform Patterns (platform/)
 
-- (暂无)
+- (none yet)

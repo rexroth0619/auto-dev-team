@@ -1,189 +1,189 @@
-# Step 模式 (步骤执行)
+# Step Mode (Step Execution)
 
-> 何时进入: Architect/Refactor/Optimize 生成计划后用户说"开始" | 必须读: current_steps.md
+> When to enter: After Architect/Refactor/Optimize generates a plan and user says "start" | Must read: current_steps.md
 
-## 最高指令
-
-```
-⛔ 禁止连续执行多步 (除非信任模式)
-⛔ 禁止跳过 How to Test
-⛔ 禁止不等用户确认就继续下一步
-⛔ 禁止步骤不产出可独立验证的模块 + log (必须增量可测)
-⛔ 禁止积攒多步改动到最后验证
-```
-
-## 每步流程
-
-### 0. 创建检查点
-
-### 1. 开始声明
-```
-"现在实现: **Step X/总数: xxx**"
-
-示例: "现在实现: **Step 2/5: 添加按钮组件**"
-```
-
-### 2. 上下文确认 (强制)
-- **必须读取** current_steps.md，包括:
-  - 当前步骤是什么
-  - **关键决策**: 复用什么、影响范围、边界处理
-- 如发现计划与当前上下文不符 → 停下来问用户
-- 简述: 上步做了什么 → 本步做什么 → 服务什么目标
-
-### 3. 改动声明
-```
-📋 改动范围:
-- 文件: [列出]
-- 函数: [列出]
-```
-
-### 4. 执行改动 (增量可测原则)
-- **复用检查**: 写新代码前，先问自己"module-registry 里有没有能用的？"
-- **增量可测**: 本步必须产出可独立验证的模块/函数/组件
-  - ✅ 好的拆分: "实现数据转换函数 + 单元测试"
-  - ❌ 坏的拆分: "准备数据结构" (无法验证)
-  - ❌ 坏的拆分: "写一半逻辑，下一步补全" (不完整)
-- **可测标准**: 本步完成后，能通过 log 或行为验证该模块正确性
-- 建议: 每步改动 ≤2 个文件，新增代码 ≤50 行
-- 如需超限: 先说明原因，等用户确认
-- Log 使用统一 fingerprint: `[DEV-{主题}-Step{N}]`
-
-### 5. How to Test (增量验证)
-```
-🈶 How to Test - 本步独立验证
-
-⚠️ 关键: 必须能独立验证本步产出，不依赖后续步骤
-
-**预期 Log (必须):**
-过滤 `[DEV-{主题}-Step{N}]` 应看到完整流程:
-
-→ [DEV-{主题}-Step{N}] 开始 xxx
-→ [DEV-{主题}-Step{N}] xxx → yyy
-→ [DEV-{主题}-Step{N}] 完成 zzz
-
-**本步可测产出:**
-- 模块: [新增的函数/组件/模块名]
-- 验证方式: [如何验证该模块正确性]
-- 预期行为: [具体表现]
-
-**操作步骤:**
-1. [具体操作 - 必须能触发本步产出]
-2. 查看 log 确认本步流程完整
-3. 验证本步模块行为正确
-
-**边界测试:**
-- [异常情况如何表现]
-- Log 应显示: [DEV-{主题}-Step{N}] Error: xxx
-
-❌ 如果无法独立验证本步:
-→ 说明步骤拆分有问题，需要重新设计
-```
-
-### 6. 结束 (强制等待)
-```
---- Step X/总数 完成 ---
-
-✅ 已更新 current_steps.md
-⏸️ 等待确认后继续下一步...
-
-请确认本步结果，回复:
-- "ok" / "确认" / "继续" → 进入下一步
-- "问题" / "回退" → 我会处理
-```
-更新 current_steps.md: 🌀 → ✅
-
-### 7. 绝对禁止 - 必须等待用户确认
-```
-⛔ 无论任何情况，Step 结束后必须停下等待用户回复
-⛔ 禁止自己判断"应该没问题"然后继续
-⛔ 即使代码很简单，也必须等待确认
-```
-
-## 信任模式
-
-用户说"信任模式"时可连续执行，但每步仍创建检查点，遇到问题立即停止。
-
-## 最后一步特殊流程
+## Supreme Directives
 
 ```
-"🧹 清理临时 log？"
-
-[1] 清理 - 删除所有 [DEV-{主题}-*] log
-[2] 保留为生产 log - 改为 [BASE-{模块名}]，精简为关键步骤
-[3] 全部保留 - 保持原样 (调试用)
-
-推荐: 
-- 核心流程 → 保留为 [BASE-{模块名}]
-- 临时调试 → 清理
+⛔ Do not execute multiple steps consecutively (unless trust mode)
+⛔ Do not skip How to Test
+⛔ Do not proceed to next step without user confirmation
+⛔ Each step must produce an independently verifiable module + log (incrementally testable)
+⛔ Do not accumulate changes across steps for deferred verification
 ```
 
-## 任务完成收尾
+## Per-Step Workflow
 
+### 0. Create Checkpoint
+
+### 1. Start Declaration
 ```
-1. 即时验证 (强制):
-   - 参考: references/principles/test-verification.md
-   - 输出: "🧪 即时验证"
-2. 自动更新文档 (强制):
-   - project-map.md (新增/改动模块)
-   - module-registry.md (新增可复用组件)
-   - 输出: "📝 已自动更新: xxx"
-3. 如有核心逻辑，询问: "是否补充单元测试？"
-4. 创建完成检查点: git commit -m "SPEC-Complete: {任务名}"
-5. "✅ 任务完成"
-6. 输出下一步选项
+"Now implementing: **Step X/Total: xxx**"
+
+Example: "Now implementing: **Step 2/5: Add button component**"
 ```
 
-## 收尾微任务
+### 2. Context Confirmation (Mandatory)
+- **Must read** current_steps.md:
+  - Current step
+  - **Key decisions**: What to reuse, impact scope, edge handling
+- Plan conflicts with current context → Stop and ask user
+- Brief summary: Previous step → This step → Goal
 
-任务完成后的小修小补 (改文案/调样式/小修复)：
-
+### 3. Change Declaration
 ```
-用户: "再把按钮颜色改一下"
-
-AI: "📒 AutoDevTeam - 收尾 @{任务名}
-[简述改动]"
-
-→ 直接执行 → How to Test (简化版) → 完成
-
-"✅ 已处理，还有其他收尾吗？"
-```
-
-**边界**: 若收尾改动 >2文件 或 需要新建文件 → "这个改动较大，建议作为新任务单独处理"
-
-## 任务完成后选项
-
-```
-📍 当前: 任务"[任务名]"已完成，共执行 [N] 步
-📌 下一步:
-[1] 添加测试（进入 autoDevTeam/tester 流程）- 为新增的核心逻辑添加单元测试
-[2] 清理代码（进入 autoDevTeam/cleanup 流程）- 清理开发期间的临时代码
-[3] 开发新功能（进入 autoDevTeam/architect 流程）
-[0] 结束
-
-💡 也可直接说收尾改动，如 "把按钮改成蓝色"（继续 autoDevTeam 协助）
+📋 Change scope:
+- Files: [list]
+- Functions: [list]
 ```
 
-## 失败处理
+### 4. Execute Changes (Incremental Testable)
+- **Reuse check**: Before new code, ask "Anything in module-registry I can use?"
+- **Incremental testable**: Step must produce independently verifiable module/function/component
+  - ✅ Good: "Implement data transformation function + unit test"
+  - ❌ Bad: "Prepare data structures" (cannot verify)
+  - ❌ Bad: "Write half the logic, complete next step" (incomplete)
+- **Testable criteria**: Module correctness verifiable via log or behavior after step
+- Guideline: ≤2 files, new code ≤50 lines per step
+- Exceeding limits: Explain reason, wait for confirmation
+- Log fingerprint: `[DEV-{topic}-Step{N}]`
+
+### 5. How to Test (Incremental Verification)
+```
+🈶 How to Test - Independent Verification for This Step
+
+⚠️ Key: Must independently verify this step's output without depending on later steps
+
+**Expected Log (mandatory):**
+Filter `[DEV-{topic}-Step{N}]` for complete flow:
+
+→ [DEV-{topic}-Step{N}] Start xxx
+→ [DEV-{topic}-Step{N}] xxx → yyy
+→ [DEV-{topic}-Step{N}] Complete zzz
+
+**Testable output:**
+- Module: [New function/component/module name]
+- Verification: [How to verify correctness]
+- Expected behavior: [Specific behavior]
+
+**Steps:**
+1. [Action that triggers this step's output]
+2. Check log for complete flow
+3. Verify module behavior
+
+**Edge testing:**
+- [Behavior under abnormal conditions]
+- Log should show: [DEV-{topic}-Step{N}] Error: xxx
+
+❌ If step cannot be independently verified:
+→ Breakdown is flawed, needs redesign
+```
+
+### 6. End (Mandatory Wait)
+```
+--- Step X/Total Complete ---
+
+✅ Updated current_steps.md
+⏸️ Waiting for confirmation...
+
+Reply:
+- "ok" / "confirm" / "continue" → Next step
+- "issue" / "rollback" → I'll handle it
+```
+Update current_steps.md: 🌀 → ✅
+
+### 7. Absolute Prohibition - Must Wait for User
+```
+⛔ Must stop and wait for user reply after Step ends
+⛔ Do not self-assess "should be fine" and continue
+⛔ Even if code is trivial, must wait for confirmation
+```
+
+## Trust Mode
+
+When user says "trust mode": continuous execution allowed, but checkpoints per step; stop immediately on issues.
+
+## Last Step Special Workflow
 
 ```
-如果本步执行失败:
-1. 立即停止，不要尝试"修复后继续"
-2. 报告: 失败原因 + 已改动的文件
-3. 询问: "是否回退本步改动？"
+"🧹 Clean up temporary logs?"
+
+[1] Clean up - Remove all [DEV-{topic}-*] logs
+[2] Retain as production logs - Rename to [BASE-{module-name}], streamline to key steps
+[3] Keep all - Leave as-is (for debugging)
+
+Recommended: 
+- Core flows → Retain as [BASE-{module-name}]
+- Temporary debugging → Clean up
 ```
 
-## 途中微任务
-
-当用户在 Step 执行中途发起其他请求：
+## Task Completion Wrap-up
 
 ```
-AI: "📒 AutoDevTeam - 微任务 @Step{N}
-[简述要做什么]"
-
-→ 直接执行 → How to Test → 完成
-
-"✅ 微任务完成
-⏩ 继续 Step {N+1}？"
+1. Instant verification (mandatory):
+   - Reference: references/principles/test-verification.md
+   - Output: "🧪 Instant verification"
+2. Auto-update documentation (mandatory):
+   - project-map.md (new/changed modules)
+   - module-registry.md (new reusable components)
+   - Output: "📝 Auto-updated: xxx"
+3. Core logic exists → Ask: "Add unit tests?"
+4. Completion checkpoint: git commit -m "SPEC-Complete: {task-name}"
+5. "✅ Task complete"
+6. Output next step options
 ```
 
-**边界**: 若"微任务"需要 >30行代码 或 >2文件 → 建议完成当前 Step 后单独处理
+## Wrap-up Micro-Tasks
+
+Minor tweaks after completion (copy/style/small fixes):
+
+```
+User: "Also change the button color"
+
+AI: "📒 AutoDevTeam - Wrap-up @{task-name}
+[Brief change description]"
+
+→ Execute → How to Test (simplified) → Done
+
+"✅ Done, any other wrap-up items?"
+```
+
+**Boundary**: Wrap-up >2 files or needs new files → "Too large, recommend separate task"
+
+## Task Completion Options
+
+```
+📍 Current: Task "[task-name]" complete, [N] steps executed
+📌 Next:
+[1] Add tests (enter autoDevTeam/tester workflow) - Unit tests for new core logic
+[2] Clean up code (enter autoDevTeam/cleanup workflow) - Clean up dev temporary code
+[3] Develop new feature (enter autoDevTeam/architect workflow)
+[0] Done
+
+💡 You can also request wrap-up changes, e.g. "make the button blue"
+```
+
+## Failure Handling
+
+```
+If step fails:
+1. Stop immediately, do not "fix and continue"
+2. Report: Failure reason + files changed
+3. Ask: "Roll back this step?"
+```
+
+## Mid-Task Micro-Tasks
+
+Other requests during Step execution:
+
+```
+AI: "📒 AutoDevTeam - Micro-task @Step{N}
+[Brief description]"
+
+→ Execute → How to Test → Done
+
+"✅ Micro-task complete
+⏩ Continue Step {N+1}?"
+```
+
+**Boundary**: Micro-task >30 lines or >2 files → Handle separately after current Step
