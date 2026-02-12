@@ -208,35 +208,47 @@ Evidence: [Key output]
 
 ### Phase 5: Recovery Confirmation & Case Archival
 
+**⛔ Key principle**: Only write to postmortem after user confirms bug is actually fixed.
+
 ```
-Patient: "It's fixed" / "Working now" / "No more issues"
+Verification passed
+    ↓
+Step 5.1: Output treatment review + Wait for user confirmation
 
-Physician must output treatment review:
+Physician outputs treatment review:
+   "━━━━━━━━━━━━━━━━━━━━
+   🔍 Treatment Review
+   ━━━━━━━━━━━━━━━━━━━━
+   
+   Ruled out:
+   - Suspected 1: [xxx] → ❌ Because: [one sentence]
+   - Suspected 2: [xxx] → ❌ Because: [one sentence]
+   
+   Final diagnosis:
+   - Suspected N: [xxx] → ✅ Because [key evidence]
+   
+   💡 Clinical insight: [One sentence abstract universal lesson]
+   ━━━━━━━━━━━━━━━━━━━━
+   
+   📌 Please confirm if bug is fixed:
+   [1] Confirmed fixed - Archive to postmortem.md
+   [2] Still has issues - Explain issue, continue diagnosis
+   [0] Not confirmed yet - Test later
+   ━━━━━━━━━━━━━━━━━━━━"
+   
+    ↓
+User chooses [1] Confirmed fixed
+    ↓
+Step 5.2: Write to postmortem.md (After user confirmation)
 
-"🔍 Treatment Review:
-
-Ruled out:
-- Suspected 1: [xxx] → ❌ Because: [one sentence]
-- Suspected 2: [xxx] → ❌ Because: [one sentence]
-
-Final diagnosis:
-- Suspected N: [xxx] → ✅ Because [key evidence]
-
-💡 Clinical insight: [One sentence on why this was hard to diagnose / easily misdiagnosed]"
+   ⭐ Auto-write to postmortem.md:
+   Output: "📝 Archived: postmortem.md - Bug-YYYY-MM-DD-00X"
 ```
 
-**Strongly prompt case archival (mandatory):**
-```
-"📝 Archive this case?
-
-Key lesson:
-→ [One distilled sentence]
-
-[Y] Archive (recommended) → Auto-append to postmortem.md
-[N] Skip"
-```
-
-Patient confirms → Update case library: "📝 Archived: postmortem.md - Bug-YYYY-MM-DD-00X"
+**⛔ Absolute prohibitions**:
+- Writing to postmortem after verification without user confirmation
+- Writing to postmortem when user says "still has issues"
+- Skipping user confirmation step
 
 ## Postmortem Writing Principles
 
@@ -270,7 +282,7 @@ Patient confirms → Update case library: "📝 Archived: postmortem.md - Bug-YY
 - **Confirm before prescribing**: Without ✅Confirmed, prescribing is prohibited — no "let's try this"
 - **Cheap before expensive**: Sort by examination cost; 💰costly options last — no major surgery for minor ailments
 - **Abstract and distill**: Archived lessons must be generalizable patterns, not specific line numbers
-- Must archive case after recovery
+- **⭐ Archive after user confirmation**: Only write to postmortem.md after user confirms bug is fixed
 - Diagnostic probes use unified fingerprint
 - **Follow-up verification**: After treatment, verify original symptoms no longer appear
 
@@ -295,12 +307,31 @@ If all hypotheses ruled out:
 [0] Cancel
 ```
 
-### Phase 5 End
+### Phase 5 End Options
+
+#### Case A: User confirms fix
+
 ```
-📍 Current: Patient recovered, root cause was "[cause summary]"
+📍 Current: Bug fixed and confirmed, root cause was "[cause summary]", archived to postmortem.md
 📌 Next:
-[1] Add follow-up tests (enter autoDevTeam/tester workflow) - Prevent recurrence
-[2] Review case - Confirm archived content
-[3] Develop new feature (enter autoDevTeam/architect workflow)
+[1] Add regression protection (enter autoDevTeam/tester workflow) - Prevent recurrence
+[2] Develop new feature (enter autoDevTeam/architect workflow)
 [0] Done
+```
+
+#### Case B: User says still has issues
+
+```
+📍 Current: User reports issue still persists, need to continue diagnosis
+📌 Next:
+[1] Continue diagnosis - Return to Phase 2, regenerate differential diagnoses
+[2] Detailed description - User provides more symptom information
+[0] Pause
+```
+
+#### Case C: User not confirmed yet
+
+```
+📍 Current: Waiting for user to confirm if bug is fixed
+💡 Tip: After testing, continue this conversation, reply "confirmed fixed" or "still has issues"
 ```
