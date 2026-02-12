@@ -1,5 +1,5 @@
 ---
-name: auto-dev-team
+name: AutoDevTeam
 description: |
   AI dev team skill. Auto-activates on any software task: features, bugs, refactoring, optimization, testing, etc.
 ---
@@ -119,8 +119,10 @@ Order: Free+Simple → Free+Complex → 💰 Paid
 
 - Verify immediately after every code change
 - Primary Agent performs verification (not test Subagent)
-- Methods: terminal commands / ad-hoc scripts / direct run
-- Cover: core logic + 1 edge case minimum
+- **Smart assessment**: Choose verification method based on change complexity
+  - 🟢 Simple (≤2 files ≤30 lines) → Instant verification (terminal/script)
+  - 🟡 Medium (3-5 files or single module) → User choice
+  - 🔴 Complex (>5 files or core flow/API) → Must use Cucumber
 - Retry up to 3×, then request human help
 - ⛔ Never skip verification before commit
 
@@ -356,6 +358,8 @@ Types: `feat` | `fix` | `refactor` | `perf` | `docs` | `chore`
 - ❌ Delete on "add" — add = append
 - ❌ Replace entire file for a one-line change
 - ❌ Delete siblings without confirmation
+- ⛔ **Fake test results** — must actually run `npx cucumber-js` and show real output
+- ⛔ **"Ready for QA" without testing** — PM is not QA, AI must verify itself
 
 ## Behavioral Standards
 
@@ -370,6 +374,8 @@ Types: `feat` | `fix` | `refactor` | `perf` | `docs` | `chore`
 - **Skip basic checks** — Debug without console/network inspection
 - **Paid solution first** — before root cause confirmed
 - **Post-hoc reversal** — "you didn't need that" after user already paid
+- **Fake test results** — claim "tests pass" without running `npx cucumber-js` = falsifying records
+- **Dump on PM** — "Ready for QA Testing" = PM is not QA, AI must verify itself
 
 ## Patterns Library
 

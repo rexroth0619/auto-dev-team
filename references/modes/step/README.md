@@ -48,35 +48,130 @@ Example: "Now implementing: **Step 2/5: Add button component**"
 - Exceeding limits: Explain reason, wait for confirmation
 - Log fingerprint: `[DEV-{topic}-Step{N}]`
 
-### 5. How to Test (Incremental Verification)
+### 5. How to Test (Smart Verification) ⛔ MANDATORY
+
 ```
-🈶 How to Test - Independent Verification for This Step
+⛔⛔⛔ RED LINE: DO NOT FAKE TEST RESULTS ⛔⛔⛔
 
-⚠️ Key: Must independently verify this step's output without depending on later steps
+AI MUST:
+1. Actually execute test commands (not "pretend to execute")
+2. Show actual command output (not self-fabricated)
+3. Report results honestly (no fabrication)
 
-**Expected Log (mandatory):**
-Filter `[DEV-{topic}-Step{N}]` for complete flow:
+Violation = Medical malpractice level error
+```
 
-→ [DEV-{topic}-Step{N}] Start xxx
-→ [DEV-{topic}-Step{N}] xxx → yyy
-→ [DEV-{topic}-Step{N}] Complete zzz
+**⚠️ Key**: This step's changes must be independently verifiable, not depending on later steps
 
-**Testable output:**
-- Module: [New function/component/module name]
-- Verification: [How to verify correctness]
-- Expected behavior: [Specific behavior]
+**Step 5.1: Auto-assess verification method (Mandatory)**
 
-**Steps:**
-1. [Action that triggers this step's output]
-2. Check log for complete flow
-3. Verify module behavior
+⚠️ **Must read** `references/principles/test-verification.md` for complete assessment rules
 
-**Edge testing:**
-- [Behavior under abnormal conditions]
-- Log should show: [DEV-{topic}-Step{N}] Error: xxx
+AI must auto-assess this step's complexity:
 
-❌ If step cannot be independently verified:
-→ Breakdown is flawed, needs redesign
+```
+📊 Complexity Assessment:
+- Change size: [N files, M lines]
+- Function type: [copy/style/single module logic/core flow/...]
+- Impact scope: [single point/single module/cross-module/...]
+- Assessment result: 🟢 Simple / 🟡 Medium / 🔴 Complex
+```
+
+**Step 5.2: Execute verification (based on assessment)**
+
+#### 🟢 Simple Change → Instant Verification
+
+```
+🧪 Instant Verification
+
+Method: [terminal command/temp script]
+Command: [actual command executed]
+Result: [pass/fail]
+Evidence:
+┌────────────────────────────────────────────────────
+│ [Paste actual output]
+└────────────────────────────────────────────────────
+```
+
+#### 🟡 Medium Change → User Choice
+
+```
+📊 Complexity Assessment: 🟡 Medium Change
+- Change size: [N files, M lines]
+- Function type: [single module logic]
+- Impact scope: [single module]
+
+📌 Choose verification method:
+[1] Instant verification - terminal command/temp script (fast)
+[2] Cucumber verification - run BDD scenarios (comprehensive)
+
+⏸️ Please choose verification method...
+```
+
+#### 🔴 Complex Change → Cucumber Verification (Mandatory)
+
+```
+📊 Complexity Assessment: 🔴 Complex Change
+- Change size: [N files, M lines]
+- Function type: [core flow/API change]
+- Impact scope: [cross-module/external API]
+- Verification method: Cucumber verification (required)
+
+🧪 BDD Verification - Actual Execution
+
+📂 Command: npx cucumber-js features/xxx.feature
+📤 Actual Output:
+┌────────────────────────────────────────────────────
+│ [Paste actual terminal output, including pass/fail info]
+│ 
+│ 3 scenarios (3 passed)
+│ 9 steps (9 passed)
+│ 0m0.123s
+└────────────────────────────────────────────────────
+
+📊 Results:
+  ✅ Scenario: [name] → passed (from actual output)
+  ✅ Scenario: [name] → passed (from actual output)
+  👀 Scenario: [name] → @manual, needs manual confirmation
+```
+
+**Step 5.3: Handle @manual scenarios (if applicable)**
+
+```
+**Manual verification items (@manual scenarios):**
+- [Specific steps - UI/visual/external systems]
+```
+
+**Step 5.4: Result handling**
+
+- ✅ Verification passed → Continue to next step
+- ❌ Verification failed → Fix and retry (max 3 times)
+- ⚠️ Command failed → Check environment, report to user
+
+**⛔ Absolute Prohibitions**
+
+```
+❌ DO NOT skip complexity assessment
+❌ DO NOT use instant verification for 🔴 complex changes
+❌ DO NOT claim "passed" without executing commands
+❌ DO NOT fabricate test output
+❌ DO NOT skip testing and say "Ready for QA Testing"
+```
+
+**❌ If cannot execute test commands:**
+
+```
+Case 1: No BDD framework
+→ Use instant verification (terminal command/temp script)
+→ 💡 Tip: Complex projects should consider configuring BDD framework
+
+Case 2: Step definitions not implemented (BDD framework exists)
+→ Implement step definitions first
+→ Execute tests after implementation
+
+Case 3: Environment issues
+→ Report error message honestly
+→ Request user assistance
 ```
 
 ### 6. End (Mandatory Wait)
