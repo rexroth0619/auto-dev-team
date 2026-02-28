@@ -1,93 +1,93 @@
-# Hotfix Mode (Emergency Fix)
+# Hotfix 模式 (紧急修复)
 
-> Applies to: Production issue, urgent, stop the bleeding fast | Principle: Stop bleeding first, postmortem later; minimal change | Output: postmortem [HOTFIX]
+> 适用: 线上出问题、紧急、需要快速止血 | 原则: 先止血后复盘，最小改动 | 产出: postmortem [HOTFIX]
 
-## Core Principle
+## 核心原则
 
 ```
-Stop the bleeding first, postmortem later
-Minimal change, rapid recovery
+先止血，后复盘
+最小改动，快速恢复
 ```
 
-## Workflow
+## 流程
 
-### 0. Create Checkpoint
+### 0. 创建检查点
 
-### 1. Rapid Localization
+### 1. 快速定位
 ```
-User: [Describes urgent issue]
-      [Error messages]
+用户: [描述紧急问题]
+      [报错信息]
 
-AI:   1. Skip deep analysis
-      2. Directly locate error point
-      3. Propose minimal fix
+AI:   1. 跳过深度分析
+      2. 直接定位出错位置
+      3. 提出最小改动方案
       
-      4. ⭐ Auto-invoke Critique Subagent (even in emergencies)
-         - Pass: [User's problem] + problem, minimal fix plan
-         - Focus: Truly minimal? Could it introduce new issues?
+      4. ⭐ 自动调用 Critique Subagent（即使紧急也要会诊）
+         - 传递：【用户原始问题描述】+ 问题、最小修复方案
+         - 重点检查：是否真的是最小改动？会不会引入新问题？
       
-      5. Subagent quick two-phase review:
+      5. Subagent 快速两阶段审查:
          
-         Phase A: Problem Clarification (quick)
-         ├── Sufficient for localization?
-         ├── More info needed to confirm direction?
-         └── ⚠️ Critical info missing → Quick follow-up (1-2 questions)
+         阶段 A: 问题澄清（快速版）
+         ├── 问题描述是否足够定位？
+         ├── 是否需要更多信息才能确认修复方向？
+         └── ⚠️ 关键信息缺失 → 快速追问（1-2个问题）
          
-         Phase B: Plan Review
-         └── Truly minimal? New issues possible?
+         阶段 B: 方案审查
+         └── 是否真的是最小改动？会不会引入新问题？
          
-      6. Output:
+      6. 输出:
          ━━━━━━━━━━━━━━━━━━━━
-         ⚡ Minimal Fix Plan: [xxx]
+         ⚡ 最小修复方案: [xxx]
          ━━━━━━━━━━━━━━━━━━━━
-         🏥 Quick Consultation: [Subagent brief review]
+         🏥 快速会诊: [Subagent 简短审查]
          ━━━━━━━━━━━━━━━━━━━━
-         📋 Original plan: [Minimal fix plan]
-         🛠️ Revised plan: [After consultation, if any]
+         📋 原方案: [最小修复方案]
+         🛠️ 修订方案: [会诊建议后的方案，如有]
          
-         Which one to execute?
+         选择执行哪一个？
 ```
 
-**⛔ Urgency is not a reason to skip consultation** — Use shorter checklist
-**⛔ Do not execute directly after consultation; must wait for user selection**
-**⛔ Emergency clarification: 1-2 key questions max**
+**⛔ 紧急不是跳过会诊的理由** —— 快速会诊可以用更短的检查清单
+**⛔ 禁止会诊后直接执行，必须等待用户选择**
+**⛔ 紧急情况下的澄清问题必须精简（最多 1-2 个关键问题）**
 
-### 2. Quick Fix
+### 2. 快速修复
 ```
-AI:   1. Execute minimal change (log: [HOTFIX-{issue}])
-      2. "⚠️ This is a temporary patch, not a root fix"
+AI:   1. 执行最小改动 (插入 log: [HOTFIX-{问题}])
+      2. "⚠️ 这是临时止血，非根治"
       3. How to Test
          
-         Filter `[HOTFIX-{issue}]` should show:
-         → [HOTFIX-{issue}] Fix point: xxx
-         → [HOTFIX-{issue}] Verification: xxx
+         过滤 `[HOTFIX-{问题}]` 应看到:
+         → [HOTFIX-{问题}] 修复点: xxx
+         → [HOTFIX-{问题}] 验证: xxx
 ```
 
-### 3. Post-Incident Documentation (Mandatory)
+### 3. 事后补票 (强制)
 ```
-AI:   1. Auto-write to postmortem.md (tagged [HOTFIX])
-         Output: "📝 Auto-updated: postmortem.md - [HOTFIX] Bug-YYYY-MM-DD-00X"
-      2. "Recommend creating a Debug task for thorough investigation later"
-      3. Clean up [HOTFIX-*] logs
+AI:   1. 自动写入 postmortem.md (标记 [HOTFIX])
+         输出: "📝 已自动更新: postmortem.md - [HOTFIX] Bug-YYYY-MM-DD-00X"
+      2. "建议后续创建 Debug 任务彻底排查"
+      3. 清理 [HOTFIX-*] log (临时诊断用)
 ```
 
-## Difference from Debug
+## 与 Debug 区别
 
 | | Hotfix | Debug |
 |---|--------|-------|
-| Goal | Stop bleeding | Root fix |
-| Analysis | Skipped | In-depth |
-| Solution | Minimal change | Complete fix |
-| Time | Minutes | As needed |
+| 目标 | 止血 | 根治 |
+| 分析 | 跳过 | 深入 |
+| 方案 | 最小改动 | 完整修复 |
+| 时间 | 分钟级 | 按需 |
 
-## Fix Completion Options
+## 修复完成后选项
 
 ```
-📍 Current: Temporary patch applied, fixed "[issue summary]"
-⚠️ Temporary fix; thorough investigation recommended
-📌 Next:
-[1] Deep investigation (enter autoDevTeam/debug workflow) - Find root cause
-[2] View postmortem - Review [HOTFIX] record
-[3] Develop new feature (enter autoDevTeam/architect workflow)
-[0] Done
+📍 当前: 已临时止血，修复了"[问题简述]"
+⚠️ 这是临时方案，建议后续彻底排查
+📌 下一步:
+[1] 深入排查（进入 autoDevTeam/debug 流程）- 找到根因，做彻底修复
+[2] 查看 postmortem - 确认 [HOTFIX] 记录内容
+[3] 开发新功能（进入 autoDevTeam/architect 流程）
+[0] 结束
 ```

@@ -1,269 +1,350 @@
-# Architect Mode (New Feature Development)
+# Architect 模式 (新功能开发)
 
-> Applies to: New feature or requirement | Output: current_steps.md
+> 适用: 用户想开发新功能、实现新需求 | 产出: current_steps.md
 
-## AI Must Proactively Read
+## AI 必须主动读取
 
-On entry, AI must read (without user providing):
-- `docs/project-map.md` - Project structure
-- `docs/module-registry.md` - Reusable components
+进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
+- `docs/project-map.md` - 了解项目结构
+- `docs/module-registry.md` - 查找可复用组件
 
-## Workflow
+## 流程
 
-### Phase 1: Requirement Confirmation
+### Phase 0: 苏格拉底问诊（需求探索）
+
+> ⚕️ 先问清楚再动手——不问诊就开方是庸医
+
+**触发条件**：需求描述模糊（< 3 句话，或含"做一个"/"搞个"/"优化一下"等模糊词）
+
+**跳过条件**：需求已含具体场景 + 边界条件 + 验收标准，或用户说"不用问，直接做"
+
 ```
-User: [Describes requirement]
+AI:   0. 主动读取 project-map.md 和 module-registry.md
+      1. 苏格拉底式提问（逐个提问，每次只问一个）:
+         - 目的: "你要解决什么问题？"（不是"你要什么功能"）
+         - 用户: "谁会用？什么场景下用？"
+         - 边界: "有什么限制？（时间/技术栈/兼容性）"
+         - 成功: "做成什么样算完成？"
+      2. 优先用选择题，降低回答成本
+         ✅ "你希望 A 还是 B？还是有其他想法？"
+         ❌ "你想怎么实现？"（太开放）
+      3. 需求足够清晰后 → 进入 Phase 1
 
-AI:   0. Read project-map.md and module-registry.md
-      1. Restate requirement (concise)
-      2. "Does this look correct?"
-      
-User: Confirm / Supplement
-```
-
-### Phase 2: Feasibility Assessment
-```
-AI:   1. Search module-registry: "Search [keyword]: found xxx / not found"
-      
-      2. Impact scope: 🟢Small / 🟡Medium / 🔴Large
-         
-         ⭐ Consumer check (mandatory for addresses/paths/configs/data formats):
-         ├── Producer: Who generates this data? → [Current change point]
-         ├── Consumer: Who consumes this data? → [List all consumers]
-         └── Compatibility: Can all consumers handle the new format?
-         
-         ⚠️ Internal/External network scenarios:
-         - What if an internal address is exposed externally?
-         - Can address replacement/transformation cover the new format?
-      
-      3. Edge cases: Invalid input? Concurrency? Empty/Large data?
-      
-      4. 🔷 Abstraction potential (Rule of Three):
-         - 🟢 Recommend → Add "design generic interface" to plan
-         - 🟡 Potential → Flag for observation
-         - 🔴 Do not abstract
-      
-      5. Verdict: 💗Better approach exists / ⚠️Risks identified / ✅Feasible
+⛔ 每条消息最多问 1 个问题，禁止一口气问 3-5 个
+⛔ 先问目的，再问方案——禁止跳过"为什么"直接讨论"怎么做"
 ```
 
-### Phase 3: Generate Plan (Incremental Testable Breakdown)
+### Phase 1: 需求确认 + BDD 场景
 ```
-AI:   1. Assess complexity:
-         - [Trivial] 1 step → One-shot implementation
-         - [Simple] 2-3 steps
-         - [Medium] 4-5 steps
-         - [Complex] >5 steps → Suggest splitting requirements
+用户: [经 Phase 0 澄清后的需求] / [本身已清晰的需求]
+
+AI:   0. （若 Phase 0 已读取则跳过）主动读取 project-map.md 和 module-registry.md
+      1. 重述需求 (专业简洁)
+      2. 生成 .feature 文件:
+         - 路径: features/{功能名}.feature
+         - 包含: 正常路径 + 异常路径 + 边界情况
+         - 只覆盖 PM 要求的功能（禁止过度设计）
+         - 无法自动化的场景标注 @manual
+         - 参考: references/principles/bdd-testing.md
+      3. "场景覆盖全了吗？需要补充吗？"
       
-      2. Breakdown principles (critical):
-         ⚠️ Each step must produce an independently verifiable module
-         
-         ✅ Good breakdown example:
-         - Step 1: Implement data transformation function [Testable: input→output verification]
-         - Step 2: Implement API call wrapper [Testable: mock data verification]
-         - Step 3: Integrate into UI component [Testable: UI rendering verification]
-         
-         ❌ Bad breakdown example:
-         - Step 1: Define types [Cannot verify independently]
-         - Step 2: Write half the logic [Incomplete, cannot verify]
-         - Step 3: Complete logic and test [Deferred to the end]
-         
-         Correct approach:
-         - Each step = cohesive, independently runnable module
-         - Each step has clear inputs, outputs, and verification method
+用户: 确认 / 补充场景
+```
+
+### Phase 2: 可行性评估
+```
+AI:   0. BDD 环境检查:
+         ✅ 已配置 BDD 框架 → 继续
+         ❌ 未配置 → "项目未安装 BDD 框架，是否配置？"
+            参考: references/principles/bdd-testing.md
       
-      3. Output plan (each step: title + files + testable output)
-         Format: Step N: [What to do] [Testable output: xxx]
+      1. 查 module-registry: "搜索 [关键词]: 找到 xxx / 未找到"
       
-      4. Write to current_steps.md:
-         - Log identifier: [DEV-{task-topic}]
-         - Key decisions
-         - Testable output per step
+      1.5 🏠 归属判断（强制，在设计新结构前）:
+          - 这个功能在语义上属于哪个领域？（用户、订单、通用工具...）
+          - 项目中是否已有处理该领域的模块？
+            ├── ✅ 有 → 评估：融入现有模块（扩展）还是独立新建？为什么？
+            └── ❌ 无 → 确认需要新建模块
+          
+          📐 模块策略（可组合，一个功能可能涉及多种策略）:
+          ├── [融入] 扩展 {现有文件}（新增什么）
+          ├── [复用] 调用 {现有组件/工具}（列出复用项）
+          └── [新建] 创建 {新文件}（理由、职责）
+          
+          ⭐ 混合型功能的处理:
+          当一个功能一半属于现有模块、另一半是新职责时，拆分处理:
+          
+          ✅ 正确做法（组合策略）:
+          "用户登录并记录行为日志"
+          ├── [融入] 扩展 src/services/authService.ts（登录逻辑，属于认证）
+          └── [新建] 创建 src/services/analyticsService.ts（行为日志，新职责）
+          
+          ❌ 错误做法（全塞一起）:
+          "用户登录并记录行为日志"
+          └── [融入] 全部写入 authService.ts（混淆了认证和分析两种职责）
+          
+          💡 判断标准: 这两部分能否独立变化？如果能，就应该分开
+          ⛔ 禁止不做归属判断就直接写代码
+
+      2. 影响范围分析: 🟢小 / 🟡中 / 🔴大
+         
+         ⭐ 消费方检查（涉及地址/路径/配置/数据格式时强制）:
+         ├── 生产方：谁产生这个数据？ → [本次改动点]
+         ├── 消费方：谁使用这个数据？ → [列出所有消费方]
+         └── 兼容性：新格式能被所有消费方正确处理吗？
+         
+         ⚠️ 内网/外网场景:
+         - 内网地址暴露给外网会怎样？
+         - 地址替换/转换逻辑能覆盖新格式吗？
+      
+      3. 边界 case: 异常输入? 并发? 空数据/大数据?
+      
+      4. 🔷 抽象潜力评估 (三问法则):
+         - 🟢 建议抽象 → 计划加入"设计通用接口"
+         - 🟡 潜在抽象 → 标记
+         - 🔴 不抽象
+      
+      5. 判断: 💗更优方案 / ⚠️有风险 / ✅可行
+```
+
+### Phase 3: 生成计划 (增量可测拆分)
+```
+AI:   1. 评估复杂度:
+         - [极简] 1步 → 建议一键完成
+         - [简单] 2-3步
+         - [中等] 4-5步
+         - [复杂] >5步 → 建议拆分需求
+      
+      2. 拆分原则 (关键):
+         ⚠️ 每步必须产出可独立验证的模块
+         
+         ✅ 好的拆分示例:
+         - Step 1: 实现数据转换函数 [可测: 输入→输出验证]
+         - Step 2: 实现 API 调用封装 [可测: mock 数据验证]
+         - Step 3: 集成到 UI 组件 [可测: UI 渲染验证]
+         
+         ❌ 坏的拆分示例:
+         - Step 1: 定义类型 [无法独立验证]
+         - Step 2: 写一半逻辑 [不完整，无法验证]
+         - Step 3: 补全逻辑并测试 [积攒到最后]
+         
+         正确做法:
+         - 每步完成一个内聚的、可独立运行的模块
+         - 每步都有明确的输入输出和验证方式
+      
+      3. ⭐ 计划必须落实 Phase 2 的模块策略:
+         - 每步必须标注目标文件（哪个文件、新建还是修改）
+         - 目标文件必须与 Phase 2 归属判断一致
+         - 格式: Step N: [做什么] → [目标文件] [覆盖场景: Scenario X, Y]
+         
+         ✅ 好的计划:
+         - Step 1: 实现数据转换 → 扩展 src/utils/transform.ts [Scenario 1]
+         - Step 2: 实现 API 封装 → 新建 src/api/user.ts [Scenario 2]
+         
+         ❌ 坏的计划:
+         - Step 1: 实现数据转换 [没说放哪个文件]
+         - Step 2: 实现 API 封装 [没说放哪个文件]
+      
+      4. 写入 current_steps.md，包含:
+         - Log 标识: [DEV-{任务主题}]
+         - 关键决策
+         - 📐 模块策略（从 Phase 2 搬入，执行时必须遵守）
+         - 每步的目标文件 + 覆盖的 Scenario 列表
       
       5. "Planning ready. Waiting for ❇️"
       
-Reminder: Use [DEV-{topic}-Step{N}] log per step
-Each step must be independently verifiable; do not defer verification
+提醒: 执行时每步使用 [DEV-{主题}-Step{N}] log 追踪流程
+每步必须能独立验证，禁止积攒到最后
 ```
 
-### Phase 3.5: PM Summary (Adaptive)
+### Phase 3.5: PM 摘要 (自适应)
 
-**Trigger**: User describes requirements in business language
+**触发条件**: 用户使用业务语言描述需求时自动附加
 
 ```
-📋 Plan Summary
+📋 计划摘要
 
-What: [One-sentence business description]
-Steps: N steps
-Estimated changes: X files
-Risk level: 🟢Low / 🟡Medium / 🔴High
-Reversible: ✅ Can be rolled back at any time
+做什么: [一句话业务语言描述]
+分几步: N 步
+预计改动: X 个文件
+风险等级: 🟢低 / 🟡中 / 🔴高
+可回退: ✅ 随时可以撤销
 
-Step overview:
-1. [Business description of step 1]
-2. [Business description of step 2]
+步骤概览:
+1. [业务语言描述第一步做什么]
+2. [业务语言描述第二步做什么]
 ...
 ```
 
-**Skip**: User uses technical language, or says "no need to explain"
+**跳过条件**: 用户使用技术语言描述，或主动说"不用解释"
 
-## Small Change Variant
+## 小改动变体
 
-Change ≤2 files, ≤30 lines → Skip planning, auto-switch to FastTrack mode
+如果改动很小（≤2文件，≤30行）→ 跳过计划，直接评估后一键实现（自动切换到 FastTrack 模式）
 
-## Mandatory Checks
+## 强制检查
 
-- File >300 lines → Add split step to plan
-- Reusable component found → Must reuse, do not create new
-- Documentation missing → Inform user, suggest Survey first
+- 单文件职责过多或体积明显膨胀 → 建议拆分，提醒用户
+- 发现可复用组件 → 必须复用，不得新建
+- 发现现有模块可扩展 → 优先融入，不得重复新建
+- 文档缺失 → 告知用户，建议先 Survey
 
-## Mode Switch
+## 模式切换
 
-Extensive refactoring needed → "Suggest Refactor mode for xxx first, then return to feature development"
+发现需要大量重构 → "建议先用 Refactor 模式处理 xxx，再回来做新功能"
 
-## Phase End Options
+## 阶段结束选项
 
-### Phase 1 End
+### Phase 0 结束
 ```
-📍 Current: Requirement understood as "[restated requirement]"
-📌 Next:
-[1] Confirm - Proceed to feasibility assessment
-[2] Supplement - If needed: [list missing items]
-[0] Cancel
+📍 当前: 需求已探索清楚
+📌 下一步:
+[1] 确认 - 进入需求确认，生成 BDD 场景
+[0] 取消
 ```
 
-### Phase 3.9: ⭐ Auto Consultation (Mandatory)
+### Phase 1 结束
+```
+📍 当前: 需求已理解为"[复述需求]"
+📌 下一步:
+[1] 确认 - 进入可行性评估，分析影响范围和复用机会
+[2] 补充 - 如需补充: [列出缺失点，如边界情况/优先级/具体交互]
+[0] 取消
+```
 
-**After outputting the plan, must auto-invoke Critique Subagent for independent review**
+### Phase 3.9: ⭐ 自动会诊（强制）
+
+**方案输出后，必须自动调用 Critique Subagent 进行独立审查**
 
 ```
-AI:   1. Generate plan (previous step)
-      2. ⭐ Auto-invoke Critique Subagent
-         - Pass: [User's original requirement] + plan, impact scope, key decisions
-         - Do not pass: AI's reasoning process
-      3. Subagent two-phase review:
+AI:   1. 生成计划（上一步）
+      2. ⭐ 自动调用 Critique Subagent
+         - 传递：【用户原始需求】+ 计划内容、影响范围、关键决策
+         - 不传递：AI 的思考过程
+      3. Subagent 执行两阶段审查:
          
-         Phase A: Requirement Clarification
-         ├── Is the requirement reasonable? Better approach?
-         ├── Ambiguous? Critical info missing?
-         └── ⚠️ Issues found → Pause, output questions, wait for user
+         阶段 A: 需求澄清检查
+         ├── 用户需求是否合理？是否有更好的方式？
+         ├── 需求是否有歧义？是否缺少关键信息？
+         └── ⚠️ 有问题 → 暂停，输出澄清问题，等用户回答
          
-         Phase B: Plan Review (after clarification passes)
-         └── Root cause validation, over-engineering, cost audit, side effects
+         阶段 B: 方案审查（澄清通过后）
+         └── 根因验证、过度设计、成本审计、副作用
          
-      4. Based on results:
-         - Clarification needed → Output questions, regenerate after user responds
-         - No clarification needed → Output report + original/revised plan
-      5. Wait for user selection
+      4. 根据 Subagent 结果:
+         - 有澄清问题 → 输出问题，等待用户回答后重新生成方案
+         - 无澄清问题 → 输出会诊报告 + 原计划/修订计划
+      5. 等待用户选择执行哪一个
 ```
 
-**⛔ Do not skip consultation and let user choose execution directly**
-**⛔ Do not execute directly after consultation; must wait for user selection**
-**⛔ Do not output plan options when requirement has clarification questions**
+**⛔ 禁止跳过会诊直接让用户选择执行**
+**⛔ 禁止会诊后直接执行，必须等待用户选择**
+**⛔ 禁止在需求有澄清问题时输出方案选项**
 
-### Phase 3 End
+### Phase 3 结束
 ```
-📍 Current: Plan generated, N steps, estimated X file changes
+📍 当前: 计划已生成，共 N 步，预计改动 X 个文件
 
 ━━━━━━━━━━━━━━━━━━━━
-🏥 Consultation Report (Critique Subagent)
+🏥 会诊报告（Critique Subagent）
 ━━━━━━━━━━━━━━━━━━━━
-[Subagent auto-review results]
+[Subagent 自动审查结果]
 ━━━━━━━━━━━━━━━━━━━━
 
-📌 Next:
-[1] Execute original plan (enter autoDevTeam/step workflow) - Step-by-step, confirm each
-[2] Execute revised plan (enter autoDevTeam/step workflow) - Step-by-step, confirm each
-[3] Trust mode (enter autoDevTeam/step workflow) - Continuous execution, report on completion
-[0] Cancel
+📌 下一步:
+[1] 执行原计划（进入 autoDevTeam/step 流程）- 逐步执行，每步需确认
+[2] 执行修订计划（进入 autoDevTeam/step 流程）- 逐步执行，每步需确认
+[3] 信任模式（进入 autoDevTeam/step 流程）- 连续执行，完成后统一汇报
+[0] 取消
 ```
 
-## Phase 4: Step Execution & Instant Verification
+## Phase 4: Step 执行与即时验证
 
-⚠️ **Must read** `references/principles/auto-testing.md` for complete workflow
+⚠️ **必须读取** `references/principles/auto-testing.md` 了解完整流程
 
-### Step Mode (Step-by-Step Confirmation)
+### Step 模式（逐步确认）
 
-After each Step completes:
+每个 Step 完成后，执行以下流程：
 
 ```
-Step N Complete
+Step N 完成
     ↓
-1. Impact scope analysis (see references/principles/impact-analysis.md)
+1. 影响范围分析（见 references/principles/impact-analysis.md）
     ↓
-2. Instant verification (Main Agent, see references/principles/test-verification.md)
+2. 即时验证（主 Agent，见 references/principles/test-verification.md）
     ↓
-3. Output to PM
+3. 输出给 PM
 ```
 
-**Step Completion Output**:
+**Step 完成输出格式**：
 ```
 ━━━━━━━━━━━━━━━━━━━━
-✅ Step N Complete: [Step description]
+✅ Step N 完成: [步骤描述]
 ━━━━━━━━━━━━━━━━━━━━
 
-🎯 Impact scope: [Module list]
+🎯 影响范围: [模块列表]
 
-🧪 Instant verification:
-Method: [Command/Script]
-Result: [Pass/Fail]
-Evidence: [Key output]
+🧪 即时验证:
+方式: [命令/脚本]
+结果: [通过/失败]
+证据: [关键输出]
 
-📌 Next:
-[1] Continue Step N+1
-[0] Pause
+📌 下一步:
+[1] 继续 Step N+1
+[0] 暂停
 ━━━━━━━━━━━━━━━━━━━━
 ```
 
-### Trust Mode (Continuous Execution)
+### 信任模式（连续执行）
 
-Instant verification per step, regression at task end (if tests exist):
+信任模式下，每步即时验证，任务末回归（若已有测试）：
 
 ```
-Execute Step 1 → Step 2 → ... → Step N
+执行 Step 1 → Step 2 → ... → Step N
     ↓
-Instant verification after each step
+每步完成后即时验证
     ↓
-Run regression before completion (if project has tests)
+任务完成前运行回归（如项目已有测试）
     ↓
-Output to PM
+输出给 PM
 ```
 
-**Trust Mode Completion Output**:
+**信任模式完成输出格式**：
 ```
 ━━━━━━━━━━━━━━━━━━━━
-✅ [Feature name] Development Complete
+✅ [功能名] 开发完成
 ━━━━━━━━━━━━━━━━━━━━
 
-📊 Execution Summary:
-├── Completed: N steps
-├── Changed: X files
-└── Instant verification: N/N passed
+📊 执行摘要:
+├── 完成: N 个步骤
+├── 改动: X 个文件
+└── 即时验证: N/N 通过
 
-🔄 Regression: [Ran/Not ran] [Result]
+🔄 回归: [已运行/未运行] [结果]
 ━━━━━━━━━━━━━━━━━━━━
 ```
 
-### Test Failure Handling
+### 测试失败处理
 
 ```
-Test failure (still failing after 3 retries):
+测试失败（3次重试仍失败）:
 
 ━━━━━━━━━━━━━━━━━━━━
-⚠️ Test failure, manual intervention required
+⚠️ 测试失败，需要人工介入
 ━━━━━━━━━━━━━━━━━━━━
 
-❌ Persistent failures:
-| Test | Reason |
-|------|--------|
-| [Test name] | [Failure reason] |
+❌ 持续失败:
+| 测试 | 原因 |
+|-----|------|
+| [测试名] | [失败原因] |
 
-🔍 Root cause analysis:
-[Analysis description]
+🔍 根因分析:
+[分析说明]
 
-📌 Options:
-[1] View detailed error logs
-[2] I'll fix it, retry after fix
-[3] Skip this test and continue (not recommended)
-[0] Abort task
+📌 选择:
+[1] 查看详细错误日志
+[2] 我来修复，修复后重试
+[3] 跳过此测试继续（不推荐）
+[0] 终止任务
 ━━━━━━━━━━━━━━━━━━━━
 ```

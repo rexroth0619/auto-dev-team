@@ -1,5 +1,5 @@
-# Android Platform Patterns
+# Android 平台经验
 
-ANR prevention, lifecycle management, permissions, multi-screen adaptation, background restrictions, etc.
+ANR 预防、生命周期、权限处理、多屏适配、后台限制等。
 
-**Use template**: `../_TEMPLATE.md`
+**使用模板**：`../_TEMPLATE.md`

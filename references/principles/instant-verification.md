@@ -1,63 +1,62 @@
-# Instant Verification Protocol
+# 即时验证 Protocol
 
-> Goal: **Fast, clear, reproducible**.
+> 目的：**快、清晰、可复现**。
 
-## Required Checklist
+## 必做清单
 
-1. Core logic: primary functionality of this change
-2. Boundary condition: at least 1 edge-case input
-3. Callers: verify at least 1 obvious caller if applicable
+1. 核心逻辑：本次改动的主功能
+2. 边界条件：至少 1 个边界输入
+3. 调用方：有明显调用方则顺手验证
 
-## Method Selection
+## 方法选择
 
-- Run directly in terminal (preferred)
-- Temporary script (delete after verification)
-- Cannot auto-verify → provide explicit manual steps to user
+- 终端直跑（优先）
+- 临时脚本（验证后删除）
+- 无法自动验证 → 明确给用户检查步骤
 
-## Pass Criteria
+## 通过标准
 
-- Must have expected values
-- Must compare against actual output
-- "No errors" alone is insufficient
+- 必须有预期值
+- 必须对比实际输出
+- 不能只看“没报错”
 
-## Failure Handling
+## 失败处理
 
-1. Suspect code first, then check verification logic
-2. Fix and retry, max 3 times
-3. Still failing → request human intervention
+1. 优先怀疑代码，再检查验证逻辑
+2. 修复后重试，最多 3 次
+3. 仍失败 → 请求人工介入
+# 即时验证协议（主 Agent）
 
-# Instant Verification Protocol (Primary Agent)
+> 目标：在当前上下文，快速证明“改动有效且没破坏关键路径”。
 
-> Goal: In current context, quickly prove "the change works and hasn't broken critical paths."
+## 必做验证点
 
-## Required Verification Points
+1. 核心逻辑（本次改动的主要功能）
+2. 至少 1 个边界条件（空值/极值/异常输入）
+3. 若有直接调用方，至少验证 1 个
 
-1. Core logic (primary functionality of this change)
-2. At least 1 boundary condition (null/extreme/abnormal input)
-3. If direct callers exist, verify at least 1
+## 验证方式选择（优先快）
 
-## Verification Method Selection (Prioritize Speed)
+- 纯函数/工具：`node -e` / `python - <<'PY'`
+- API：`curl` / 临时请求脚本
+- 文件/配置：直接读取或检查输出文件
+- UI/体验：给出明确手动验证步骤
 
-- Pure functions/utilities: `node -e` / `python - <<'PY'`
-- APIs: `curl` / temporary request scripts
-- Files/config: directly read or inspect output files
-- UI/UX: provide explicit manual verification steps
+## 临时代码规则
 
-## Temporary Code Rules
+- 优先**一行命令**验证
+- 需要临时脚本时：用 `.tmp-verify.*`，验证后删除
+- 禁止把验证代码留在正式文件
 
-- Prefer **one-liner commands** for verification
-- When script needed: use `.tmp-verify.*`, delete after
-- Never leave verification code in production files
+## 失败处理（最多 3 次）
 
-## Failure Handling (Max 3 Retries)
+1. 先假设代码问题 → 修复 → 重试
+2. 再检查验证逻辑是否错误
+3. 第 3 次失败 → 停止并请求用户介入
 
-1. Assume code issue first → fix → retry
-2. Then check verification logic
-3. Third failure → stop, request user intervention
-
-## Output Format
+## 输出格式
 
 ```
-🧪 Instant Verification: [pass/fail]
-Evidence: [command/output summary]
+🧪 即时验证: [通过/失败]
+证据: [命令/输出摘要]
 ```

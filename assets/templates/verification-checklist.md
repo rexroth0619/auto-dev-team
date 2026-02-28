@@ -1,57 +1,57 @@
-# Verification Checklist
+# 验收清单
 
-> 💡 Optional. Say "run verification" when done, or "I trust the result" to skip.
+> 💡 可选使用。任务完成时说"验收一下"可查看，说"我信任结果"可跳过。
 
-## Functional (PM Check)
+## 功能验收（PM 检查）
 
-- [ ] **Core functionality**: Does the feature work?
-- [ ] **Edge cases**: Correct with empty data, invalid input?
-- [ ] **UX**: Smooth operation, no lag?
+- [ ] **核心功能**: 描述的功能是否可用？
+- [ ] **边界情况**: 空数据、错误输入时表现正常？
+- [ ] **用户体验**: 操作是否顺畅，有无卡顿？
 
-## Technical (AI Auto-completes)
+## 技术验收（AI 自动完成）
 
-- [ ] No lint errors
-- [ ] Related tests pass (if any)
-- [ ] Docs updated (project-map / module-registry)
-- [ ] Checkpoint created
+- [ ] 无 lint 错误
+- [ ] 相关测试通过（如有）
+- [ ] 文档已更新（project-map / module-registry）
+- [ ] 检查点已创建
 
-## Regression
+## 回归验收
 
-- [ ] Existing features unaffected
-- [ ] Related pages/features work normally
-
----
-
-## Quick Verification Flow
-
-### Minor Changes (FastTrack)
-```
-AI: "✅ Done — modified [N] files"
-
-PM options:
-[1] Review the result → Manual verification
-[2] Finish → Trust the result
-```
-
-### New Feature
-```
-AI: "✅ Task complete — [N] steps executed"
-
-PM options:
-[1] Verification checklist → Check each item
-[2] Quick verification → Core functionality only
-[3] Finish → Trust the result
-```
-
-### Bug Fix
-```
-AI: "✅ Bug fixed"
-
-PM must verify:
-1. Reproduce with original steps → Issue should be gone
-2. Related features work → No new issues introduced
-```
+- [ ] 已有功能未受影响
+- [ ] 相关页面/功能正常工作
 
 ---
 
-*Checklist auto-adjusts based on task type*
+## 快速验收流程
+
+### 小改动（FastTrack）
+```
+AI: "✅ 已完成，改动了 [N] 个文件"
+
+PM 选择:
+[1] 看一下效果 → 手动验证
+[2] 结束 → 信任结果
+```
+
+### 新功能开发
+```
+AI: "✅ 任务完成，共执行 [N] 步"
+
+PM 选择:
+[1] 验收清单 → 逐项检查
+[2] 快速验收 → 只测核心功能
+[3] 结束 → 信任结果
+```
+
+### Bug 修复
+```
+AI: "✅ Bug 已修复"
+
+PM 必须验证:
+1. 用原复现步骤测试 → 问题应该消失
+2. 相关功能正常 → 没有引入新问题
+```
+
+---
+
+*此清单会根据任务类型自动调整显示内容*

@@ -1,63 +1,63 @@
-# Quick Command Reference
+# 常用指令速查
 
-> 💡 Common PM commands — AI recognizes and executes accordingly.
+> 💡 这些是 PM 常用的指令，AI 会识别并执行相应操作。
 
-## Control Commands
+## 控制指令
 
-| Phrase | AI Behavior |
-|--------|-------------|
-| "Confirm" / "ok" / "continue" | Proceed to next step |
-| "Rollback" / "undo" | Revert to previous checkpoint |
-| "Start over" / "try another approach" | Abandon plan, re-analyze |
-| "Pause" / "hold on" | Save state, await instructions |
-| "No, what I want is..." | Re-interpret requirements, adjust |
+| 说法 | AI 行为 |
+|------|---------|
+| "确认" / "ok" / "继续" | 进入下一步 |
+| "回退" / "撤销" | 回到上一个检查点 |
+| "重新来" / "换个方案" | 放弃当前计划，重新分析 |
+| "暂停" / "先停一下" | 保存当前状态，等待指示 |
+| "不对，我要的是..." | 理解新需求，调整方向 |
 
-## Mode Switching
+## 模式切换
 
-| Phrase | Mode |
-|--------|------|
-| "I want to build a new feature" | Architect |
-| "There's a bug" / "getting an error" | Debug |
-| "Production is down! Urgent!" | Hotfix |
-| "Code is messy, clean it up" | Refactor |
-| "This is too slow" | Optimize |
-| "Help me review this project" | Survey |
-| "Remove dead code" | Cleanup |
-| "Add a test" | Tester |
-| "What does this code mean" | Explain |
-| "Change a label" / "adjust a color" | FastTrack |
+| 说法 | 进入模式 |
+|------|----------|
+| "我想做个新功能" | Architect |
+| "这里有 bug" / "报错了" | Debug |
+| "线上挂了！紧急！" | Hotfix |
+| "代码太乱了，整理一下" | Refactor |
+| "这个太慢了" | Optimize |
+| "帮我看看这个项目" | Survey |
+| "删掉没用的代码" | Cleanup |
+| "加个测试" | Tester |
+| "这段代码什么意思" | Explain |
+| "改个文案" / "调个颜色" | FastTrack |
 
-## Execution Control
+## 执行控制
 
-| Phrase | AI Behavior |
-|--------|-------------|
-| "Trust mode" / "continuous execution" | Execute multiple steps, report at once |
-| "Step by step" | Confirm at each step (default) |
-| "Explain in detail" | More detailed explanation |
-| "Just do it" / "skip the explanation" | Skip explanation |
+| 说法 | AI 行为 |
+|------|---------|
+| "信任模式" / "连续执行" | 连续执行多步，完成后统一汇报 |
+| "一步一步来" | 每步都等确认（默认） |
+| "详细说明" | 展开更多解释 |
+| "直接执行" / "不用解释" | 跳过详细说明 |
 
-## Verification
+## 验收相关
 
-| Phrase | AI Behavior |
-|--------|-------------|
-| "Done" / "looks good" | Confirm completion, wrap up |
-| "Still has issues" | Continue debugging/modifying |
-| "Run verification" | Show verification checklist |
-| "I trust the result" | Skip verification, finish |
+| 说法 | AI 行为 |
+|------|---------|
+| "好了" / "没问题了" | 确认完成，进入收尾 |
+| "还有问题" | 继续调试/修改 |
+| "验收一下" | 展示验收清单 |
+| "我信任结果" | 跳过验收，直接结束 |
 
-## Status Queries
+## 信息查询
 
-| Phrase | AI Behavior |
-|--------|-------------|
-| "Where are we at" | Show current progress |
-| "What changed so far" | Show change history |
-| "Can we rollback" | Show available checkpoints |
-| "What's the project structure" | Show project-map summary |
+| 说法 | AI 行为 |
+|------|---------|
+| "现在做到哪了" | 展示当前进度 |
+| "之前改了什么" | 展示改动历史 |
+| "能回退吗" | 展示可用的检查点 |
+| "这个项目结构是什么" | 展示 project-map 摘要 |
 
-## Emergencies
+## 紧急情况
 
-| Phrase | AI Behavior |
-|--------|-------------|
-| "Stop!" / "Don't touch anything!" | Halt all operations immediately |
-| "Rollback everything" | Revert to pre-task state |
-| "Something broke, restore first" | Prioritize restoring stable state |
+| 说法 | AI 行为 |
+|------|---------|
+| "停！" / "别动了！" | 立即停止所有操作 |
+| "全部回退" | 回到任务开始前的状态 |
+| "出问题了，先恢复" | 优先恢复到稳定状态 |

@@ -1,112 +1,112 @@
-# Abstraction Decision Principles
+# 抽象判断原则
 
-> Evaluate whether logic should be abstracted into a shared utility before implementing.
+> 开发新功能或重构时，必须评估是否应该抽象成通用 Utility
 
-## Three-Question Rule (Ask Before Abstracting)
+## 三问法则 (抽象前必问)
 
-### Q1: Neutral operation or business-specific logic?
+### Q1: 这个功能是"中性动作"还是"业务特化"？
 
-| Type | Characteristics | Abstraction Value |
+| 类型 | 特征 | 抽象价值 |
 |------|------|----------|
-| **Neutral Operation** | Scanning, traversal, transformation, validation, formatting... | ✅ Worth abstracting |
-| **Business-Specific** | User profiling, order state machines, domain-specific UI... | ❌ Usually not needed |
+| **中性动作** | 扫描、遍历、转换、校验、格式化... | ✅ 有抽象价值 |
+| **业务特化** | 用户画像计算、订单状态机、特定UI组件... | ❌ 通常不需要 |
 
-### Q2: Will other scenarios reuse this?
+### Q2: 未来会有其他场景使用吗？
 
-| Assessment | Conclusion |
+| 判断 | 结论 |
 |------|------|
-| 🟢 Clearly yes (e.g., "scan" applies to characters/shapes/images) | → **Abstract** |
-| 🟡 Possibly, uncertain | → **Don't abstract yet; mark as "potential abstraction point"** |
-| 🔴 No | → **Don't abstract** |
+| 🟢 明确会有 (如"扫描"可用于字符/形状/图片) | → **抽象** |
+| 🟡 可能会有但不确定 | → **先不抽象，标记"潜在抽象点"** |
+| 🔴 不会有 | → **不抽象** |
 
-### Q3: Will the API be simpler after abstraction?
+### Q3: 抽象后 API 会更简单还是更复杂？
 
-| Assessment | Conclusion |
+| 判断 | 结论 |
 |------|------|
-| Simpler (e.g., `scan(target, type)`) | → **Abstract** |
-| More complex (parameter explosion, generics hell) | → **Don't abstract — over-engineering** |
+| 更简单 (如 `scan(target, type)`) | → **抽象** |
+| 更复杂 (参数爆炸、泛型地狱) | → **不抽象，这是过度工程** |
 
-## Rule of Three (Post-hoc Abstraction)
+## Rule of Three (事后抽象)
 
-| Occurrences | Strategy |
+| 出现次数 | 策略 |
 |----------|------|
-| 1–2 times | Don't abstract; duplication is acceptable |
-| 3+ times | **Must abstract** |
+| 1-2 次 | 不抽象，允许重复 |
+| 3+ 次 | **必须抽象** |
 
-## Abstraction Decision Flowchart
+## 抽象决策流程图
 
 ```
-Identify potential abstraction opportunity
+发现可能的抽象机会
         │
         ▼
-    Q1: Neutral operation?
+    Q1: 中性动作？
         │
    ┌────┴────┐
    │         │
-  Yes       No → Don't abstract
+  是        否 → 不抽象
    │
    ▼
-Q2: Will other scenarios use it?
+Q2: 其他场景会用？
    │
-   ├─ Clearly yes → Q3
-   ├─ Uncertain → Mark and observe
-   └─ No → Don't abstract
+   ├─ 明确会 → Q3
+   ├─ 不确定 → 标记观察
+   └─ 不会 → 不抽象
    │
    ▼
-Q3: Will API be simpler?
+Q3: API 更简单？
    │
-   ├─ Yes → ✅ Abstract
-   └─ No → ❌ Over-engineering
+   ├─ 是 → ✅ 抽象
+   └─ 否 → ❌ 过度工程
 ```
 
-## Abstraction Deliverables
+## 抽象产出
 
-After abstracting:
-1. Register new utility in `module-registry.md`
-2. Update `project-map.md` to annotate the new shared capability
+抽象完成后必须:
+1. 新 Utility 记录到 `module-registry.md`
+2. 更新 `project-map.md` 标注新的通用能力
 
-Output: `📝 Auto-updated: module-registry.md — added [Utility Name]`
+输出: `📝 已自动更新: module-registry.md - 新增 [Utility名]`
 
-## Common Abstraction Pitfalls
+## 常见抽象陷阱
 
-### ❌ Premature Abstraction
+### ❌ 过早抽象
 ```
-Abstracting after only 1 occurrence
-→ Wastes time; abstraction direction may be wrong
-```
-
-### ❌ Over-Generalization
-```
-Adding excessive config parameters for "universality"
-→ API complexity explodes; worse than no abstraction
+只出现 1 次就抽象
+→ 浪费时间，可能抽象方向错误
 ```
 
-### ❌ Abstracting Business Logic
+### ❌ 过度泛化
 ```
-Abstracting order pricing logic into a "universal pricer"
-→ Business rules change constantly; abstraction becomes a burden
+为了"通用"加入大量配置参数
+→ API 复杂度爆炸，不如不抽象
 ```
 
-## Good Abstraction Example
+### ❌ 业务逻辑抽象
+```
+把订单计价逻辑抽象成"通用计价器"
+→ 业务规则千变万化，抽象反而是负担
+```
+
+## 好的抽象示例
 
 ```typescript
-// ✅ Neutral operation, multi-scenario reuse, simple API
+// ✅ 中性动作，多场景复用，API 简单
 function traverse<T>(
   root: T, 
   getChildren: (node: T) => T[]
 ): T[] { ... }
 
-// Use cases:
-// - Traverse file tree
-// - Traverse DOM nodes
-// - Traverse org hierarchy
+// 使用场景:
+// - 遍历文件树
+// - 遍历 DOM 节点
+// - 遍历组织架构
 ```
 
-## Bad Abstraction Example
+## 不该抽象的示例
 
 ```typescript
-// ❌ Business-specific, only one scenario
+// ❌ 业务特化，只有一个场景
 function calculateUserVIPDiscount(user, order) {
-  // VIP discount rules change frequently; abstraction is pointless
+  // VIP 折扣规则经常变，抽象没意义
 }
 ```

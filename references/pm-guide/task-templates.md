@@ -1,70 +1,70 @@
-# PM Task Description Templates
+# PM 任务描述模板
 
-> 💡 Optional references. Experienced users can describe tasks naturally — AI understands.
+> 💡 这些模板是可选的参考。熟练用户可以直接用自然语言描述，AI 会自动理解。
 
-## When to Use
+## 何时使用模板
 
-- First time using autoDevTeam
-- Unsure how to describe requirements
-- Want more precise communication
+- 第一次使用 autoDevTeam
+- 不确定该怎么描述需求
+- 想要更精确的沟通
 
-## New Feature Request
-
-```
-【Goal】What should the user be able to do?
-【Acceptance Criteria】How to determine completion? (Observable behavior)
-【Priority】P0 Urgent / P1 Important / P2 Normal
-【Reference】Similar to existing feature? (Optional)
-```
-
-**Example**:
-```
-【Goal】User can toggle dark mode on settings page
-【Acceptance Criteria】Clicking toggle immediately switches app theme
-【Priority】P1
-【Reference】Similar to iOS system dark mode toggle
-```
-
-## Bug Report
+## 新功能需求
 
 ```
-【Symptom】What did you see?
-【Expected】What should have happened?
-【Repro Steps】At which step does it break?
-【Severity】Impact scope?
+【目标】用户能够做什么？
+【验收标准】怎么算完成？（可观察的行为）
+【优先级】P0 紧急 / P1 重要 / P2 一般
+【参考】类似什么已有功能？（可选）
 ```
 
-**Example**:
+**示例**：
 ```
-【Symptom】Page freezes after clicking submit
-【Expected】Should navigate to success page
-【Repro Steps】Fill form → Click submit → Freeze
-【Severity】All users affected — urgent!
-```
-
-## Optimization Request
-
-```
-【Problem】What's slow / unusable?
-【Target】Desired result?
-【Priority】P0/P1/P2
+【目标】用户能在设置页面切换深色模式
+【验收标准】点击开关后，整个应用立即切换主题色
+【优先级】P1
+【参考】类似 iOS 系统的深色模式切换
 ```
 
-**Example**:
+## 问题反馈 / Bug 报告
+
 ```
-【Problem】List page takes 5 seconds to load
-【Target】Load within 2 seconds
-【Priority】P1
+【现象】看到了什么？
+【预期】应该是什么？
+【复现】第几步出问题？
+【紧急程度】影响范围？
 ```
 
-## Shorthand Expressions
+**示例**：
+```
+【现象】点击提交按钮后页面卡住
+【预期】应该跳转到成功页面
+【复现】填写表单 → 点提交 → 卡住
+【紧急程度】所有用户都遇到，紧急！
+```
 
-Once comfortable, just say:
+## 优化需求
 
-| Full Version | Shorthand |
-|-------------|-----------|
-| 【Goal】User can toggle dark mode... | "Add a dark mode toggle" |
-| 【Symptom】Freezes after clicking submit... | "Submit button does nothing on click" |
-| 【Problem】Loading too slow... | "This page is too slow" |
+```
+【问题】哪里慢 / 不好用？
+【期望】希望达到什么效果？
+【优先级】P0/P1/P2
+```
 
-AI auto-asks for missing key information.
+**示例**：
+```
+【问题】列表页加载要 5 秒
+【期望】2 秒内加载完成
+【优先级】P1
+```
+
+## 简化表达
+
+熟练后可以直接说：
+
+| 完整版 | 简化版 |
+|--------|--------|
+| 【目标】用户能切换深色模式... | "加个深色模式开关" |
+| 【现象】点击提交后卡住... | "提交按钮点了没反应" |
+| 【问题】加载太慢... | "这个页面太慢了" |
+
+AI 会自动追问缺失的关键信息。

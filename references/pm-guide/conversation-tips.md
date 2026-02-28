@@ -1,99 +1,100 @@
-# Conversation Tips
+# 对话技巧
 
-> 💡 Collaborate with AI more effectively.
+> 💡 如何更高效地与 AI 协作。
 
-## When to Start a New Conversation
+## 何时开始新对话
 
-- ✅ Switching to a completely different feature
-- ✅ Current conversation exceeds 15-20 turns unresolved
-- ✅ AI repeats itself or gives confused responses
-- ✅ Task complete, starting the next
+建议开新对话：
+- ✅ 切换到完全不同的功能
+- ✅ 当前对话超过 15-20 轮未解决
+- ✅ AI 开始重复或回答混乱
+- ✅ 完成了一个完整任务，开始下一个
 
-## When to Continue
+## 何时继续当前对话
 
-- ✅ Iterating on the same feature
-- ✅ Small adjustments to recent changes
-- ✅ Need prior discussion context
-- ✅ Consecutive bug fixes
+建议继续：
+- ✅ 同一功能的迭代和微调
+- ✅ 刚才改动的小调整
+- ✅ 需要参考之前的讨论上下文
+- ✅ 连续的 Bug 修复
 
-## Effective Communication
+## 高效沟通技巧
 
-### 1. Be Direct, Not Verbose
-
-```
-❌ "I think maybe we should add something when the user logs in, like a 
-    captcha or something, because recently people reported getting hacked, 
-    so I was wondering if we should..."
-
-✅ "Add a captcha to login — prevent account theft"
-```
-
-### 2. State Problems Directly
+### 1. 说重点，不啰嗦
 
 ```
-❌ "Hmm...something seems off...not quite right..."
+❌ "我觉得可能需要在用户登录的时候加一个什么东西，就是那种验证码，
+    因为最近有人反馈被盗号了，所以我想是不是应该..."
 
-✅ "Bug: clicking should navigate, but nothing happens"
+✅ "登录加个验证码，防盗号"
 ```
 
-### 3. Give Specific Feedback
+### 2. 有问题直接说
 
 ```
-❌ "Not what I wanted"
+❌ "嗯...好像有点问题...不太对..."
 
-✅ "Not what I wanted — I need a modal on click, not a page redirect"
+✅ "这里不对：点击后应该跳转，但现在没反应"
 ```
 
-### 4. Ask When Uncertain
+### 3. 给反馈要具体
 
 ```
-✅ "Will this change affect other parts?"
-✅ "How long will this take roughly?"
-✅ "Is there a simpler approach?"
+❌ "不是我想要的"
+
+✅ "不是我想要的，我要的是点击后弹窗，不是跳转页面"
 ```
 
-## Common Scenarios
-
-### AI Misunderstood
+### 4. 不确定就问
 
 ```
-"No, I don't want xxx, I want yyy"
-→ AI re-interprets and adjusts
+✅ "这样改会不会影响其他地方？"
+✅ "大概要多久？"
+✅ "有没有更简单的方案？"
 ```
 
-### Want More Options
+## 常见场景处理
+
+### AI 理解错了
 
 ```
-"Any other approaches?"
-→ AI provides alternatives
+"不对，我要的不是 xxx，是 yyy"
+→ AI 会重新理解并调整
 ```
 
-### Want to Simplify
+### 想看更多选项
 
 ```
-"Don't overcomplicate it, keep it simple"
-→ AI simplifies the approach
+"还有其他方案吗？"
+→ AI 会提供替代方案
 ```
 
-### Want to Speed Up
+### 想简化流程
 
 ```
-"Trust mode, just get it done"
-→ AI executes continuously, reports at end
+"不用那么复杂，简单点"
+→ AI 会简化方案
 ```
 
-### Want to Pause
+### 想加速执行
 
 ```
-"Hold on, let me think"
-→ AI pauses, awaits input
+"信任模式，直接做完"
+→ AI 会连续执行，完成后统一汇报
 ```
 
-## Anti-Patterns
+### 想暂停思考
 
-| ❌ Avoid | ✅ Instead |
-|----------|-----------|
-| Multiple unrelated requests at once | One thing at a time |
-| Half-stated requirements, then "go" | State clearly before starting |
-| Vague problem descriptions | Provide specific symptoms and steps |
-| Endlessly adding scope | Finish one task, then start the next |
+```
+"等一下，让我想想"
+→ AI 会暂停，等待你的指示
+```
+
+## 避免的做法
+
+| ❌ 避免 | ✅ 改为 |
+|--------|--------|
+| 一次提多个不相关的需求 | 一次说一件事 |
+| 需求说一半就让执行 | 说清楚再开始 |
+| 问题描述太模糊 | 给具体现象和步骤 |
+| 无限追加需求 | 完成一个再开下一个 |

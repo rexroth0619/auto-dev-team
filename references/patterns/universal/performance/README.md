@@ -1,7 +1,7 @@
-# Performance Optimization Patterns
+# 性能优化 Pattern
 
-Caching, lazy loading, virtualization, debounce/throttle, preloading, and other universal principles.
+缓存、懒加载、虚拟化、防抖节流、预加载等通用原理。
 
-**Typical scenarios**: Slow page loads, slow API responses, high memory usage
+**典型场景**：页面加载慢、接口响应慢、内存占用高
 
-**Use template**: `../_TEMPLATE.md`
+**使用模板**：`../_TEMPLATE.md`

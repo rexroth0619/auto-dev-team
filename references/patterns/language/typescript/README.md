@@ -1,5 +1,5 @@
-# TypeScript Patterns
+# TypeScript 经验
 
-Type gymnastics, async/await pitfalls, type narrowing, generics, etc.
+类型体操、async/await 陷阱、类型收窄、泛型技巧等。
 
-**Use template**: `../_TEMPLATE.md`
+**使用模板**：`../_TEMPLATE.md`

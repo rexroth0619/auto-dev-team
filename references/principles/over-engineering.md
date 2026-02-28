@@ -1,68 +1,68 @@
-# No Over-Engineering Principle
+# 禁止过度设计原则
 
-> ⛔ PMs cannot distinguish over-engineering — the AI must self-regulate.
+> ⛔ PM 无法分辨过度设计，AI 必须自我约束
 
-## Definition
+## 定义
 
-**Over-engineering = Adding features the PM didn't ask for**
+**过度设计 = 添加 PM 没要求的额外功能**
 
-Not to be confused with reasonable code abstraction (see `abstraction-rules.md`).
+这不是指合理的代码抽象（抽象仍然需要，见 `abstraction-rules.md`）。
 
-## Signs of Over-Engineering
+## 过度设计的特征
 
-- ❌ PM says "build a login," you add "third-party login, remember-me, and 2FA while we're at it"
-- ❌ PM says "add a button," you add "a full button component library while we're at it"
-- ❌ PM says "show a list," you add "sorting, filtering, pagination, and export while we're at it"
-- ❌ Any "while we're at it," "might need later," or "easy to add" features
-- ❌ Config options, toggles, or optional parameters the PM never mentioned
+- ❌ PM 说"做个登录"，你加了"顺便支持第三方登录、记住密码、双因素认证"
+- ❌ PM 说"加个按钮"，你加了"顺便做个按钮组件库"
+- ❌ PM 说"展示列表"，你加了"顺便支持排序、筛选、分页、导出"
+- ❌ 任何"顺便"、"以后可能用到"、"加上也不费事"的功能
+- ❌ PM 没提到的配置项、开关、可选参数
 
-## Correct Approach
+## 正确做法
 
-- ✅ Build only what the PM explicitly asked for — nothing more
-- ✅ When tempted to add extras, ask the PM first: "Should we also support xxx?"
-- ✅ If the PM says no, don't add it
+- ✅ 只做 PM 明确要求的功能，一个字都不多
+- ✅ 想加额外功能时，先问 PM："要不要顺便支持 xxx？"
+- ✅ PM 说不要就不加，别自作主张
 
-## Self-Check Questions (Ask Before Writing Code)
+## 自检问题（写代码前必须问自己）
 
-1. Did the PM specify this, or do I think it "should exist"?
-2. If the PM didn't mention it, why am I adding it?
+1. 这个功能是 PM 说的，还是我觉得"应该有"的？
+2. 如果 PM 没提，我为什么要加？
 
-**If the answer is "I think it should exist" → stop and ask the PM. Do not add it.**
+**如果答案是"我觉得应该有"→ 停下来问 PM，不要自己加。**
 
-## Distinction from Code Abstraction
+## 与代码抽象的区别
 
-| Type | Definition | Allowed? |
+| 类型 | 定义 | 是否允许 |
 |------|------|---------|
-| Over-engineering | Adding features the PM didn't ask for | ❌ Prohibited |
-| Code abstraction | Extracting repeated logic into functions/modules | ✅ Required |
+| 过度设计 | 添加 PM 没要求的功能 | ❌ 禁止 |
+| 代码抽象 | 把重复逻辑提取为函数/模块 | ✅ 需要 |
 
-**Abstraction criteria**: See `abstraction-rules.md`
-- Rule of Three: same logic 3+ times → must abstract
-- Three-Question Rule: neutral operation? Future reuse? Simpler API?
+**抽象的判断标准**：见 `abstraction-rules.md`
+- Rule of Three：相同逻辑出现 3+ 次 → 必须抽象
+- 三问法则：中性动作？未来复用？API 更简单？
 
-## Examples
+## 示例
 
-### ❌ Over-Engineering
+### ❌ 过度设计
 
-PM: "Build a user list page"
+PM："做个用户列表页"
 
-You built:
-- User list ✅
-- Pagination ❌ (PM didn't ask)
-- Sorting ❌ (PM didn't ask)
-- Filtering ❌ (PM didn't ask)
-- Excel export ❌ (PM didn't ask)
-- Batch delete ❌ (PM didn't ask)
+你做了：
+- 用户列表 ✅
+- 分页 ❌（PM 没说要）
+- 排序 ❌（PM 没说要）
+- 筛选 ❌（PM 没说要）
+- 导出 Excel ❌（PM 没说要）
+- 批量删除 ❌（PM 没说要）
 
-### ✅ Correct Approach
+### ✅ 正确做法
 
-PM: "Build a user list page"
+PM："做个用户列表页"
 
-You ask: "Do you need pagination? Sorting and filtering?"
+你问："需要分页吗？需要排序筛选吗？"
 
-PM: "Pagination yes, nothing else"
+PM："需要分页，其他不用"
 
-You built:
-- User list ✅
-- Pagination ✅
-- Nothing else added
+你做了：
+- 用户列表 ✅
+- 分页 ✅
+- 其他都不加

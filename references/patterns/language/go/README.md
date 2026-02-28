@@ -1,5 +1,5 @@
-# Go Patterns
+# Go 经验
 
-Goroutines, channels, error handling, context usage, etc.
+goroutine、channel、错误处理模式、context 使用等。
 
-**Use template**: `../_TEMPLATE.md`
+**使用模板**：`../_TEMPLATE.md`

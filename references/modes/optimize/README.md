@@ -1,223 +1,223 @@
-# Optimize Mode (Performance Optimization)
+# Optimize 模式 (性能优化)
 
-> Applies to: Program too slow, want to optimize performance | Output: Update project-map.md
+> 适用: 程序太慢、想优化性能 | 产出: 更新 project-map.md
 
-## AI Must Proactively Read
+## AI 必须主动读取
 
-On entry, AI must read (without user providing):
-- `docs/project-map.md` - Project structure
-- Target files mentioned by user
+进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
+- `docs/project-map.md` - 了解项目结构
+- 用户提到的目标文件
 
-## Phase 1: Performance Diagnosis
+## Phase 1: 性能诊断
 
 ```
-AI:   1. Clarify: What is slow? How slow? Which scenarios?
+AI:   1. 明确: 什么慢? 慢到什么程度? 影响哪些场景?
       
-      2. 🔍 Diagnostic checklist (Show Your Work):
-         | Type | Check Item | Status | Finding |
-         | Compute/Render/Network/Memory | ... | ✅/❌ | ... |
+      2. 🔍 诊断清单 (Show Your Work):
+         | 类型 | 检查项 | 状态 | 发现 |
+         | 计算/渲染/网络/内存 | ... | ✅/❌ | ... |
          
-      3. Impact scope: 🟢Small / 🟡Medium / 🔴Large
+      3. 影响范围: 🟢小 / 🟡中 / 🔴大
 ```
 
-### Phase 1 End Options
+### Phase 1 结束选项
 ```
-📍 Current: Diagnosis complete, found [N] bottlenecks, primarily [type]
-📌 Next:
-[1] Confirm - Proceed to plan, prioritize optimizations
-[2] More info - If needed: [list missing items]
-[3] Switch to debug (enter autoDevTeam/debug workflow) - Functional issue, not performance
-[0] Cancel
+📍 当前: 诊断完成，发现 [N] 个性能瓶颈，主要在 [类型]
+📌 下一步:
+[1] 确认 - 进入方案设计，制定优化优先级
+[2] 补充信息 - 如需补充: [列出缺失点]
+[3] 转调试（进入 autoDevTeam/debug 流程）- 发现是功能问题而非性能问题
+[0] 取消
 ```
 
-## Phase 2: Optimization Plan
+## Phase 2: 优化方案
 
 ```
-AI:   📋 Optimization Plan:
+AI:   📋 优化方案:
       
-      | Priority | Optimization Point | Expected Gain | Risk | Complexity |
-      |----------|-------------------|---------------|------|------------|
-      | P0 | xxx | 🔥High | 🟢Low | Simple |
-      | P1 | xxx | 🔶Medium | 🟡Medium | Medium |
-      | P2 | xxx | 🔹Low | 🟢Low | Simple |
+      | 优先级 | 优化点 | 预期收益 | 风险 | 复杂度 |
+      |--------|--------|----------|------|--------|
+      | P0 | xxx | 🔥高 | 🟢低 | 简单 |
+      | P1 | xxx | 🔶中 | 🟡中 | 中等 |
+      | P2 | xxx | 🔹低 | 🟢低 | 简单 |
       
-      ⚠️ Notes:
-      - [Potentially affected features]
-      - [Scenarios requiring extra testing]
+      ⚠️ 注意事项:
+      - [可能影响的功能]
+      - [需要额外测试的场景]
       
-      📊 Complexity:
-      - Single-point (1 point) → Execute directly
-      - Multi-point (2+) → Generate Step plan
+      📊 复杂度评估:
+      - 单点优化 (1个优化点) → 直接执行
+      - 多点优化 (2+优化点) → 生成 Step 计划
 ```
 
-### Phase 2.9: ⭐ Auto Consultation (Mandatory)
+### Phase 2.9: ⭐ 自动会诊（强制）
 
-**After outputting plan, must auto-invoke Critique Subagent for review**
+**方案输出后，必须自动调用 Critique Subagent 进行独立审查**
 
 ```
-AI:   1. Generate optimization plan (previous step)
-      2. ⭐ Auto-invoke Critique Subagent
-         - Pass: [User's optimization concern] + plan, priority, risk assessment
-         - Focus: Premature optimization? Simpler approach? Affects functionality?
-      3. Subagent two-phase review:
+AI:   1. 生成优化方案（上一步）
+      2. ⭐ 自动调用 Critique Subagent
+         - 传递：【用户原始优化诉求】+ 优化方案、优先级排序、风险评估
+         - 重点检查：是否过早优化？有没有更简单的方案？会影响功能吗？
+      3. Subagent 执行两阶段审查:
          
-         Phase A: Requirement Clarification
-         ├── What specific scenario is "slow"? Quantitative data?
-         ├── Clear target (how fast is enough)?
-         ├── Functionality vs. performance trade-offs to confirm?
-         └── ⚠️ Questions remain → Pause, ask user first
+         阶段 A: 需求澄清检查
+         ├── 用户说的"慢"具体是什么场景？有量化数据吗？
+         ├── 优化目标是否明确（多快算够？）
+         ├── 是否有功能正确性 vs 性能的权衡需要确认？
+         └── ⚠️ 有疑问 → 暂停，先问用户
          
-         Phase B: Plan Review (after clarification passes)
-         └── Premature optimization? Simpler approach? Affects functionality?
+         阶段 B: 方案审查（澄清通过后）
+         └── 是否过早优化？有没有更简单的方案？会影响功能吗？
          
-      4. Output consultation report
-      5. Output "Original plan + Revised plan (if any)"
-      6. Wait for user selection
+      4. 输出会诊报告
+      5. 输出「原计划 + 修订计划（若有）」
+      6. 等待用户选择执行哪一个
 
-Output:
+输出:
 ━━━━━━━━━━━━━━━━━━━━
-🏥 Consultation Report (Critique Subagent)
+🏥 会诊报告（Critique Subagent）
 ━━━━━━━━━━━━━━━━━━━━
-[Subagent auto-review results]
+[Subagent 自动审查结果]
 ━━━━━━━━━━━━━━━━━━━━
 
-"Confirm execution? Choose original or revised plan, starting from P0?"
+"确认执行？请选择原计划或修订计划，从 P0 开始？"
 ```
 
-**⛔ Do not skip consultation and let user choose execution directly**
-**⛔ Do not execute directly after consultation; must wait for user selection**
-**⛔ Do not output plan options when optimization target has open questions**
+**⛔ 禁止跳过会诊直接让用户选择执行**
+**⛔ 禁止会诊后直接执行，必须等待用户选择**
+**⛔ 禁止在优化目标有疑问时直接输出方案选项**
 
-## Phase 3: Execute Optimization
+## Phase 3: 执行优化
 
-### Single-Point Optimization
+### 单点优化
 ```
-1. Create checkpoint
-2. Execute optimization (log: [OPT-{optimization-point}])
+1. 创建检查点
+2. 执行优化 (插入 log: [OPT-{优化点}])
    
-   Must include:
-   → [OPT-{optimization-point}] Before: xxx ms / computation count
-   → [OPT-{optimization-point}] Applied: [strategy]
-   → [OPT-{optimization-point}] After: yyy ms / computation count
+   必须包含:
+   → [OPT-{优化点}] 优化前: xxx ms / 计算次数
+   → [OPT-{优化点}] 应用优化: [策略]
+   → [OPT-{优化点}] 优化后: yyy ms / 计算次数
    
-3. How to Test: Compare before/after log data
-4. Verify functionality unaffected
-5. Clean up [OPT-*] logs (or retain as [BASE-{module-name}] for monitoring)
+3. How to Test: 对比优化前后的 log 数据
+4. 验证功能不受影响
+5. 清理 [OPT-*] log (或保留为 [BASE-{模块名}] 用于监控)
 ```
 
-### Multi-Point Optimization → Enter Step Mode (Incremental Testable)
+### 多点优化 → 进入 Step 模式 (增量可测)
 ```
-Generate Step plan in current_steps.md:
+生成 Step 计划写入 current_steps.md，要求:
 
-- Each step = one optimization point
-- Each step independently verifiable
-  ✅ Good: Step 1: Cache API results [Testable: compare request count logs]
-  ❌ Bad: Step 1: Prepare cache structure [Cannot verify effect]
+- 每步只做一个优化点
+- 每步必须能独立验证优化效果
+  ✅ 好: Step 1: 缓存API结果 [可测: 对比请求次数 log]
+  ❌ 坏: Step 1: 准备缓存结构 [无法验证效果]
   
-- Each step uses [OPT-{optimization-point}-Step{N}] log
-- Immediate verification after each step:
-  → Performance data comparison (via logs)
-  → Functionality unaffected (via log flow completeness)
+- 每步使用 [OPT-{优化点}-Step{N}] log
+- 每步后立即验证:
+  → 性能数据对比 (通过 log)
+  → 功能不受影响 (通过 log 流程完整性)
   
-Do not batch multiple optimization points for final verification
+禁止积攒多个优化点到最后统一验证
 ```
 
-## Common Optimization Patterns
+## 常见优化模式
 
-### Compute
-- Cache results (memoization)
-- Reduce nested loops
-- Lazy evaluation
-- Batch processing
+### 计算优化
+- 缓存计算结果 (memoization)
+- 减少循环嵌套
+- 延迟计算 (lazy evaluation)
+- 批量处理代替逐个处理
 
-### Render
-- Reduce unnecessary re-renders
-- Virtual lists (large datasets)
-- Debounce/Throttle
-- Async loading
+### 渲染优化
+- 减少不必要的重渲染
+- 虚拟列表 (大量数据)
+- 防抖/节流
+- 异步加载
 
-### Network
-- Request batching
-- Data compression
-- Caching strategies
-- Pagination/Lazy loading
+### 网络优化
+- 请求合并
+- 数据压缩
+- 缓存策略
+- 分页/懒加载
 
-### Memory
-- Timely release of large objects
-- Avoid closure traps
-- Event listener cleanup
+### 内存优化
+- 及时释放大对象
+- 避免闭包陷阱
+- 事件监听器清理
 
-## Verification Method
-
-```
-AI:   "Verify optimization results:
-
-      📊 Log Comparison (mandatory):
-      Filter `[OPT-{optimization-point}]` for before/after data:
-      
-      Before: [OPT-{optimization-point}] Before: X ms
-      After: [OPT-{optimization-point}] After: Y ms
-      
-      📏 Performance Comparison:
-      | Metric | Before | After | Change |
-      |--------|--------|-------|--------|
-      | xxx    | ~Xms   | ~Yms  | ⬇️Z%   |
-      
-      ⚠️ Functional Verification:
-      - [ ] Existing functionality works (log flow complete)
-      - [ ] No new errors
-      
-      Report actual results."
-```
-
-## Optimization Ineffective Handling
+## 验证方式
 
 ```
-If no significant improvement:
+AI:   "请验证优化效果:
 
-AI:   "⚠️ Optimization effect negligible
+      📊 Log 对比 (必须):
+      过滤 `[OPT-{优化点}]` 查看前后数据:
       
-      Possible reasons:
-      1. Bottleneck is not here
-      2. Measurement method inaccurate
-      3. Deeper analysis needed
+      优化前 log: [OPT-{优化点}] 优化前: X ms
+      优化后 log: [OPT-{优化点}] 优化后: Y ms
       
-      Suggestions:
-      - Roll back: `rollback`
-      - Try other points: `continue optimizing`
-      - Detailed profiling: Use a profiler tool"
+      📏 性能对比:
+      | 指标 | 优化前 | 优化后 | 变化 |
+      |------|--------|--------|------|
+      | xxx  | ~Xms   | ~Yms   | ⬇️Z% |
+      
+      ⚠️ 功能验证:
+      - [ ] 原有功能正常 (查看 log 流程完整)
+      - [ ] 无新增错误
+      
+      请反馈实际效果。"
 ```
 
-## Mode Boundaries
+## 优化无效处理
 
-### Boundary with Debug
-| Scenario | Which Mode |
-|----------|-----------|
-| Correct but slow | Optimize |
-| Broken (e.g. memory leak crash) | Debug |
-| Unclear if perf or bug | Start Optimize, switch to Debug if bug found |
+```
+如果优化后性能无明显提升:
 
-### Boundary with Refactor
-| Scenario | Which Mode |
-|----------|-----------|
-| Restructure for performance | Optimize |
-| Restructure for maintainability | Refactor |
-| Both needed | Refactor first, then Optimize |
+AI:   "⚠️ 优化效果不明显
+      
+      可能原因:
+      1. 瓶颈不在此处
+      2. 测量方式不准确
+      3. 需要更深入分析
+      
+      建议:
+      - 回退本次优化: `回退`
+      - 尝试其他优化点: `继续优化`
+      - 更详细的性能分析: 使用专业工具 profiler"
+```
 
-## Mandatory Rules
+## 模式边界
 
-- Must Show Your Work during diagnosis
-- Must define clear target before optimizing; no "while we're at it"
-- One optimization point at a time; no mixed changes
-- Must verify functionality unaffected after optimization
-- Multi-point → must generate Step plan
-- Auto-update project-map.md on completion
+### 与 Debug 的边界
+| 情况 | 用哪个模式 |
+|------|-----------|
+| 功能正常但慢 | Optimize |
+| 功能异常 (如内存泄漏导致崩溃) | Debug |
+| 不确定是性能还是 bug | 先 Optimize 诊断，发现是 bug 转 Debug |
 
-## Prohibited Behaviors
+### 与 Refactor 的边界
+| 情况 | 用哪个模式 |
+|------|-----------|
+| 为了性能改代码结构 | Optimize |
+| 为了可维护性改代码结构 | Refactor |
+| 两者都需要 | 先 Refactor 再 Optimize |
 
-- ❌ No optimization without a clear target
-- ❌ No premature optimization
-- ❌ No sacrificing readability for performance (unless necessary and commented)
-- ❌ No multiple optimizations at once (hard to assess individual effects)
-- ❌ No skipping diagnosis to jump to optimization
-- ❌ No committing to specific numbers (use High/Medium/Low qualitative descriptions)
+## 强制规则
+
+- 诊断时必须 Show Your Work，展示具体检查过程
+- 优化前必须明确目标，禁止"顺便优化"
+- 一次只做一个优化点，避免混合变更
+- 优化后必须验证功能不受影响
+- 多点优化必须生成 Step 计划
+- 完成后自动更新 project-map.md
+
+## 禁止行为
+
+- ❌ 禁止没有明确目标的"优化"
+- ❌ 禁止过早优化 (premature optimization)
+- ❌ 禁止为了性能牺牲可读性 (除非必要且有注释说明)
+- ❌ 禁止一次性做多个优化 (难以评估效果)
+- ❌ 禁止跳过诊断直接优化
+- ❌ 禁止用具体数字承诺收益 (用 高/中/低 定性描述)

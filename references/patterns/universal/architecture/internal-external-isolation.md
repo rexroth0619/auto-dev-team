@@ -1,94 +1,94 @@
-# Internal/External Network Isolation Principle
+# 内外网隔离原则
 
-> One-liner: internal optimization must not expose internal addresses to external users
+> 一句话：内网优化功能不能让内网地址暴露给外网用户
 
-## Scope
+## 适用范围
 
-| Dimension | Scope |
-|-----------|-------|
-| Language | Universal |
-| Platform | Universal (especially cloud services) |
+| 维度 | 范围 |
+|------|------|
+| 语言 | 通用 |
+| 平台 | 通用（尤其是云服务场景） |
 
-## Problem
+## 问题
 
-To improve performance or cut costs, servers use internal network addresses for storage/databases/services. If internal addresses leak to external users, those users cannot access the resources.
+为了提升性能或节省成本，服务器内部使用内网地址访问存储/数据库/其他服务。但如果不小心把内网地址暴露给了外网用户，用户将无法访问。
 
-**Typical scenarios**:
-- Cloud storage (OSS/S3) with internal access generates signed URLs containing internal addresses
-- Database connection strings use internal addresses but config files are read by the frontend
-- Microservices use internal domains but mistakenly return them to clients
+**典型场景**：
+- 云存储（OSS/S3）开启内网访问后，签名 URL 包含内网地址
+- 数据库连接串使用内网地址，但配置文件被前端读取
+- 微服务之间使用内网域名，但错误地返回给客户端
 
-## Solution (Conceptual)
+## 方案（概念层）
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                     Server Internal                         │
+│                        服务器内部                            │
 │                                                             │
-│   [Business Logic] ──internal addr──> [Storage/Service]     │
+│   [业务逻辑] ──内网地址──> [存储/服务]                        │
 │       │                                                     │
-│       │ When generating external access links               │
+│       │ 生成外部访问链接时                                    │
 │       ▼                                                     │
-│   [Address Translation Layer]                               │
+│   [地址转换层]                                               │
 │       │                                                     │
-│       │ Replace with public address/custom domain           │
+│       │ 替换为公网地址/自定义域名                             │
 │       ▼                                                     │
-│   [Return to User]                                          │
+│   [返回给用户]                                               │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-**Key**: Before returning to user, an **address translation layer** must:
-1. Replace internal addresses with public addresses
-2. Cover all internal address formats
+**关键**：在"返回给用户"之前，必须有一个**地址转换层**，确保：
+1. 内网地址被替换为公网地址
+2. 覆盖所有可能的内网地址格式
 
-## Key Decision Points
+## 关键决策点
 
-- **Translation timing**: Translate just before returning to user, not at generation time
-  - Reason: Server still needs internal addresses for performance
+- **转换时机**：在最后返回给用户之前转换，而不是在生成时就用公网地址
+  - 原因：服务器内部仍需使用内网地址以保持性能优势
   
-- **Translation coverage**: Must cover all address formats
-  - Public: `xxx.oss-cn-hangzhou.aliyuncs.com`
-  - Internal: `xxx.oss-cn-hangzhou-internal.aliyuncs.com`
-  - VPC: `xxx.oss-cn-hangzhou.internal.aliyuncs.com` (some cloud services)
+- **转换覆盖度**：必须覆盖所有可能的地址格式
+  - 公网格式：`xxx.oss-cn-hangzhou.aliyuncs.com`
+  - 内网格式：`xxx.oss-cn-hangzhou-internal.aliyuncs.com`
+  - VPC 格式：`xxx.oss-cn-hangzhou.internal.aliyuncs.com`（某些云服务）
 
-## Boundary Conditions
+## 边界条件
 
-- **Not applicable**: Purely internal systems (no external user access)
-- **Special handling**: If users share the same internal network (e.g., enterprise intranet), return different addresses based on user network environment
+- **不适用**：纯内部系统（无外网用户访问）
+- **特殊处理**：如果用户也在同一内网（如企业内部应用），可能需要根据用户网络环境返回不同地址
 
-## Checklist
+## 检查清单
 
-**When adding internal optimization**:
-- [ ] List all URL/address generation points
-- [ ] Verify each has address translation logic
-- [ ] Verify translation covers all internal formats (public, internal, VPC)
-- [ ] Verify end-to-end test: access generated URLs from user's perspective
+**新增内网优化功能时**：
+- [ ] 列出所有会生成 URL/地址的地方
+- [ ] 检查每个地方是否有地址转换逻辑
+- [ ] 转换逻辑是否覆盖所有内网地址格式（公网、内网、VPC）
+- [ ] 是否有端到端测试：从用户视角访问生成的 URL
 
-**During code review**:
-- [ ] Search for `internal`, `vpc`, `private` keywords
-- [ ] Verify these addresses are not returned to users
+**代码审查时**：
+- [ ] 搜索代码中的 `internal`、`vpc`、`private` 等关键词
+- [ ] 检查这些地址是否会被返回给用户
 
-## Examples
+## 示例
 
-### Incorrect Example
+### 错误示例
 
 ```javascript
-// Enable internal access
+// 开启内网访问
 const ossClient = new OSS({ internal: true });
 
-// Generate signed URL (contains internal address)
+// 生成签名 URL（包含内网地址）
 let url = ossClient.signatureUrl(objectKey);
 
-// ❌ Incorrect: only replaces public format
+// ❌ 错误：只替换了公网格式
 const publicDomain = `${bucket}.${region}.aliyuncs.com`;
 url = url.replace(publicDomain, customDomain);
-// Internal format xxx-internal.aliyuncs.com is not replaced!
+// 内网格式 xxx-internal.aliyuncs.com 未被替换！
 ```
 
-### Correct Example
+### 正确示例
 
 ```javascript
-// ✅ Correct: replaces both public and internal formats
+// ✅ 正确：同时替换公网和内网格式
 const publicDomain = `${bucket}.${region}.aliyuncs.com`;
 const internalDomain = `${bucket}.${region}-internal.aliyuncs.com`;
 url = url.replace(publicDomain, customDomain);
@@ -96,4 +96,4 @@ url = url.replace(internalDomain, customDomain);
 ```
 
 ---
-*Tags*: `internal-optimization`, `address-translation`, `cloud-storage`, `OSS`, `S3`, `signed-URL`, `security`
+*标签*: `内网优化`, `地址转换`, `云存储`, `OSS`, `S3`, `签名URL`, `安全`

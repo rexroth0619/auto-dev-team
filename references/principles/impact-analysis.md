@@ -1,231 +1,231 @@
-# Impact Analysis Principles
+# 影响范围分析原则
 
-> ⚕️ Assess blast radius before surgery — changing one organ may affect the entire system.
+> ⚕️ 手术前必须评估波及范围——改一个器官可能影响整个系统
 
-## Trigger Conditions
+## 触发时机
 
-After every code change, perform impact analysis to ensure tests cover all potentially affected modules.
+每次代码变更后，必须执行影响范围分析，确保测试覆盖所有可能受影响的模块。
 
-## Analysis Dimensions
+## 分析维度
 
-### 1. Direct Dependencies (Static Analysis — Automatable)
+### 1. 直接依赖（静态分析，可自动化）
 
-**Caller analysis**: Who calls the modified module?
+**调用方分析**：谁调用了被改的模块？
 
 ```bash
 # TypeScript/JavaScript
-rg "import.*{modified_module}" --type ts
-rg "from ['\"].*modified_module" --type ts
+rg "import.*{被改模块}" --type ts
+rg "from ['\"].*被改模块" --type ts
 
 # Python
-rg "from.*modified_module.*import" --type py
-rg "import.*modified_module" --type py
+rg "from.*被改模块.*import" --type py
+rg "import.*被改模块" --type py
 
 # Go
-rg "import.*modified_package" --type go
+rg "import.*被改包" --type go
 ```
 
-**Callee analysis**: What does the modified module call?
+**被调用方分析**：被改的模块调用了谁？
 
 ```
-Read import/require statements of the modified file
-→ List all dependencies
-→ If behavioral assumptions of dependencies changed, there may be issues
+读取被改文件的 import/require 语句
+→ 列出所有依赖
+→ 如果依赖的行为假设改变，可能有问题
 ```
 
-### 2. Data Flow Dependencies (Requires Business Understanding)
+### 2. 数据流依赖（需要理解业务）
 
-| Question | Analysis Method |
+| 问题 | 分析方法 |
 |-----|---------|
-| Where does this data come from? | Trace data source (API/database/user input) |
-| Where does this data flow to? | Track consumers (UI/storage/third-party) |
-| Who is affected by format changes? | Check all locations that parse/use this data |
+| 这个数据从哪来？ | 追溯数据源（API/数据库/用户输入） |
+| 这个数据流向哪？ | 追踪数据消费方（UI/存储/第三方） |
+| 数据格式变化影响谁？ | 检查所有解析/使用该数据的地方 |
 
-**Example**:
+**示例**：
 ```
-Change: formatPrice() output changed from "$100" to "¥100"
+改动: formatPrice() 返回格式从 "$100" 改为 "¥100"
 
-Data flow analysis:
-├── Source: pricing service
-├── Consumer 1: ProductCard component (display) → needs testing
-├── Consumer 2: PDF export (may have parsing logic) → needs testing
-└── Consumer 3: third-party settlement system (API) → needs testing
+数据流分析:
+├── 来源: 价格计算服务
+├── 消费方 1: ProductCard 组件（显示）→ 需要测试
+├── 消费方 2: PDF 导出（可能有解析逻辑）→ 需要测试
+└── 消费方 3: 第三方结算系统（API）→ 需要测试
 ```
 
-### 3. Configuration/Environment Dependencies
+### 3. 配置/环境依赖
 
-| Change Type | Impact Scope |
+| 改动类型 | 影响范围 |
 |---------|---------|
-| Environment variables | All services reading that variable |
-| Config files | All modules loading that config |
-| Database schema | All code querying that table |
-| API endpoints | All clients calling that endpoint |
+| 环境变量 | 所有读取该变量的服务 |
+| 配置文件 | 所有加载该配置的模块 |
+| 数据库 Schema | 所有查询该表的代码 |
+| API 接口 | 所有调用该接口的客户端 |
 
-### 4. Implicit Dependencies (Most Easily Overlooked)
+### 4. 隐式依赖（最容易遗漏）
 
-| Type | Example | Detection Method |
+| 类型 | 示例 | 检测方法 |
 |-----|------|---------|
-| String parsing | Regex matching "$" in prices | Search for related regex patterns |
-| Order dependency | Assumes list is in specific order | Check sorting/iteration logic |
-| Timing dependency | Assumes one operation precedes another | Check async/concurrency code |
-| Cache dependency | Assumes data exists in cache | Check cache read/write points |
+| 字符串解析 | 正则匹配价格中的 "$" | 搜索相关正则表达式 |
+| 顺序依赖 | 假设列表按特定顺序 | 检查排序/遍历逻辑 |
+| 时间依赖 | 假设某操作在另一个之前 | 检查异步/并发代码 |
+| 缓存依赖 | 假设缓存中有某数据 | 检查缓存读写点 |
 
-## Output Format
+## 输出格式
 
 ```
-🎯 Impact Analysis
+🎯 影响范围分析
 
-Current changes:
-├── src/utils/price.ts (core change)
-└── src/types/price.d.ts (type update)
+本次变更:
+├── src/utils/price.ts (核心改动)
+└── src/types/price.d.ts (类型更新)
 
 ━━━━━━━━━━━━━━━━━━━━
 
-📌 Direct impact (callers):
+📌 直接影响（调用方）:
 ├── src/components/ProductCard.tsx
 ├── src/components/CartItem.tsx
 └── src/pages/Checkout.tsx
 
-📌 Direct impact (callees):
+📌 直接影响（被调用方）:
 └── src/utils/currency.ts
 
 ━━━━━━━━━━━━━━━━━━━━
 
-📌 Data flow impact:
-├── PDF export module (may parse price strings)
-└── Settlement API (passes prices to third-party)
+📌 数据流影响:
+├── PDF 导出模块（可能解析价格字符串）
+└── 结算 API（传递价格给第三方）
 
-📌 Config impact:
-└── None
+📌 配置影响:
+└── 无
 
 ━━━━━━━━━━━━━━━━━━━━
 
-🧪 Recommended test scope:
+🧪 测试范围建议:
 
-| Priority | Module | Reason |
+| 优先级 | 模块 | 原因 |
 |-------|------|------|
-| 🔴 Must test | price.ts | Core of this change |
-| 🔴 Must test | ProductCard.tsx | Direct caller |
-| 🔴 Must test | CartItem.tsx | Direct caller |
-| 🟡 Recommended | Checkout.tsx | Direct caller |
-| 🟡 Recommended | PDF export | Data flow consumer |
-| ⚪ Optional | currency.ts | Callee, low impact |
+| 🔴 必测 | price.ts | 本次改动核心 |
+| 🔴 必测 | ProductCard.tsx | 直接调用方 |
+| 🔴 必测 | CartItem.tsx | 直接调用方 |
+| 🟡 建议 | Checkout.tsx | 直接调用方 |
+| 🟡 建议 | PDF 导出 | 数据流消费方 |
+| ⚪ 可选 | currency.ts | 被调用方，影响小 |
 ```
 
-## Integration with Instant Verification
+## 与即时验证的配合
 
-Impact analysis results inform **verification scope**:
+影响范围分析结果必须用于**验证范围**：
 
 ```
-Primary Agent completes code
+主 Agent 完成代码
     ↓
-Execute impact analysis
+执行影响范围分析
     ↓
-Instant verification covers:
-  - Change points
-  - Direct callers
+即时验证覆盖：
+  - 改动点
+  - 直接调用方
 ```
 
-## Analysis Depth Rules
+## 分析深度规则
 
-| Change Scale | Analysis Depth |
+| 改动规模 | 分析深度 |
 |---------|---------|
-| 🟢 Small (1–2 files, <30 lines) | Direct callers only |
-| 🟡 Medium (3–5 files) | Direct dependencies + data flow |
-| 🔴 Large (>5 files or core interfaces) | Full analysis across all dimensions |
+| 🟢 小改动（1-2文件，<30行） | 只分析直接调用方 |
+| 🟡 中改动（3-5文件） | 分析直接依赖 + 数据流 |
+| 🔴 大改动（>5文件或涉及核心接口） | 完整分析所有维度 |
 
-## Special Scenarios
+## 特殊场景
 
-### Interface Changes
-
-```
-If the change involves:
-- API endpoint signatures
-- Data structures/types
-- Public function parameters
-
-Must:
-1. List all callers
-2. Check backward compatibility
-3. If not backward-compatible, all callers are must-test scope
-```
-
-### Database Changes
+### 接口变更
 
 ```
-If the change involves:
-- Table schema (ALTER TABLE)
-- Index changes
-- Constraint changes
+如果改动涉及：
+- API 接口签名
+- 数据结构/类型
+- 公共函数参数
 
-Must:
-1. List all code querying that table
-2. Check ORM model sync
-3. Check migration script correctness
+必须：
+1. 列出所有调用方
+2. 检查是否向后兼容
+3. 如不兼容，所有调用方都是必测范围
 ```
 
-### Configuration Changes
+### 数据库变更
 
 ```
-If the change involves:
-- Environment variables
-- Config files
-- Feature flags
+如果改动涉及：
+- 表结构 (ALTER TABLE)
+- 索引变更
+- 约束变更
 
-Must:
-1. List all code reading that config
-2. Check default value handling
-3. Check cross-environment differences
+必须：
+1. 列出所有查询该表的代码
+2. 检查 ORM 模型是否同步
+3. 检查迁移脚本是否正确
 ```
 
-### 5. Preservation Check (Required for "Add/Modify" Scenarios)
+### 配置变更
 
-> ⚕️ Don't damage healthy tissue during surgery — adding a new organ must not remove existing ones.
+```
+如果改动涉及：
+- 环境变量
+- 配置文件
+- Feature Flag
 
-| Checkpoint | Question | Typical Error |
+必须：
+1. 列出所有读取该配置的代码
+2. 检查默认值处理
+3. 检查不同环境的差异
+```
+
+### 5. 保留性检查（"添加/修改"场景必做）
+
+> ⚕️ 手术时不能误伤健康组织——添加新器官不能切掉原有器官
+
+| 检查点 | 问题 | 典型错误 |
 |--------|------|----------|
-| **Sibling preservation** | Other sibling elements (fields/functions/config items) preserved? | Adding a field while deleting others |
-| **Hierarchy preservation** | Inner logic/content preserved? | Rewriting a function while losing critical internal logic |
+| **并列性** | 同级的其他元素（字段/函数/配置项）是否保留？ | 添加字段时删除了其他字段 |
+| **层级性** | 内层的逻辑/内容是否保留？ | 重写函数时丢失了内部关键逻辑 |
 
-**Execution**:
+**执行方式**：
 
 ```
-Before modifying a file, output preservation checklist:
+修改文件前，必须输出保留清单：
 
-📋 Preservation Check - [filename]
-├── ✅ Preserve: [list all preserved elements]
-├── 🔄 Modify: [list elements to modify]
-└── ❌ Delete: [list elements to delete + reason] (leave empty if none)
+📋 保留性检查 - [文件名]
+├── ✅ 保留: [列出所有保留的元素]
+├── 🔄 修改: [列出要修改的元素]
+└── ❌ 删除: [列出要删除的元素 + 理由]（无则留空）
 
-⛔ When user says "add", the "Delete" section must be empty
+⛔ 用户说"添加"时，"删除"栏必须为空
 ```
 
-### 6. Correlation Check (Required When Modifying Logic)
+### 6. 关联性检查（修改任何逻辑时必做）
 
-> ⚕️ The body is a whole — changing the heart's blood supply requires checking all organs receiving blood.
+> ⚕️ 人体是整体——改了心脏供血，必须检查所有受血器官
 
-| Checkpoint | Question | Example |
+| 检查点 | 问题 | 示例 |
 |--------|------|------|
-| **Symmetry** | Changed forward operation — reverse need syncing? | Encode↔Decode, Encrypt↔Decrypt, Serialize↔Deserialize |
-| **Closed-loop** | Changed one flow link — other links need checking? | CRUD (changed C → check R, U, D), state machines, data flows |
-| **Inheritance** | Changed base class/interface — subclasses need syncing? | Interface signature change → all implementing classes |
+| **对称性** | 改了正向操作，逆向需要同步吗？ | 编码↔解码、加密↔解密、序列化↔反序列化 |
+| **闭环性** | 改了流程中一环，其他环需要检查吗？ | CRUD（改了C要查RUD）、状态机、数据流 |
+| **继承性** | 改了基类/接口，子类/实现需要同步吗？ | 接口签名变更→所有实现类 |
 
-**Execution**:
+**执行方式**：
 
 ```
-Before modifying logic, output correlation checklist:
+修改逻辑前，必须输出关联清单：
 
-🔗 Correlation Check - [modified function/module]
-├── ⚖️ Symmetric operations: [yes/no] → [if yes, list reverse operations]
-├── 🔄 Complete flow: [yes/no] → [if yes, list other flow links]
-└── 📐 Inheritance chain: [yes/no] → [if yes, list subclasses/implementations]
+🔗 关联性检查 - [被改函数/模块]
+├── ⚖️ 对称操作: [有/无] → [若有，列出对应的逆操作]
+├── 🔄 完整流程: [有/无] → [若有，列出流程中其他环节]
+└── 📐 继承链: [有/无] → [若有，列出子类/实现]
 
-⛔ Any "yes" item must be checked for required synchronized changes
+⛔ 任何"有"的项目必须检查是否需要同步修改
 ```
 
-## Prohibited Actions
+## 禁止行为
 
-- ❌ Skip impact analysis and write tests directly
-- ❌ Analyze only direct callers while ignoring data flow
-- ❌ Omit test scope recommendations
-- ❌ Perform shallow analysis for large changes
+- ❌ 跳过影响范围分析直接写测试
+- ❌ 只分析直接调用方，忽略数据流
+- ❌ 不输出测试范围建议
+- ❌ 大改动只做浅层分析

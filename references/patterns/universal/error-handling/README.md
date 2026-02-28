@@ -1,7 +1,7 @@
-# Error Handling Patterns
+# 错误处理 Pattern
 
-Retry, circuit breaker, fallback, timeout, graceful degradation, and other universal principles.
+重试、熔断、降级、超时、兜底策略等通用原理。
 
-**Typical scenarios**: Unstable networks, service unavailability, exception recovery
+**典型场景**：网络不稳定、服务不可用、异常恢复
 
-**Use template**: `../_TEMPLATE.md`
+**使用模板**：`../_TEMPLATE.md`

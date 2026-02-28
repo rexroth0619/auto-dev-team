@@ -1,49 +1,49 @@
-# Project Context Snapshot
+# 项目上下文快照
 
-> ⚠️ Auto-maintained by AI for rapid context recovery. Keep concise — 100 lines max.
+> ⚠️ 此文档由 AI 自动维护，用于新对话时快速恢复项目认知。保持精简，不超过 100 行。
 
-## Project Overview
-<!-- One-sentence description -->
+## 项目概述
+<!-- 一句话描述 -->
 
-**Tech Stack**: 
-**Phase**: In Development / Maintenance / Refactoring
+**技术栈**: 
+**项目阶段**: 开发中 / 维护中 / 重构中
 
-## Recently Completed
-<!-- Keep latest 5; remove older entries -->
+## 最近完成的功能
+<!-- 保留最近 5 个，旧的删除 -->
 
-| Date | Feature | Key Files |
-|------|---------|-----------|
+| 时间 | 功能 | 关键文件 |
+|------|------|----------|
 | | | |
 
-## In Progress
-<!-- Unfinished tasks -->
+## 当前进行中
+<!-- 如有未完成的任务 -->
 
 - [ ] 
 
-## Key Decisions & Conventions
-<!-- Project conventions every new conversation must know -->
+## 关键决策 & 约定
+<!-- 项目特有的重要约定，新对话必须知道的 -->
 
 - 
 
-## 🛡️ Core Features (Do Not Delete)
-<!-- Core features — verify no impact before modifying -->
+## 🛡️ 核心功能清单（不可删除）
+<!-- 项目的核心功能，任何修改前必须确认不会影响这些功能 -->
 
-| Feature | Key Files | Notes |
-|---------|-----------|-------|
+| 功能 | 关键文件 | 说明 |
+|------|----------|------|
 | | | |
 
-⚠️ Verify preservation before modifying related files.
+⚠️ 以上功能为项目核心，修改相关文件前必须确认保留性
 
-## Known Issues & TODOs
-<!-- Discovered but unresolved -->
+## 已知问题 & 待办
+<!-- 已发现但未处理的问题 -->
 
 - 
 
-## Forbidden Zone Reminders
-<!-- Summary from forbidden-zones.md -->
+## 禁区提醒
+<!-- 从 forbidden-zones.md 摘要，如有 -->
 
 - 
 
 ---
-*Last updated: YYYY-MM-DD HH:mm*
-*Updated by: [Completed task name]*
+*最后更新: YYYY-MM-DD HH:mm*
+*更新者: [完成的任务名]*

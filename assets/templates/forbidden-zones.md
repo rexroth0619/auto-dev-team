@@ -1,66 +1,66 @@
-# Forbidden Zones Configuration
+# 禁止区域配置
 
-> ⚠️ Configure once, AI auto-complies. Warnings trigger only when a forbidden zone is touched.
+> ⚠️ 配置一次，AI 自动遵守。只有触碰禁止区域时才会警告。
 
-## Absolutely Forbidden
+## 绝对禁止改动
 
-<!-- AI must never modify these — halts and warns if encountered -->
-
-```
-# Examples (configure per project)
-.env*                    # Environment variables
-*.lock                   # Dependency lock files
-migrations/              # Database migrations
-```
-
-## Requires Approval
-
-<!-- AI may propose changes but must await explicit confirmation -->
+<!-- AI 绝对不能修改这些文件/目录，遇到时必须停止并警告 -->
 
 ```
-# Examples
-src/core/               # Core modules
-api/                    # Public-facing interfaces
-config/                 # Configuration files
+# 示例（根据项目实际情况配置）
+.env*                    # 环境变量
+*.lock                   # 依赖锁定文件
+migrations/              # 数据库迁移
 ```
 
-## Sensitive Areas
+## 需要审批才能改动
 
-<!-- Extra caution required for changes here -->
+<!-- AI 可以提出修改建议，但必须等待明确确认 -->
 
 ```
-# Examples
-src/auth/               # Authentication
-src/payment/            # Payment processing
+# 示例
+src/core/               # 核心模块
+api/                    # 对外接口
+config/                 # 配置文件
 ```
 
----
+## 敏感模式
 
-## AI Behavior on Forbidden Zones
+<!-- 这些目录内的改动需要额外谨慎 -->
 
-### Absolutely Forbidden
 ```
-⛔ Execution halted
-
-Touches forbidden zone: [xxx]
-Reason: [Why this modification is needed]
-
-Requires manual handling — cannot modify directly.
-```
-
-### Requires Approval
-```
-⚠️ Confirmation required
-
-Touches sensitive zone: [xxx]
-Change details: [What exactly will be modified]
-Impact scope: [What could be affected]
-
-[1] Confirm modification
-[2] Skip this change
-[0] Cancel entire operation
+# 示例
+src/auth/               # 认证相关
+src/payment/            # 支付相关
 ```
 
 ---
 
-*On first use, AI will ask whether to configure forbidden zones after Survey mode*
+## AI 遇到禁止区域时的行为
+
+### 绝对禁止区域
+```
+⛔ 停止执行
+
+这个改动涉及禁止区域: [xxx]
+原因: [为什么需要改这里]
+
+此操作需要人工处理，我无法直接修改。
+```
+
+### 需要审批区域
+```
+⚠️ 需要确认
+
+这个改动涉及敏感区域: [xxx]
+改动内容: [具体改什么]
+影响范围: [可能影响什么]
+
+[1] 确认修改
+[2] 跳过此处
+[0] 取消整个操作
+```
+
+---
+
+*首次使用时，AI 会在 Survey 模式后询问是否需要配置禁止区域*

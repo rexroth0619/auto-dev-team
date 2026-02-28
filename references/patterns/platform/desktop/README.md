@@ -1,5 +1,5 @@
-# Desktop Platform Patterns
+# 桌面平台经验
 
-Electron, Tauri, cross-platform UI, system integration, auto-update, etc.
+Electron、Tauri、跨平台 UI、系统集成、自动更新等。
 
-**Use template**: `../_TEMPLATE.md`
+**使用模板**：`../_TEMPLATE.md`

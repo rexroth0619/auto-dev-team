@@ -1,284 +1,293 @@
-# Step Mode (Step Execution)
+# Step 模式 (步骤执行)
 
-> When to enter: After Architect/Refactor/Optimize generates a plan and user says "start" | Must read: current_steps.md
+> 何时进入: Architect/Refactor/Optimize 生成计划后用户说"开始" | 必须读: current_steps.md
 
-## Supreme Directives
-
-```
-⛔ Do not execute multiple steps consecutively (unless trust mode)
-⛔ Do not skip How to Test
-⛔ Do not proceed to next step without user confirmation
-⛔ Each step must produce an independently verifiable module + log (incrementally testable)
-⛔ Do not accumulate changes across steps for deferred verification
-```
-
-## Per-Step Workflow
-
-### 0. Create Checkpoint
-
-### 1. Start Declaration
-```
-"Now implementing: **Step X/Total: xxx**"
-
-Example: "Now implementing: **Step 2/5: Add button component**"
-```
-
-### 2. Context Confirmation (Mandatory)
-- **Must read** current_steps.md:
-  - Current step
-  - **Key decisions**: What to reuse, impact scope, edge handling
-- Plan conflicts with current context → Stop and ask user
-- Brief summary: Previous step → This step → Goal
-
-### 3. Change Declaration
-```
-📋 Change scope:
-- Files: [list]
-- Functions: [list]
-```
-
-### 4. Execute Changes (Incremental Testable)
-- **Reuse check**: Before new code, ask "Anything in module-registry I can use?"
-- **Incremental testable**: Step must produce independently verifiable module/function/component
-  - ✅ Good: "Implement data transformation function + unit test"
-  - ❌ Bad: "Prepare data structures" (cannot verify)
-  - ❌ Bad: "Write half the logic, complete next step" (incomplete)
-- **Testable criteria**: Module correctness verifiable via log or behavior after step
-- Guideline: ≤2 files, new code ≤50 lines per step
-- Exceeding limits: Explain reason, wait for confirmation
-- Log fingerprint: `[DEV-{topic}-Step{N}]`
-
-### 5. How to Test (Smart Verification) ⛔ MANDATORY
+## 最高指令
 
 ```
-⛔⛔⛔ RED LINE: DO NOT FAKE TEST RESULTS ⛔⛔⛔
-
-AI MUST:
-1. Actually execute test commands (not "pretend to execute")
-2. Show actual command output (not self-fabricated)
-3. Report results honestly (no fabrication)
-
-Violation = Medical malpractice level error
+⛔ 禁止连续执行多步 (除非信任模式)
+⛔ 禁止跳过 How to Test
+⛔ 禁止不等用户确认就继续下一步
+⛔ 禁止步骤不产出可独立验证的模块 + log (必须增量可测)
+⛔ 禁止积攒多步改动到最后验证
 ```
 
-**⚠️ Key**: This step's changes must be independently verifiable, not depending on later steps
+## 每步流程
 
-**Step 5.1: Auto-assess verification method (Mandatory)**
+### 0. 创建检查点
 
-⚠️ **Must read** `references/principles/test-verification.md` for complete assessment rules
-
-AI must auto-assess this step's complexity:
-
+### 1. 开始声明
 ```
-📊 Complexity Assessment:
-- Change size: [N files, M lines]
-- Function type: [copy/style/single module logic/core flow/...]
-- Impact scope: [single point/single module/cross-module/...]
-- Assessment result: 🟢 Simple / 🟡 Medium / 🔴 Complex
+"现在实现: **Step X/总数: xxx**"
+
+示例: "现在实现: **Step 2/5: 添加按钮组件**"
 ```
 
-**Step 5.2: Execute verification (based on assessment)**
+### 2. 上下文确认 (强制)
+- **必须读取** current_steps.md，包括:
+  - 当前步骤是什么
+  - **关键决策**: 复用什么、影响范围、边界处理
+  - **📐 模块策略**: 本步的目标文件是什么？融入还是新建？
+- 如发现计划与当前上下文不符 → 停下来问用户
+- 简述: 上步做了什么 → 本步做什么 → 写入哪个文件 → 服务什么目标
 
-#### 🟢 Simple Change → Instant Verification
+### 3. 改动声明
+```
+📋 改动范围:
+- 文件: [列出]
+- 函数: [列出]
+```
+
+### 4. 执行改动 (增量可测原则)
+- **遵守模块策略**: 代码写入 current_steps.md 中指定的目标文件，不随意换文件
+- **复用检查**: 写新代码前，先问自己"module-registry 里有没有能用的？"
+- **增量可测**: 本步必须产出可独立验证的模块/函数/组件
+  - ✅ 好的拆分: "实现数据转换函数 + 对应 step definitions"
+  - ❌ 坏的拆分: "准备数据结构" (无法验证)
+  - ❌ 坏的拆分: "写一半逻辑，下一步补全" (不完整)
+- **BDD 同步**: 本步覆盖的 Scenario，同步编写对应的 step definitions
+  - 路径: features/steps/{功能名}.steps.{ext}
+  - 复用已有 step（避免重复胶水代码）
+  - 无法自动化的场景标注 @manual
+- **可测标准**: 本步完成后，对应 Scenario 能通过 cucumber 验证
+- **文件膨胀感知**: 如果目标文件在多步累积后职责变杂或体积明显膨胀，
+  主动提醒用户："该文件已包含多种职责，建议后续考虑拆分"
+- 建议: 每步改动范围尽量精简（少文件、少行数），如需较大改动先说明原因
+- **即时更新 registry**: 本步如果新建了可复用的工具/组件，立即更新 module-registry.md，
+  确保后续步骤能发现并复用
+- Log 使用统一 fingerprint: `[DEV-{主题}-Step{N}]`
+
+### 5. How to Test (智能验证) ⛔ 强制执行
 
 ```
-🧪 Instant Verification
+⛔⛔⛔ 红线：禁止伪造测试结果 ⛔⛔⛔
 
-Method: [terminal command/temp script]
-Command: [actual command executed]
-Result: [pass/fail]
-Evidence:
+AI 必须：
+1. 真正执行测试命令（不是"假装执行"）
+2. 展示完整的命令输出（不是自己编的）
+3. 如实报告结果（不伪造）
+
+违反 = 医疗事故级错误
+```
+
+**⚠️ 关键**: 本步改动必须能独立验证，不依赖后续步骤
+
+**Step 5.1: 自动评估验证方式（强制）**
+
+⚠️ **必须读取** `references/principles/test-verification.md` 了解完整评估规则
+
+AI 必须自动评估本步复杂度：
+
+```
+📊 复杂度评估:
+- 改动量: [N 文件, M 行]
+- 功能类型: [文案/样式/单模块逻辑/核心流程/...]
+- 影响范围: [单点/单模块/跨模块/...]
+- 评估结果: 🟢 简单 / 🟡 中等 / 🔴 复杂
+```
+
+**Step 5.2: 执行验证（根据评估结果）**
+
+#### 🟢 简单改动 → 即时验证
+
+```
+🧪 即时验证
+
+方式: [终端命令/临时脚本]
+命令: [实际执行的命令]
+结果: [通过/失败]
+证据:
 ┌────────────────────────────────────────────────────
-│ [Paste actual output]
+│ [粘贴实际输出]
 └────────────────────────────────────────────────────
 ```
 
-#### 🟡 Medium Change → User Choice
+#### 🟡 中等改动 → 用户选择
 
 ```
-📊 Complexity Assessment: 🟡 Medium Change
-- Change size: [N files, M lines]
-- Function type: [single module logic]
-- Impact scope: [single module]
+📊 复杂度评估: 🟡 中等改动
+- 改动量: [N 文件, M 行]
+- 功能类型: [单模块逻辑改动]
+- 影响范围: [单模块影响]
 
-📌 Choose verification method:
-[1] Instant verification - terminal command/temp script (fast)
-[2] Cucumber verification - run BDD scenarios (comprehensive)
+📌 验证方式选择:
+[1] 即时验证 - 终端命令/临时脚本（快速）
+[2] Cucumber 验证 - 跑 BDD 场景（全面）
 
-⏸️ Please choose verification method...
+⏸️ 请选择验证方式...
 ```
 
-#### 🔴 Complex Change → Cucumber Verification (Mandatory)
+#### 🔴 复杂改动 → Cucumber 验证（强制）
 
 ```
-📊 Complexity Assessment: 🔴 Complex Change
-- Change size: [N files, M lines]
-- Function type: [core flow/API change]
-- Impact scope: [cross-module/external API]
-- Verification method: Cucumber verification (required)
+📊 复杂度评估: 🔴 复杂改动
+- 改动量: [N 文件, M 行]
+- 功能类型: [核心流程/API 变更]
+- 影响范围: [跨模块/对外接口]
+- 验证方式: Cucumber 验证（必须）
 
-🧪 BDD Verification - Actual Execution
+🧪 BDD 验证 - 实际执行
 
-📂 Command: npx cucumber-js features/xxx.feature
-📤 Actual Output:
+📂 执行命令: npx cucumber-js features/xxx.feature
+📤 实际输出:
 ┌────────────────────────────────────────────────────
-│ [Paste actual terminal output, including pass/fail info]
+│ [粘贴终端实际输出，包括成功/失败信息]
 │ 
 │ 3 scenarios (3 passed)
 │ 9 steps (9 passed)
 │ 0m0.123s
 └────────────────────────────────────────────────────
 
-📊 Results:
-  ✅ Scenario: [name] → passed (from actual output)
-  ✅ Scenario: [name] → passed (from actual output)
-  👀 Scenario: [name] → @manual, needs manual confirmation
+📊 结果汇总:
+  ✅ Scenario: [场景名] → passed（来自实际输出）
+  ✅ Scenario: [场景名] → passed（来自实际输出）
+  👀 Scenario: [场景名] → @manual，需手动确认
 ```
 
-**Step 5.3: Handle @manual scenarios (if applicable)**
+**Step 5.3: 处理 @manual 场景（如适用）**
 
 ```
-**Manual verification items (@manual scenarios):**
-- [Specific steps - UI/visual/external systems]
+**手动验证项（@manual 场景）:**
+- [具体操作步骤 - UI/视觉/外部系统]
 ```
 
-**Step 5.4: Result handling**
+**Step 5.4: 结果处理**
 
-- ✅ Verification passed → Continue to next step
-- ❌ Verification failed → Fix and retry (max 3 times)
-- ⚠️ Command failed → Check environment, report to user
+- ✅ 验证通过 → 继续下一步
+- ❌ 验证失败 → 修复后重试（最多 3 次）
+- ⚠️ 命令执行失败 → 检查环境配置，报告给用户
 
-**⛔ Absolute Prohibitions**
-
-```
-❌ DO NOT skip complexity assessment
-❌ DO NOT use instant verification for 🔴 complex changes
-❌ DO NOT claim "passed" without executing commands
-❌ DO NOT fabricate test output
-❌ DO NOT skip testing and say "Ready for QA Testing"
-```
-
-**❌ If cannot execute test commands:**
+**⛔ 绝对禁止**
 
 ```
-Case 1: No BDD framework
-→ Use instant verification (terminal command/temp script)
-→ 💡 Tip: Complex projects should consider configuring BDD framework
-
-Case 2: Step definitions not implemented (BDD framework exists)
-→ Implement step definitions first
-→ Execute tests after implementation
-
-Case 3: Environment issues
-→ Report error message honestly
-→ Request user assistance
+❌ 禁止跳过复杂度评估
+❌ 禁止 🔴 复杂改动却用即时验证
+❌ 禁止不执行命令就说 "passed"
+❌ 禁止自己编造测试输出
+❌ 禁止跳过测试说 "Ready for QA Testing"
 ```
 
-### 6. End (Mandatory Wait)
-```
---- Step X/Total Complete ---
-
-✅ Updated current_steps.md
-⏸️ Waiting for confirmation...
-
-Reply:
-- "ok" / "confirm" / "continue" → Next step
-- "issue" / "rollback" → I'll handle it
-```
-Update current_steps.md: 🌀 → ✅
-
-### 7. Absolute Prohibition - Must Wait for User
-```
-⛔ Must stop and wait for user reply after Step ends
-⛔ Do not self-assess "should be fine" and continue
-⛔ Even if code is trivial, must wait for confirmation
-```
-
-## Trust Mode
-
-When user says "trust mode": continuous execution allowed, but checkpoints per step; stop immediately on issues.
-
-## Last Step Special Workflow
+**❌ 如果无法执行测试命令**
 
 ```
-"🧹 Clean up temporary logs?"
+情况 1: 项目没有 BDD 框架
+→ 使用即时验证（终端命令/临时脚本）
+→ 💡 提示: 复杂项目建议配置 BDD 框架
 
-[1] Clean up - Remove all [DEV-{topic}-*] logs
-[2] Retain as production logs - Rename to [BASE-{module-name}], streamline to key steps
-[3] Keep all - Leave as-is (for debugging)
+情况 2: step definitions 未实现（已有 BDD 框架）
+→ 先实现 step definitions
+→ 实现完成后再执行测试
 
-Recommended: 
-- Core flows → Retain as [BASE-{module-name}]
-- Temporary debugging → Clean up
+情况 3: 测试环境问题
+→ 如实报告错误信息
+→ 请求用户协助解决
 ```
 
-## Task Completion Wrap-up
-
+### 6. 结束 (强制等待)
 ```
-1. Instant verification (mandatory):
-   - Reference: references/principles/test-verification.md
-   - Output: "🧪 Instant verification"
-2. Auto-update documentation (mandatory):
-   - project-map.md (new/changed modules)
-   - module-registry.md (new reusable components)
-   - Output: "📝 Auto-updated: xxx"
-3. Core logic exists → Ask: "Add unit tests?"
-4. Completion checkpoint: git commit -m "SPEC-Complete: {task-name}"
-5. "✅ Task complete"
-6. Output next step options
+--- Step X/总数 完成 ---
+
+✅ 已更新 current_steps.md
+⏸️ 等待确认后继续下一步...
+
+请确认本步结果，回复:
+- "ok" / "确认" / "继续" → 进入下一步
+- "问题" / "回退" → 我会处理
 ```
+更新 current_steps.md: 🌀 → ✅
 
-## Wrap-up Micro-Tasks
-
-Minor tweaks after completion (copy/style/small fixes):
-
+### 7. 绝对禁止 - 必须等待用户确认
 ```
-User: "Also change the button color"
-
-AI: "📒 AutoDevTeam - Wrap-up @{task-name}
-[Brief change description]"
-
-→ Execute → How to Test (simplified) → Done
-
-"✅ Done, any other wrap-up items?"
+⛔ 无论任何情况，Step 结束后必须停下等待用户回复
+⛔ 禁止自己判断"应该没问题"然后继续
+⛔ 即使代码很简单，也必须等待确认
 ```
 
-**Boundary**: Wrap-up >2 files or needs new files → "Too large, recommend separate task"
+## 信任模式
 
-## Task Completion Options
+用户说"信任模式"时可连续执行，但每步仍创建检查点，遇到问题立即停止。
 
-```
-📍 Current: Task "[task-name]" complete, [N] steps executed
-📌 Next:
-[1] Add tests (enter autoDevTeam/tester workflow) - Unit tests for new core logic
-[2] Clean up code (enter autoDevTeam/cleanup workflow) - Clean up dev temporary code
-[3] Develop new feature (enter autoDevTeam/architect workflow)
-[0] Done
-
-💡 You can also request wrap-up changes, e.g. "make the button blue"
-```
-
-## Failure Handling
+## 最后一步特殊流程
 
 ```
-If step fails:
-1. Stop immediately, do not "fix and continue"
-2. Report: Failure reason + files changed
-3. Ask: "Roll back this step?"
+"🧹 清理临时 log？"
+
+[1] 清理 - 删除所有 [DEV-{主题}-*] log
+[2] 保留为生产 log - 改为 [BASE-{模块名}]，精简为关键步骤
+[3] 全部保留 - 保持原样 (调试用)
+
+推荐: 
+- 核心流程 → 保留为 [BASE-{模块名}]
+- 临时调试 → 清理
 ```
 
-## Mid-Task Micro-Tasks
-
-Other requests during Step execution:
+## 任务完成收尾
 
 ```
-AI: "📒 AutoDevTeam - Micro-task @Step{N}
-[Brief description]"
-
-→ Execute → How to Test → Done
-
-"✅ Micro-task complete
-⏩ Continue Step {N+1}?"
+1. 即时验证 (强制):
+   - 参考: references/principles/test-verification.md
+   - 输出: "🧪 即时验证"
+2. 自动更新文档 (强制):
+   - project-map.md (新增/改动模块)
+   - module-registry.md (新增可复用组件)
+   - 输出: "📝 已自动更新: xxx"
+3. 如有核心逻辑，询问: "是否补充单元测试？"
+4. 创建完成检查点: git commit -m "SPEC-Complete: {任务名}"
+5. "✅ 任务完成"
+6. 输出下一步选项
 ```
 
-**Boundary**: Micro-task >30 lines or >2 files → Handle separately after current Step
+## 收尾微任务
+
+任务完成后的小修小补 (改文案/调样式/小修复)：
+
+```
+用户: "再把按钮颜色改一下"
+
+AI: "📒 AutoDevTeam - 收尾 @{任务名}
+[简述改动]"
+
+→ 直接执行 → How to Test (简化版) → 完成
+
+"✅ 已处理，还有其他收尾吗？"
+```
+
+**边界**: 若收尾改动 >2文件 或 需要新建文件 → "这个改动较大，建议作为新任务单独处理"
+
+## 任务完成后选项
+
+```
+📍 当前: 任务"[任务名]"已完成，共执行 [N] 步
+📌 下一步:
+[1] 添加测试（进入 autoDevTeam/tester 流程）- 为新增的核心逻辑添加单元测试
+[2] 清理代码（进入 autoDevTeam/cleanup 流程）- 清理开发期间的临时代码
+[3] 开发新功能（进入 autoDevTeam/architect 流程）
+[0] 结束
+
+💡 也可直接说收尾改动，如 "把按钮改成蓝色"（继续 autoDevTeam 协助）
+```
+
+## 失败处理
+
+```
+如果本步执行失败:
+1. 立即停止，不要尝试"修复后继续"
+2. 报告: 失败原因 + 已改动的文件
+3. 询问: "是否回退本步改动？"
+```
+
+## 途中微任务
+
+当用户在 Step 执行中途发起其他请求：
+
+```
+AI: "📒 AutoDevTeam - 微任务 @Step{N}
+[简述要做什么]"
+
+→ 直接执行 → How to Test → 完成
+
+"✅ 微任务完成
+⏩ 继续 Step {N+1}？"
+```
+
+**边界**: 若"微任务"需要 >30行代码 或 >2文件 → 建议完成当前 Step 后单独处理

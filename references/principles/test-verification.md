@@ -1,112 +1,112 @@
-# Test Verification Mechanism (Instant Verification)
+# 测试验证机制（即时验证）
 
-> Goal: **Verify now** — catch issues quickly, provide evidence.
+> 目标：**当下验证**，快速发现问题并给出证据。
 
-## Trigger Conditions (Mandatory)
+## 触发时机（强制）
 
-- Any code change (Step / Debug / Hotfix / Refactor / Optimize / Fix / Feat)
+- 任何代码更新（Step / Debug / Hotfix / Refactor / Optimize / Fix / Feat）
 
-## Core Rules
+## 核心规则
 
-- **Primary Agent verifies directly** (no testing Subagent)
-- **Execute immediately**: verify on the spot after writing code
-- **Minimum coverage**: core logic + 1 boundary condition
-- **Retry on failure**: max 3 times; then request human intervention
-- **Evidence required**: command + output/result
+- **主 Agent 自己验证**（不调用测试 Subagent）
+- **立刻执行**：写完代码当场验证
+- **覆盖最小集**：核心逻辑 + 1 个边界条件
+- **失败重试**：最多 3 次，仍失败请求人工介入
+- **必须有证据**：命令 + 输出/结果
 
-## ⭐ Verification Methods (Smart Assessment)
+## ⭐ 验证方式（智能评估）
 
-### Step 1: Check if project has BDD framework
-
-```
-Check for .feature files in the project:
-- `ls **/*.feature` or `find . -name "*.feature"`
-
-✅ Has .feature files → Project has BDD configured, proceed to assessment
-❌ No .feature files → Jump to "No BDD Framework" branch
-```
-
-### Step 2A: Has BDD Framework → Assess Complexity
-
-**Assessment Dimensions** (AI auto-judges):
-
-| Dimension | 🟢 Simple (Instant) | 🟡 Medium (User Choice) | 🔴 Complex (Cucumber) |
-|-----------|---------------------|-------------------------|----------------------|
-| **Change Size** | ≤2 files ≤30 lines | 3-5 files or 30-100 lines | >5 files or >100 lines |
-| **Function Type** | Copy/style/small fix | Single module logic | Core flow/API change |
-| **Impact Scope** | Single point | Single module | Cross-module/external API |
-| **Verification Complexity** | 1 checkpoint | 2-3 checkpoints | Multiple scenarios/edge cases |
-
-**Assessment Results**:
-
-#### 🟢 Simple Change → Instant Verification
+### 第一步：检查项目是否有 BDD 框架
 
 ```
-📊 Complexity Assessment: 🟢 Simple Change
-- Change size: [N files, M lines]
-- Function type: [copy/style/...]
-- Impact scope: [single point/...]
-- Verification method: Instant verification (terminal command/temp script)
+检查项目中是否存在 .feature 文件:
+- `ls **/*.feature` 或 `find . -name "*.feature"`
 
-🧪 Instant Verification:
-Method: [command/script]
-Result: [pass/fail]
-Evidence: [key output]
+✅ 有 .feature 文件 → 项目已配置 BDD，继续评估
+❌ 无 .feature 文件 → 跳到"无 BDD 框架"分支
 ```
 
-#### 🟡 Medium Change → User Choice
+### 第二步 A：有 BDD 框架 → 评估复杂度
+
+**评估维度**（AI 自动判断）：
+
+| 维度 | 🟢 简单（即时验证） | 🟡 中等（用户选择） | 🔴 复杂（Cucumber） |
+|------|---------------------|---------------------|---------------------|
+| **改动量** | ≤2 文件 ≤30 行 | 3-5 文件 或 30-100 行 | >5 文件 或 >100 行 |
+| **功能类型** | 文案/样式/小修复 | 单模块逻辑改动 | 核心流程/API 变更 |
+| **影响范围** | 单点改动 | 单模块影响 | 跨模块/对外接口 |
+| **验证复杂度** | 1 个检查点 | 2-3 个检查点 | 多场景/边界情况 |
+
+**评估结果**：
+
+#### 🟢 简单改动 → 即时验证
 
 ```
-📊 Complexity Assessment: 🟡 Medium Change
-- Change size: [N files, M lines]
-- Function type: [single module logic]
-- Impact scope: [single module]
+📊 复杂度评估: 🟢 简单改动
+- 改动量: [N 文件, M 行]
+- 功能类型: [文案/样式/...]
+- 影响范围: [单点/...]
+- 验证方式: 即时验证（终端命令/临时脚本）
 
-📌 Choose verification method:
-[1] Instant verification - terminal command/temp script (fast)
-[2] Cucumber verification - run BDD scenarios (comprehensive)
+🧪 即时验证:
+方式: [命令/脚本]
+结果: [通过/失败]
+证据: [关键输出]
 ```
 
-#### 🔴 Complex Change → Must Use Cucumber
+#### 🟡 中等改动 → 用户选择
 
 ```
-📊 Complexity Assessment: 🔴 Complex Change
-- Change size: [N files, M lines]
-- Function type: [core flow/API change]
-- Impact scope: [cross-module/external API]
-- Verification method: Cucumber verification (required)
+📊 复杂度评估: 🟡 中等改动
+- 改动量: [N 文件, M 行]
+- 功能类型: [单模块逻辑改动]
+- 影响范围: [单模块影响]
 
-🧪 BDD Verification:
-Command: npx cucumber-js [corresponding feature file]
-Result: [actual output]
+📌 验证方式选择:
+[1] 即时验证 - 终端命令/临时脚本（快速）
+[2] Cucumber 验证 - 跑 BDD 场景（全面）
 ```
 
-**⛔ Prohibited**:
-- Using instant verification for 🔴 complex changes
-- Skipping assessment and choosing method directly
-
-### Step 2B: No BDD Framework → Prioritize Speed
+#### 🔴 复杂改动 → 必须 Cucumber
 
 ```
-Project has no BDD framework, prioritize speed:
+📊 复杂度评估: 🔴 复杂改动
+- 改动量: [N 文件, M 行]
+- 功能类型: [核心流程/API 变更]
+- 影响范围: [跨模块/对外接口]
+- 验证方式: Cucumber 验证（必须）
 
-1. Run directly in terminal (CLI / curl / node -e / python -c)
-2. Temporary script (delete after verification)
-3. User manual confirmation (UI/UX/external systems)
-
-💡 Tip: Complex projects should consider configuring BDD framework
+🧪 BDD 验证:
+执行命令: npx cucumber-js [对应 feature 文件]
+结果: [实际输出]
 ```
 
-## Output Format (Required)
+**⛔ 禁止行为**：
+- 🔴 复杂改动却选择即时验证
+- 跳过评估直接选择方式
+
+### 第二步 B：无 BDD 框架 → 按快优先
 
 ```
-🧪 Instant Verification
-Method: [command/script/user confirmation]
-Result: [pass/fail/unable to execute]
-Evidence: [key output or reason]
+项目未配置 BDD 框架，按快优先:
+
+1. 终端直跑（CLI / curl / node -e / python -c）
+2. 临时脚本（验证后删除）
+3. 用户手动确认（UI/体验/外部系统）
+
+💡 提示: 复杂项目建议配置 BDD 框架
 ```
 
-## Prohibited Actions
+## 输出格式（必须）
 
-- ❌ Skip verification and commit directly
-- ❌ Conclusions without evidence
+```
+🧪 即时验证
+方式: [命令/脚本/用户确认]
+结果: [通过/失败/无法执行]
+证据: [关键输出或原因]
+```
+
+## 禁止行为
+
+- ❌ 跳过验证直接 commit
+- ❌ 只有结论没有证据

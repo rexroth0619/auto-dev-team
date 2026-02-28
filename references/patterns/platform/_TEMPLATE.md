@@ -1,53 +1,53 @@
-# [Platform]: [Pattern Name]
+# [平台]: [经验名称]
 
-> One-liner: platform-specific problem/best practice addressed
+> 一句话：这个平台特有的什么问题/最佳实践
 
-## Scope
+## 适用范围
 
-| Dimension | Scope |
-|-----------|-------|
-| Platform version | Android 10+ / iOS 14+ / Chrome 90+ / ... |
-| Related framework | React 18 / SwiftUI / Jetpack Compose / ... (optional) |
+| 维度 | 范围 |
+|------|------|
+| 平台版本 | Android 10+ / iOS 14+ / Chrome 90+ / ... |
+| 相关框架 | React 18 / SwiftUI / Jetpack Compose / ... (可选) |
 
-## Background
+## 背景
 
 <!-- 
-Why is this problem platform-specific?
-- Platform limitations
-- System characteristics
-- UX requirements
+为什么这个问题在这个平台上特殊？
+- 平台限制导致
+- 系统特性导致
+- 用户体验要求导致
 -->
 
-## Symptoms
+## 问题表现
 
 <!-- 
-What do users/developers encounter?
-- User-visible issues
-- Developer-facing errors
-- Performance metric changes
+用户或开发者会遇到什么症状？
+- 用户看到的现象
+- 开发者看到的错误
+- 性能指标的变化
 -->
 
-## Solution
+## 解决方案
 
 <!-- 
-Best practices + code examples
+最佳实践 + 代码示例
 -->
 
 ```language
-// Recommended approach
-[code example]
+// 推荐做法
+[代码示例]
 ```
 
-## Pitfall Guide
+## 避坑指南
 
-<!-- Optional: common mistakes to avoid -->
+<!-- 可选：容易犯的错误 -->
 
-## Related
+## 关联
 
-- Universal principle: `universal/xxx/yyy.md` (if applicable)
-- Language pattern: `language/xxx/zzz.md` (if applicable)
+- 通用原理: `universal/xxx/yyy.md` (如有)
+- 语言经验: `language/xxx/zzz.md` (如有)
 
 ---
-*Tags*: `tag1`, `tag2`
-*Created*: YYYY-MM-DD
-*Verification status*: Verified / Unverified
+*标签*: `tag1`, `tag2`
+*创建时间*: YYYY-MM-DD
+*验证状态*: 已验证 / 待验证
