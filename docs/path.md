@@ -12,8 +12,8 @@
 
 | 项目 | 值 |
 |------|-----|
-| 远程仓库 (origin) | `<仓库地址>` |
-| HTTPS 地址 | `<仓库 HTTPS 地址>` |
+| 远程仓库 (origin) | `git@github.com:rexroth0619/AutoDevTeam.git` |
+| HTTPS 地址 | `https://github.com/rexroth0619/AutoDevTeam` |
 | 主分支 | `main` |
 
 ### Commit 规范

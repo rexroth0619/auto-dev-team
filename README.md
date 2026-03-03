@@ -26,14 +26,14 @@ AutoDevTeam 是一个基于 [Agent Skills 规范](https://agentskills.io/specifi
 
 ```bash
 cd ~/.cursor/skills/
-git clone <仓库地址> autoDevTeam
+git clone git@github.com:rexroth0619/AutoDevTeam.git autoDevTeam
 ```
 
 ### 方式二：作为项目级 Skill
 
 ```bash
 cd your-project/.cursor/skills/
-git clone <仓库地址> autoDevTeam
+git clone git@github.com:rexroth0619/AutoDevTeam.git autoDevTeam
 ```
 
 ## 📂 目录结构
