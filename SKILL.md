@@ -1,7 +1,6 @@
 ---
-name: auto-dev-team-cn
-description: |
-  AI 赛博开发团队。任何软件开发任务自动激活：新功能、bug修复、重构、优化、测试等。
+name: auto-dev-team
+description: AI 赛博开发团队。任何软件开发任务自动激活：新功能、bug修复、重构、优化、测试等。
 ---
 
 # AutoDevTeam 开发规范
