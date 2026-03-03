@@ -6,7 +6,7 @@
 
 | 项目 | 路径 |
 |------|------|
-| Skill 目录 | `auto-dev-team` |
+| Skill 目录 | `~/.cursor/skills/AutoDevTeam` |
 
 ## Git 配置
 

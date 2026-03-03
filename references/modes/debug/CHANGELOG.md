@@ -159,6 +159,6 @@
 
 ### 相关文件
 
-- 中文版：`references/modes/debug/README.md (zh-CN branch)`
-- 英文版：`references/modes/debug/README.md (main branch)`
+- 中文版：`~/.cursor/skills/AutoDevTeamCN/references/modes/debug/README.md`
+- 英文版：`~/.cursor/skills/AutoDevTeam/references/modes/debug/README.md`
 - Commit: `e43f387`
