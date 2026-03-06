@@ -22,18 +22,27 @@ auto-dev-team 是一个基于 [Agent Skills 规范](https://agentskills.io/speci
 
 ## 🚀 安装
 
-### 方式一：克隆到 Cursor Skills 目录
+### Cursor 安装方式
+
+**方式一：全局安装**
 
 ```bash
 cd ~/.cursor/skills/
-git clone git@github.com:rexroth0619/auto-dev-team.git auto-dev-team
+git clone git@github.com:rexroth0619/AutoDevTeam.git auto-dev-team
 ```
 
-### 方式二：作为项目级 Skill
+**方式二：项目级安装**
 
 ```bash
 cd your-project/.cursor/skills/
-git clone git@github.com:rexroth0619/auto-dev-team.git auto-dev-team
+git clone git@github.com:rexroth0619/AutoDevTeam.git auto-dev-team
+```
+
+### Qoder 安装方式
+
+```bash
+cd ~/.qoder/skills/
+git clone git@github.com:rexroth0619/AutoDevTeam.git auto-dev-team
 ```
 
 ## 📂 目录结构
