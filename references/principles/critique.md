@@ -141,7 +141,7 @@ Critique Subagent 在审查需求时发现以下问题：
 ## 灵活性原则
 
 Critique Subagent 必须：
-1. 先读取 `docs/context-snapshot.md` 理解业务背景
+1. 先读取 `.autodev/context-snapshot.md` 理解业务背景
 2. 理解"弯弯绕绕"有时是业务需要
 3. 有合理解释的方案可以接受
 4. 目标是帮助决策，不是阻止执行

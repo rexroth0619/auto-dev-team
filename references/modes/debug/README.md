@@ -56,7 +56,7 @@
 ## AI 必须主动读取（查阅病史）
 
 进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
-- `docs/postmortem.md` - 病例库，查找历史类似病例
+- `.autodev/postmortem.md` - 病例库，查找历史类似病例
 
 **注意**：context-snapshot 和 git log 已在 `_index.md` 通用前置步骤中强制执行。
 

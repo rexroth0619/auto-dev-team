@@ -24,7 +24,7 @@
 **涉及代码改动的模式**（Architect / FastTrack / Debug / Refactor / Optimize / Hotfix）进入前：
 
 0. **项目初始化检查（一次性拦截）**
-   检查 `docs/project-map.md`:
+   检查 `.autodev/project-map.md`:
    ├── 不存在 或 内容含 `<!-- STATUS: TEMPLATE -->` → 🆕 触发 Init 流程
    └── 存在且有实际内容（含 `<!-- STATUS: INITIALIZED -->`）→ ✅ 跳过
 
@@ -38,20 +38,20 @@
    用户: [回答] / "跳过"
 
    AI:  1. 创建初始目录结构建议（用户确认后执行）
-        2. 生成 docs/project-map.md（填入基本信息，标记 INITIALIZED）
-        3. 生成 docs/module-registry.md（空表格，标记已初始化）
-        4. 生成其他缺失的 docs/ 必需文档
+        2. 生成 .autodev/project-map.md（填入基本信息，标记 INITIALIZED）
+        3. 生成 .autodev/module-registry.md（空表格，标记已初始化）
+        4. 生成其他缺失的 .autodev/ 必需文档
         5. "✅ 项目已初始化，继续你的任务"
         6. 返回原模式继续执行
 
    **用户跳过时的降级策略**:
-   - 仍然创建 docs/ 文档（标记 INITIALIZED），但内容最简化
+   - 仍然创建 .autodev/ 文档（标记 INITIALIZED），但内容最简化
    - AI 在第一个功能开发过程中，边做边补充 project-map.md
    - 第一个功能完成后，project-map.md 必须包含实际的架构信息
    ```
    ⛔ Init 完成前禁止进入任何模式的实际流程
 
-1. 读取 `docs/context-snapshot.md` → 最近做了什么功能？
+1. 读取 `.autodev/context-snapshot.md` → 最近做了什么功能？
 2. 执行 `git log -5 --oneline` → 最近 5 次提交是什么？
 3. 回答：**最近改动和本次任务有没有关联？**
    - 新功能：是否和最近改动有冲突/依赖？

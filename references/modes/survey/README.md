@@ -98,7 +98,7 @@ AI:   1. 生成/更新 project-map.md
 
 ### Phase 5: 禁止区域配置 (首次)
 
-**触发条件**: 项目首次 Survey 且未配置 `docs/forbidden-zones.md`
+**触发条件**: 项目首次 Survey 且未配置 `.autodev/forbidden-zones.md`
 
 ```
 AI:   "🔒 是否配置禁止区域？
@@ -110,7 +110,7 @@ AI:   "🔒 是否配置禁止区域？
       - migrations/ (数据库迁移)
       - 核心配置文件
       
-      [1] 配置 - 创建 docs/forbidden-zones.md
+      [1] 配置 - 创建 .autodev/forbidden-zones.md
       [2] 跳过 - 不需要限制
       "
 ```

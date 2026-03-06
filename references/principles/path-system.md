@@ -4,7 +4,7 @@
 
 ## 机制说明
 
-**每个项目必须有 `docs/path.md`**，记录所有与项目相关的固定路径和配置。
+**每个项目必须有 `.autodev/path.md`**，记录所有与项目相关的固定路径和配置。
 
 这是"环境配置的单一真相来源"，避免路径信息分散在各处。
 
@@ -24,12 +24,12 @@
 
 | 文档 | 必须包含 |
 |------|----------|
-| `docs/project-map.md` | 头部引用 `📍 环境路径详见 docs/path.md` |
-| `docs/context-snapshot.md` | 头部引用 `📍 环境路径详见 docs/path.md` |
+| `.autodev/project-map.md` | 头部引用 `📍 环境路径详见 .autodev/path.md` |
+| `.autodev/context-snapshot.md` | 头部引用 `📍 环境路径详见 .autodev/path.md` |
 
 ## AI 读取规则
 
-以下操作**必须先读取 `docs/path.md`**：
+以下操作**必须先读取 `.autodev/path.md`**：
 
 - 部署相关操作
 - Git commit/push 操作
@@ -42,9 +42,9 @@
 
 进入任何模式时，AI 必须：
 
-1. 检查 `docs/path.md` 是否存在
+1. 检查 `.autodev/path.md` 是否存在
 2. 不存在时，使用 `assets/templates/path.md` 模板创建
-3. 输出: `📄 已创建: docs/path.md（使用模板初始化，请填写实际配置）`
+3. 输出: `📄 已创建: .autodev/path.md（使用模板初始化，请填写实际配置）`
 
 ## 模板位置
 
@@ -62,11 +62,11 @@
 ## 与其他文档的关系
 
 ```
-docs/path.md (环境路径)
+.autodev/path.md (环境路径)
     ↑ 引用
-docs/context-snapshot.md (项目快照)
+.autodev/context-snapshot.md (项目快照)
     ↑ 引用
-docs/project-map.md (架构地图)
+.autodev/project-map.md (架构地图)
 ```
 
 这三个文档互相引用，形成完整的项目认知体系。

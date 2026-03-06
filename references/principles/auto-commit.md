@@ -17,7 +17,7 @@
 ## 执行流程
 
 ```
-1. 读取 `docs/path.md` 获取 git 配置（远程仓库、分支策略）
+1. 读取 `.autodev/path.md` 获取 git 配置（远程仓库、分支策略）
 2. git add -A
 3. git commit -m "{类型}: {一句话描述}"
 4. git push（推送到 path.md 中配置的远程仓库）
@@ -73,7 +73,7 @@ feat: 添加风控待处理状态
 
 | 情况 | 处理方式 |
 |------|----------|
-| 无 `docs/path.md` | 提示用户先创建，使用模板 `assets/templates/path.md` |
+| 无 `.autodev/path.md` | 提示用户先创建，使用模板 `assets/templates/path.md` |
 | 远程仓库未配置 | 提示用户在 `path.md` 中配置 Git 配置部分 |
 | push 失败 | 报告错误，保留本地 commit，提示手动处理 |
 | 冲突 | 停止自动流程，提示用户解决冲突后手动推送 |

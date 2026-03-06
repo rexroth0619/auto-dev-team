@@ -5,8 +5,8 @@
 ## AI 必须主动读取
 
 进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
-- `docs/project-map.md` - 了解项目结构
-- `docs/module-registry.md` - 查找可复用组件
+- `.autodev/project-map.md` - 了解项目结构
+- `.autodev/module-registry.md` - 查找可复用组件
 
 ## 流程
 
