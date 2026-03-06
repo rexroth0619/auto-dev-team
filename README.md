@@ -7,7 +7,9 @@
 
 ## 📖 简介
 
-auto-dev-team 是一个基于 [Agent Skills 规范](https://agentskills.io/specification) 的 Cursor Skill，它将 AI 转变为一个完整的开发团队，提供结构化、增量可测的软件开发工作流。
+auto-dev-team 是一个基于 [Agent Skills 规范](https://agentskills.io/specification) 的 Skill，它将 AI 转变为一个完整的开发团队，提供结构化、增量可测的软件开发工作流。
+
+**仓库地址**：`https://github.com/rexroth0619/AutoDevTeam`
 
 **核心理念**：PM 只需用自然语言描述需求，AI 自动选择合适的工作流，一步步完成开发任务。
 
