@@ -244,7 +244,7 @@ AI 必须自动评估本步复杂度：
 ```
 用户: "再把按钮颜色改一下"
 
-AI: "📒 AutoDevTeam - 收尾 @{任务名}
+AI: "📒 auto-dev-team - 收尾 @{任务名}
 [简述改动]"
 
 → 直接执行 → How to Test (简化版) → 完成
@@ -259,12 +259,12 @@ AI: "📒 AutoDevTeam - 收尾 @{任务名}
 ```
 📍 当前: 任务"[任务名]"已完成，共执行 [N] 步
 📌 下一步:
-[1] 添加测试（进入 autoDevTeam/tester 流程）- 为新增的核心逻辑添加单元测试
-[2] 清理代码（进入 autoDevTeam/cleanup 流程）- 清理开发期间的临时代码
-[3] 开发新功能（进入 autoDevTeam/architect 流程）
+[1] 添加测试（进入 auto-dev-team/tester 流程）- 为新增的核心逻辑添加单元测试
+[2] 清理代码（进入 auto-dev-team/cleanup 流程）- 清理开发期间的临时代码
+[3] 开发新功能（进入 auto-dev-team/architect 流程）
 [0] 结束
 
-💡 也可直接说收尾改动，如 "把按钮改成蓝色"（继续 autoDevTeam 协助）
+💡 也可直接说收尾改动，如 "把按钮改成蓝色"（继续 auto-dev-team 协助）
 ```
 
 ## 失败处理
@@ -281,7 +281,7 @@ AI: "📒 AutoDevTeam - 收尾 @{任务名}
 当用户在 Step 执行中途发起其他请求：
 
 ```
-AI: "📒 AutoDevTeam - 微任务 @Step{N}
+AI: "📒 auto-dev-team - 微任务 @Step{N}
 [简述要做什么]"
 
 → 直接执行 → How to Test → 完成

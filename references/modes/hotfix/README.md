@@ -86,8 +86,8 @@ AI:   1. 自动写入 postmortem.md (标记 [HOTFIX])
 📍 当前: 已临时止血，修复了"[问题简述]"
 ⚠️ 这是临时方案，建议后续彻底排查
 📌 下一步:
-[1] 深入排查（进入 autoDevTeam/debug 流程）- 找到根因，做彻底修复
+[1] 深入排查（进入 auto-dev-team/debug 流程）- 找到根因，做彻底修复
 [2] 查看 postmortem - 确认 [HOTFIX] 记录内容
-[3] 开发新功能（进入 autoDevTeam/architect 流程）
+[3] 开发新功能（进入 auto-dev-team/architect 流程）
 [0] 结束
 ```

@@ -19,7 +19,7 @@
 用户: 用户登录流程是怎么实现的？
       @LoginButton.tsx
 
-AI:   🔥 AutoDevTeam - Explain 已激活
+AI:   🔥 auto-dev-team - Explain 已激活
       
       📊 [用户登录] 实现路径:
       
@@ -89,10 +89,10 @@ AI:   📊 validateForm() 详细展开:
 ```
 📍 当前: 已解释"[功能]"的实现路径
 📌 下一步:
-[1] 深入（继续 autoDevTeam/explain 流程）- 展开某个函数的内部实现: [列出可展开的函数]
-[2] 开始开发（进入 autoDevTeam/architect 流程）- 基于理解开始功能开发
-[3] 调试问题（进入 autoDevTeam/debug 流程）- 发现问题，需要调试
-[4] 重构代码（进入 autoDevTeam/refactor 流程）- 发现代码异味，需要整理
+[1] 深入（继续 auto-dev-team/explain 流程）- 展开某个函数的内部实现: [列出可展开的函数]
+[2] 开始开发（进入 auto-dev-team/architect 流程）- 基于理解开始功能开发
+[3] 调试问题（进入 auto-dev-team/debug 流程）- 发现问题，需要调试
+[4] 重构代码（进入 auto-dev-team/refactor 流程）- 发现代码异味，需要整理
 [0] 结束
 ```
 
@@ -111,7 +111,7 @@ Ask Mode (Cursor 原生):
 - 自由问答，格式不固定
 - 适合概念性问题 "什么是闭包？"
 
-Explain Mode (AutoDevTeam):
+Explain Mode (auto-dev-team):
 - 标准化输出格式 (调用链可视化)
 - 专注代码实现路径
 - 适合 "这个功能怎么实现的？"

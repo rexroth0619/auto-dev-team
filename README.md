@@ -1,4 +1,4 @@
-# 🤖 AutoDevTeam
+# 🤖 auto-dev-team
 
 > 你的 AI 赛博开发团队 — 让不懂代码的 PM 也能驾驭软件开发
 
@@ -7,7 +7,7 @@
 
 ## 📖 简介
 
-AutoDevTeam 是一个基于 [Agent Skills 规范](https://agentskills.io/specification) 的 Cursor Skill，它将 AI 转变为一个完整的开发团队，提供结构化、增量可测的软件开发工作流。
+auto-dev-team 是一个基于 [Agent Skills 规范](https://agentskills.io/specification) 的 Cursor Skill，它将 AI 转变为一个完整的开发团队，提供结构化、增量可测的软件开发工作流。
 
 **核心理念**：PM 只需用自然语言描述需求，AI 自动选择合适的工作流，一步步完成开发任务。
 
@@ -26,20 +26,20 @@ AutoDevTeam 是一个基于 [Agent Skills 规范](https://agentskills.io/specifi
 
 ```bash
 cd ~/.cursor/skills/
-git clone git@github.com:rexroth0619/AutoDevTeam.git autoDevTeam
+git clone git@github.com:rexroth0619/auto-dev-team.git auto-dev-team
 ```
 
 ### 方式二：作为项目级 Skill
 
 ```bash
 cd your-project/.cursor/skills/
-git clone git@github.com:rexroth0619/AutoDevTeam.git autoDevTeam
+git clone git@github.com:rexroth0619/auto-dev-team.git auto-dev-team
 ```
 
 ## 📂 目录结构
 
 ```
-autoDevTeam/
+auto-dev-team/
 ├── SKILL.md                    # 主技能文件
 ├── assets/
 │   └── templates/              # 项目文档模板
@@ -85,7 +85,7 @@ autoDevTeam/
 ```
 PM: 我想加一个深色模式
 
-AI: 🔥 AutoDevTeam - Architect 已激活
+AI: 🔥 auto-dev-team - Architect 已激活
 
 📋 需求理解：
 用户能在设置页面切换深色/浅色模式，切换后整个应用立即生效。
@@ -98,7 +98,7 @@ AI: 🔥 AutoDevTeam - Architect 已激活
 ```
 PM: 提交按钮点了没反应
 
-AI: 🔥 AutoDevTeam - Debug 已激活
+AI: 🔥 auto-dev-team - Debug 已激活
 
 📋 症状记录：
 - 现象：点击提交按钮无响应
@@ -113,7 +113,7 @@ AI: 🔥 AutoDevTeam - Debug 已激活
 ```
 PM: 线上挂了！支付接口报 500！
 
-AI: 🔥 AutoDevTeam - Hotfix 已激活
+AI: 🔥 auto-dev-team - Hotfix 已激活
 
 ⚡ 快速定位中...
 ⚡ 最小修复方案: [xxx]

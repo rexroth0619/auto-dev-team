@@ -317,8 +317,8 @@ Step 5.2: 写入 postmortem.md（用户确认后执行）
 ```
 📍 当前: Bug 已修复并确认，病因是"[病因简述]"，已归档到 postmortem.md
 📌 下一步:
-[1] 添加回归保护（进入 autoDevTeam/tester 流程）- 防止复发
-[2] 开发新功能（进入 autoDevTeam/architect 流程）
+[1] 添加回归保护（进入 auto-dev-team/tester 流程）- 防止复发
+[2] 开发新功能（进入 auto-dev-team/architect 流程）
 [0] 结束
 ```
 

@@ -1,4 +1,4 @@
-# AutoDevTeam 路径清单
+# auto-dev-team 路径清单
 
 > 📍 所有固定路径和配置的唯一真相来源
 
@@ -6,14 +6,14 @@
 
 | 项目 | 路径 |
 |------|------|
-| Skill 目录 | `~/.cursor/skills/AutoDevTeam` |
+| Skill 目录 | `~/.cursor/skills/auto-dev-team` |
 
 ## Git 配置
 
 | 项目 | 值 |
 |------|-----|
-| 远程仓库 (origin) | `git@github.com:rexroth0619/AutoDevTeam.git` |
-| HTTPS 地址 | `https://github.com/rexroth0619/AutoDevTeam` |
+| 远程仓库 (origin) | `git@github.com:rexroth0619/auto-dev-team.git` |
+| HTTPS 地址 | `https://github.com/rexroth0619/auto-dev-team` |
 | 主分支 | `main` |
 
 ### Commit 规范

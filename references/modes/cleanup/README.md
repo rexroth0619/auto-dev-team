@@ -63,8 +63,8 @@ AI:   扫描:
 ```
 📍 当前: 已清理 [N] 项，删除了 [文件/代码行数] 
 📌 下一步:
-[1] 继续清理（继续 autoDevTeam/cleanup 流程）- 扫描其他类型的冗余代码
-[2] 开发新功能（进入 autoDevTeam/architect 流程）
-[3] 重构代码（进入 autoDevTeam/refactor 流程）- 进一步整理代码结构
+[1] 继续清理（继续 auto-dev-team/cleanup 流程）- 扫描其他类型的冗余代码
+[2] 开发新功能（进入 auto-dev-team/architect 流程）
+[3] 重构代码（进入 auto-dev-team/refactor 流程）- 进一步整理代码结构
 [0] 结束
 ```

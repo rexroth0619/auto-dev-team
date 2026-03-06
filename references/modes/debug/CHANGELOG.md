@@ -51,8 +51,8 @@
 **情况 A：用户确认修复**
 ```
 📌 下一步:
-[1] 添加回归保护（进入 autoDevTeam/tester 流程）
-[2] 开发新功能（进入 autoDevTeam/architect 流程）
+[1] 添加回归保护（进入 auto-dev-team/tester 流程）
+[2] 开发新功能（进入 auto-dev-team/architect 流程）
 [0] 结束
 ```
 
@@ -136,8 +136,8 @@
 ━━━━━━━━━━━━━━━━━━━━
 📍 当前: Bug 已修复并确认，病因是"[病因简述]"，已归档到 postmortem.md
 📌 下一步:
-[1] 添加回归保护（进入 autoDevTeam/tester 流程）- 防止复发
-[2] 开发新功能（进入 autoDevTeam/architect 流程）
+[1] 添加回归保护（进入 auto-dev-team/tester 流程）- 防止复发
+[2] 开发新功能（进入 auto-dev-team/architect 流程）
 [0] 结束
 ━━━━━━━━━━━━━━━━━━━━
 ```
@@ -159,6 +159,6 @@
 
 ### 相关文件
 
-- 中文版：`~/.cursor/skills/AutoDevTeamCN/references/modes/debug/README.md`
-- 英文版：`~/.cursor/skills/AutoDevTeam/references/modes/debug/README.md`
+- 中文版：`~/.cursor/skills/auto-dev-team-cn/references/modes/debug/README.md`
+- 英文版：`~/.cursor/skills/auto-dev-team/references/modes/debug/README.md`
 - Commit: `e43f387`

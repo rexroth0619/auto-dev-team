@@ -100,9 +100,9 @@ AI:   1. 执行改动 (插入 log: [SHORT-{主题}])
 ```
 📍 当前: 已完成"[改动简述]"，改动了 [N] 个文件
 📌 下一步:
-[1] 继续小改（继续 autoDevTeam/fasttrack 流程）
-[2] 开发新功能（进入 autoDevTeam/architect 流程）- 开始较大的新功能
-[3] 清理代码（进入 autoDevTeam/cleanup 流程）- 顺便清理相关冗余代码
+[1] 继续小改（继续 auto-dev-team/fasttrack 流程）
+[2] 开发新功能（进入 auto-dev-team/architect 流程）- 开始较大的新功能
+[3] 清理代码（进入 auto-dev-team/cleanup 流程）- 顺便清理相关冗余代码
 [0] 结束
 ```
 
@@ -111,7 +111,7 @@ AI:   1. 执行改动 (插入 log: [SHORT-{主题}])
 ```
 📍 当前: 改动范围较大 (涉及 [N] 个文件 / [原因])
 📌 下一步:
-[1] 完整流程（进入 autoDevTeam/architect 流程）- 先做可行性评估
+[1] 完整流程（进入 auto-dev-team/architect 流程）- 先做可行性评估
 [2] 缩小范围 - 只做其中一部分: [列出可拆分的子任务]
 [0] 取消
 ```

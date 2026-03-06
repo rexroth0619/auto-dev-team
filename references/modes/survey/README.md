@@ -127,10 +127,10 @@ AI:   "🔒 是否配置禁止区域？
 ```
 📍 当前: 测绘完成，发现 [N] 项技术债，[M] 个抽象机会
 📌 下一步:
-[1] 处理技术债（进入 autoDevTeam/refactor 流程）- 处理 P0 技术债: [简述最优先项]
-[2] 抽象提取（进入 autoDevTeam/refactor 流程）- 提取重复代码: [简述抽象机会]
-[3] 开发新功能（进入 autoDevTeam/architect 流程）
-[4] 清理代码（进入 autoDevTeam/cleanup 流程）- 清理死代码和冗余依赖
+[1] 处理技术债（进入 auto-dev-team/refactor 流程）- 处理 P0 技术债: [简述最优先项]
+[2] 抽象提取（进入 auto-dev-team/refactor 流程）- 提取重复代码: [简述抽象机会]
+[3] 开发新功能（进入 auto-dev-team/architect 流程）
+[4] 清理代码（进入 auto-dev-team/cleanup 流程）- 清理死代码和冗余依赖
 [5] 配置禁止区域 - 设置 AI 不能自动修改的文件（首次推荐）
 [0] 结束
 ```
