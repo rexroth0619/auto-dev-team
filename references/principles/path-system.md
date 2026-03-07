@@ -20,6 +20,10 @@
 | **第三方服务** | API 端点、控制台地址、文档链接 |
 | **常用命令** | 部署、重启、备份等命令速查 |
 
+## Git 策略配置
+
+`path.md` 中的 Git 配置供检查点机制使用，详见 `references/principles/checkpoint-mechanism.md`。
+
 ## 引用规则
 
 | 文档 | 必须包含 |

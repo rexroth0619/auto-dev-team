@@ -6,7 +6,7 @@
 
 **过度设计 = 添加 PM 没要求的额外功能**
 
-这不是指合理的代码抽象（抽象仍然需要，见 `abstraction-rules.md`）。
+这不是指合理的代码抽象（抽象仍然需要，见 `references/principles/abstraction-rules.md`）。
 
 ## 过度设计的特征
 
@@ -36,7 +36,7 @@
 | 过度设计 | 添加 PM 没要求的功能 | ❌ 禁止 |
 | 代码抽象 | 把重复逻辑提取为函数/模块 | ✅ 需要 |
 
-**抽象的判断标准**：见 `abstraction-rules.md`
+**抽象的判断标准**：见 `references/principles/abstraction-rules.md`
 - Rule of Three：相同逻辑出现 3+ 次 → 必须抽象
 - 三问法则：中性动作？未来复用？API 更简单？
 

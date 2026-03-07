@@ -9,9 +9,13 @@
 - 修小 bug
 - 单点改动
 
+⚠️ FastTrack 仍属于写模式，进入前必须先执行 `references/write-preflight.md`。
+
 ## 流程
 
-### 0. 创建检查点
+### 0. 检查点
+
+改动完成后建立 1 个检查点。详见 `references/principles/checkpoint-mechanism.md`。
 
 ### 1. 范围检查
 ```

@@ -1,12 +1,14 @@
 # Architect 模式 (新功能开发)
 
-> 适用: 用户想开发新功能、实现新需求 | 产出: current_steps.md
+> 适用: 用户想开发新功能、实现新需求 | 产出: current-steps.md
 
 ## AI 必须主动读取
 
 进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
 - `.autodev/project-map.md` - 了解项目结构
 - `.autodev/module-registry.md` - 查找可复用组件
+
+⚠️ Architect 进入前必须先执行 `references/write-preflight.md`。
 
 ## 流程
 
@@ -145,7 +147,7 @@ AI:   1. 评估复杂度:
          - Step 1: 实现数据转换 [没说放哪个文件]
          - Step 2: 实现 API 封装 [没说放哪个文件]
       
-      4. 写入 current_steps.md，包含:
+      4. 写入 current-steps.md，包含:
          - Log 标识: [DEV-{任务主题}]
          - 关键决策
          - 📐 模块策略（从 Phase 2 搬入，执行时必须遵守）
@@ -252,99 +254,18 @@ AI:   1. 生成计划（上一步）
 ━━━━━━━━━━━━━━━━━━━━
 
 📌 下一步:
-[1] 执行原计划（进入 auto-dev-team/step 流程）- 逐步执行，每步需确认
-[2] 执行修订计划（进入 auto-dev-team/step 流程）- 逐步执行，每步需确认
-[3] 信任模式（进入 auto-dev-team/step 流程）- 连续执行，完成后统一汇报
+[1] 执行原计划（进入 auto-dev-team/step 流程）- 逐步执行，每步 1 个检查点
+[2] 执行修订计划（进入 auto-dev-team/step 流程）- 逐步执行，每步 1 个检查点
+[3] 信任模式（进入 auto-dev-team/step 流程）- 连续执行，完成后 1 个检查点
 [0] 取消
 ```
 
-## Phase 4: Step 执行与即时验证
+## Phase 4: 进入 Step 执行
 
-⚠️ **必须读取** `references/principles/auto-testing.md` 了解完整流程
+实际执行统一交给 `references/modes/step/README.md`。
 
-### Step 模式（逐步确认）
+进入 Step 前，必须确保：
 
-每个 Step 完成后，执行以下流程：
-
-```
-Step N 完成
-    ↓
-1. 影响范围分析（见 references/principles/impact-analysis.md）
-    ↓
-2. 即时验证（主 Agent，见 references/principles/test-verification.md）
-    ↓
-3. 输出给 PM
-```
-
-**Step 完成输出格式**：
-```
-━━━━━━━━━━━━━━━━━━━━
-✅ Step N 完成: [步骤描述]
-━━━━━━━━━━━━━━━━━━━━
-
-🎯 影响范围: [模块列表]
-
-🧪 即时验证:
-方式: [命令/脚本]
-结果: [通过/失败]
-证据: [关键输出]
-
-📌 下一步:
-[1] 继续 Step N+1
-[0] 暂停
-━━━━━━━━━━━━━━━━━━━━
-```
-
-### 信任模式（连续执行）
-
-信任模式下，每步即时验证，任务末回归（若已有测试）：
-
-```
-执行 Step 1 → Step 2 → ... → Step N
-    ↓
-每步完成后即时验证
-    ↓
-任务完成前运行回归（如项目已有测试）
-    ↓
-输出给 PM
-```
-
-**信任模式完成输出格式**：
-```
-━━━━━━━━━━━━━━━━━━━━
-✅ [功能名] 开发完成
-━━━━━━━━━━━━━━━━━━━━
-
-📊 执行摘要:
-├── 完成: N 个步骤
-├── 改动: X 个文件
-└── 即时验证: N/N 通过
-
-🔄 回归: [已运行/未运行] [结果]
-━━━━━━━━━━━━━━━━━━━━
-```
-
-### 测试失败处理
-
-```
-测试失败（3次重试仍失败）:
-
-━━━━━━━━━━━━━━━━━━━━
-⚠️ 测试失败，需要人工介入
-━━━━━━━━━━━━━━━━━━━━
-
-❌ 持续失败:
-| 测试 | 原因 |
-|-----|------|
-| [测试名] | [失败原因] |
-
-🔍 根因分析:
-[分析说明]
-
-📌 选择:
-[1] 查看详细错误日志
-[2] 我来修复，修复后重试
-[3] 跳过此测试继续（不推荐）
-[0] 终止任务
-━━━━━━━━━━━━━━━━━━━━
-```
+- 共享写前置已按 `references/write-preflight.md` 执行。
+- 若本计划会创建或修改 `.feature` / step definitions，先读 `references/principles/bdd-testing.md`。
+- Step 阶段的影响分析、即时验证、检查点、信任模式与任务收尾，均以 `references/modes/step/README.md`、`references/principles/test-verification.md` 和 `references/principles/checkpoint-mechanism.md` 为准。

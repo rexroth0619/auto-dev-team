@@ -8,6 +8,8 @@
 - `.autodev/project-map.md` - 了解项目结构
 - 用户提到的目标文件
 
+⚠️ Optimize 进入前必须先执行 `references/write-preflight.md`。
+
 ## Phase 1: 性能诊断
 
 ```
@@ -92,8 +94,7 @@ AI:   1. 生成优化方案（上一步）
 
 ### 单点优化
 ```
-1. 创建检查点
-2. 执行优化 (插入 log: [OPT-{优化点}])
+1. 执行优化 (插入 log: [OPT-{优化点}])
    
    必须包含:
    → [OPT-{优化点}] 优化前: xxx ms / 计算次数
@@ -103,11 +104,12 @@ AI:   1. 生成优化方案（上一步）
 3. How to Test: 对比优化前后的 log 数据
 4. 验证功能不受影响
 5. 清理 [OPT-*] log (或保留为 [BASE-{模块名}] 用于监控)
+6. 建立检查点（详见 `references/principles/checkpoint-mechanism.md`）
 ```
 
 ### 多点优化 → 进入 Step 模式 (增量可测)
 ```
-生成 Step 计划写入 current_steps.md，要求:
+生成 Step 计划写入 current-steps.md，要求:
 
 - 每步只做一个优化点
 - 每步必须能独立验证优化效果

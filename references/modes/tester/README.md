@@ -6,6 +6,9 @@
 
 进入此模式时，AI 必须主动读取用户提到的目标源文件（无需用户手动提供）。
 
+⚠️ Tester 属于写模式，进入前必须先执行 `references/write-preflight.md`。  
+⚠️ 若新增或修改 `.feature` / step definitions，必须读取 `references/principles/bdd-testing.md`。
+
 ## Phase 0: 环境检查
 
 ```
@@ -220,6 +223,7 @@ Mock 原则:
 - 测试命名清晰描述预期行为
 - 不测试实现细节，测试行为
 - 先写最有价值的测试 (核心逻辑、Bug 修复)
+- 写完测试后同样要做即时验证并建立检查点
 
 ## 阶段结束选项
 

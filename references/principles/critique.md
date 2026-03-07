@@ -125,7 +125,7 @@ Critique Subagent 在审查需求时发现以下问题：
 
 | 位置 | 路径 | 用途 |
 |------|------|------|
-| 项目级 | `.cursor/agents/critique.md` | 跟着 git，包含项目上下文 |
+| 项目级 | `.cursor/agents/critique.md` | 仓库可提供或本地补充，优先用于项目上下文 |
 | 用户级 | `~/.cursor/agents/critique.md` | 跟着电脑，通用版 |
 
 优先使用项目级，因为可以理解项目业务背景。

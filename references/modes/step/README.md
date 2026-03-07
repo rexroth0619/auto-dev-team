@@ -1,6 +1,9 @@
 # Step 模式 (步骤执行)
 
-> 何时进入: Architect/Refactor/Optimize 生成计划后用户说"开始" | 必须读: current_steps.md
+> 何时进入: Architect/Refactor/Optimize 生成计划后用户说"开始" | 必须读: current-steps.md
+
+⚠️ 执行本模式前，默认已完成 `references/write-preflight.md`。  
+⚠️ 执行本模式时，必须读取 `references/principles/incremental-testable.md`。
 
 ## 最高指令
 
@@ -14,7 +17,14 @@
 
 ## 每步流程
 
-### 0. 创建检查点
+### 0. 检查点（Step 模式）
+
+每步代码变更完成后，建立 1 个检查点。详见 `references/principles/checkpoint-mechanism.md`。
+
+**输出格式**：
+```
+【已建立检查点】分支:{工作分支} 指纹:{业务摘要}#{序号} 哈希:{hash}
+```
 
 ### 1. 开始声明
 ```
@@ -24,7 +34,7 @@
 ```
 
 ### 2. 上下文确认 (强制)
-- **必须读取** current_steps.md，包括:
+- **必须读取** current-steps.md，包括:
   - 当前步骤是什么
   - **关键决策**: 复用什么、影响范围、边界处理
   - **📐 模块策略**: 本步的目标文件是什么？融入还是新建？
@@ -39,7 +49,7 @@
 ```
 
 ### 4. 执行改动 (增量可测原则)
-- **遵守模块策略**: 代码写入 current_steps.md 中指定的目标文件，不随意换文件
+- **遵守模块策略**: 代码写入 current-steps.md 中指定的目标文件，不随意换文件
 - **复用检查**: 写新代码前，先问自己"module-registry 里有没有能用的？"
 - **增量可测**: 本步必须产出可独立验证的模块/函数/组件
   - ✅ 好的拆分: "实现数据转换函数 + 对应 step definitions"
@@ -49,6 +59,7 @@
   - 路径: features/steps/{功能名}.steps.{ext}
   - 复用已有 step（避免重复胶水代码）
   - 无法自动化的场景标注 @manual
+- **触发条件**: 若本步新增或修改 `.feature` / step definitions，必须先读取 `references/principles/bdd-testing.md`
 - **可测标准**: 本步完成后，对应 Scenario 能通过 cucumber 验证
 - **文件膨胀感知**: 如果目标文件在多步累积后职责变杂或体积明显膨胀，
   主动提醒用户："该文件已包含多种职责，建议后续考虑拆分"
@@ -187,14 +198,14 @@ AI 必须自动评估本步复杂度：
 ```
 --- Step X/总数 完成 ---
 
-✅ 已更新 current_steps.md
+✅ 已更新 current-steps.md
 ⏸️ 等待确认后继续下一步...
 
 请确认本步结果，回复:
 - "ok" / "确认" / "继续" → 进入下一步
 - "问题" / "回退" → 我会处理
 ```
-更新 current_steps.md: 🌀 → ✅
+更新 current-steps.md: 🌀 → ✅
 
 ### 7. 绝对禁止 - 必须等待用户确认
 ```
@@ -205,7 +216,13 @@ AI 必须自动评估本步复杂度：
 
 ## 信任模式
 
-用户说"信任模式"时可连续执行，但每步仍创建检查点，遇到问题立即停止。
+用户说"信任模式"时：
+- 可连续执行多步，无需每步确认
+- **整个任务完成后**建立 1 个检查点（非每步）
+- 遇到问题立即停止
+- 完成后统一报告所有改动，并询问是否合并/推送
+
+详见 `references/principles/checkpoint-mechanism.md`。
 
 ## 最后一步特殊流程
 
@@ -225,16 +242,18 @@ AI 必须自动评估本步复杂度：
 
 ```
 1. 即时验证 (强制):
-   - 参考: references/principles/test-verification.md
+   - 参考: `references/principles/test-verification.md`
    - 输出: "🧪 即时验证"
 2. 自动更新文档 (强制):
    - project-map.md (新增/改动模块)
    - module-registry.md (新增可复用组件)
    - 输出: "📝 已自动更新: xxx"
 3. 如有核心逻辑，询问: "是否补充单元测试？"
-4. 创建完成检查点: git commit -m "SPEC-Complete: {任务名}"
+4. 建立检查点（按 `references/principles/checkpoint-mechanism.md`）:
+   - 输出: "【已建立检查点】分支:{branch} 指纹:{fingerprint} 哈希:{hash}"
 5. "✅ 任务完成"
-6. 输出下一步选项
+6. 里程碑询问: 是否合并到集成分支、是否推送
+   - 详见 `references/principles/checkpoint-mechanism.md`
 ```
 
 ## 收尾微任务
@@ -257,14 +276,22 @@ AI: "📒 auto-dev-team - 收尾 @{任务名}
 ## 任务完成后选项
 
 ```
-📍 当前: 任务"[任务名]"已完成，共执行 [N] 步
-📌 下一步:
-[1] 添加测试（进入 auto-dev-team/tester 流程）- 为新增的核心逻辑添加单元测试
-[2] 清理代码（进入 auto-dev-team/cleanup 流程）- 清理开发期间的临时代码
-[3] 开发新功能（进入 auto-dev-team/architect 流程）
-[0] 结束
+━━━━━━━━━━━━━━━━━━━━
+✅ 任务"[任务名]"已完成，共执行 [N] 步
 
-💡 也可直接说收尾改动，如 "把按钮改成蓝色"（继续 auto-dev-team 协助）
+🌿 工作分支: [分支名]
+📍 检查点: [hash]「[指纹]」
+━━━━━━━━━━━━━━━━━━━━
+📌 下一步:
+[1] 合并到 {集成分支} 并推送
+[2] 合并到 {集成分支}（不推送）
+[3] 继续开发
+[4] 仅推送工作分支（便于创建 PR）
+[5] 添加测试（进入 auto-dev-team/tester 流程）
+[6] 清理代码（进入 auto-dev-team/cleanup 流程）
+[0] 结束（暂不合并）
+━━━━━━━━━━━━━━━━━━━━
+💡 也可直接说收尾改动，如 "把按钮改成蓝色"
 ```
 
 ## 失败处理

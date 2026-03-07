@@ -1,106 +1,15 @@
-# 模式索引
+# 模式索引（兼容入口）
 
-> 根据用户意图匹配模式，确定后只读取对应目录的 README.md
+> 本文件保留给旧链路使用。canonical 入口已迁移到 `references/mode-index.md`。
 
-## 匹配规则（按顺序，命中即停）
+## 如果你是从旧入口进入
 
-| # | 模式 | 触发词/场景 | 读取路径 |
-|---|------|-------------|----------|
-| 1 | Hotfix | "线上"/"紧急"/"生产环境"/"赶紧"/"马上修" | `hotfix/README.md` |
-| 2 | Debug | "报错"/"bug"/"不正常"/"崩溃"/"出问题"/"不工作" | `debug/README.md` |
-| 3 | FastTrack | 明确小改动 ≤2文件（改文案/调样式/小修复） | `fasttrack/README.md` |
-| 4 | Refactor | "重构"/"整理"/"代码太乱"/"拆分"/"提取" | `refactor/README.md` |
-| 5 | Optimize | "太慢"/"优化"/"性能"/"加速"/"卡顿" | `optimize/README.md` |
-| 6 | Cleanup | "删掉"/"没用的代码"/"冗余"/"清理" | `cleanup/README.md` |
-| 7 | Tester | "写测试"/"单元测试"/"加测试"/"测试覆盖" | `tester/README.md` |
-| 8 | Survey | "了解项目"/"项目结构"/"刚接手"/"熟悉代码" | `survey/README.md` |
-| 9 | Explain | "这段代码干嘛的"/"怎么工作的"/"解释一下" | `explain/README.md` |
-| 10 | Architect | "做一个"/"实现"/"新功能"/"开发"/"加一个" | `architect/README.md` |
+1. 立即转读 `references/mode-index.md`，按新索引判断唯一模式。
+2. 若模式会写文件或改配置，先执行 `references/write-preflight.md`。
+3. 然后只读取对应模式的一个 `README.md`。
 
-**Step 模式**：不由用户直接触发，而是在 Architect/Refactor/Optimize 生成计划后进入执行阶段时使用 → `step/README.md`
+## 兼容要求
 
-## ⭐ 通用前置步骤（代码改动模式必须执行）
-
-**涉及代码改动的模式**（Architect / FastTrack / Debug / Refactor / Optimize / Hotfix）进入前：
-
-0. **项目初始化检查（一次性拦截）**
-   检查 `.autodev/project-map.md`:
-   ├── 不存在 或 内容含 `<!-- STATUS: TEMPLATE -->` → 🆕 触发 Init 流程
-   └── 存在且有实际内容（含 `<!-- STATUS: INITIALIZED -->`）→ ✅ 跳过
-
-   **Init 流程**（仅在新项目首次触发，完成后不再触发）:
-   ```
-   AI:  "📦 检测到新项目，快速初始化（3 个问题，可直接说'跳过'）:
-        1. 这是什么项目？（如：React 网站、Node 后端、CLI 工具...）
-        2. 你打算用什么技术栈？
-        3. 有没有参考项目或规范？"
-
-   用户: [回答] / "跳过"
-
-   AI:  1. 创建初始目录结构建议（用户确认后执行）
-        2. 生成 .autodev/project-map.md（填入基本信息，标记 INITIALIZED）
-        3. 生成 .autodev/module-registry.md（空表格，标记已初始化）
-        4. 生成其他缺失的 .autodev/ 必需文档
-        5. "✅ 项目已初始化，继续你的任务"
-        6. 返回原模式继续执行
-
-   **用户跳过时的降级策略**:
-   - 仍然创建 .autodev/ 文档（标记 INITIALIZED），但内容最简化
-   - AI 在第一个功能开发过程中，边做边补充 project-map.md
-   - 第一个功能完成后，project-map.md 必须包含实际的架构信息
-   ```
-   ⛔ Init 完成前禁止进入任何模式的实际流程
-
-1. 读取 `.autodev/context-snapshot.md` → 最近做了什么功能？
-2. 执行 `git log -5 --oneline` → 最近 5 次提交是什么？
-3. 回答：**最近改动和本次任务有没有关联？**
-   - 新功能：是否和最近改动有冲突/依赖？
-   - Debug：是否由最近改动引起？
-   - 小改动：是否会影响最近上线的功能？
-
-⛔ **禁止跳过此步骤直接进入模式**
-
-**不需要执行的模式**：Survey、Explain、Tester、Cleanup（只读或不涉及功能改动）
-
-## 读取规则
-
-1. 读取本索引后，根据用户意图匹配上表
-2. **执行通用前置步骤**（如适用）
-3. **确定唯一模式后**，只读取该模式的 `README.md`
-4. ⛔ 禁止同时读取多个模式的 README.md
-5. ⛔ 禁止"先读一下看看是不是"
-
-## 模式简介
-
-### Hotfix ⚡
-紧急止血，最小改动，先修后复盘。适用于线上问题、紧急修复。
-
-### Debug 🔍
-系统诊断，先检查后假设，确诊才开方。适用于 bug、报错、功能异常。
-
-### FastTrack 🏃
-快速小改，≤2文件 ≤30行，超限自动升级 Architect。适用于改文案、调样式、小修复。
-
-### Refactor 🔧
-代码重构，影响分析，向后兼容，增量验证。适用于代码整理、结构优化。
-
-### Optimize ⚡
-性能优化，先诊断后优化，一次一个点。适用于程序太慢、性能问题。
-
-### Cleanup 🧹
-清理冗余，确认无用，安全删除。适用于删除无用代码、清理冗余。
-
-### Tester 🧪
-添加测试，可测性分析，核心逻辑优先。适用于写单元测试、增加测试覆盖。
-
-### Survey 🗺️
-项目摸底，结构扫描，生成文档。适用于刚接手项目、了解项目结构。
-
-### Explain 📖
-代码解释，追踪流程，通俗说明。适用于理解某段代码如何工作。
-
-### Architect 🏗️
-新功能开发，可行性评估，增量可测拆分。适用于开发新功能、实现新需求。
-
-### Step 📋
-步骤执行模式，由 Architect/Refactor/Optimize 计划确认后进入。逐步执行，每步验证。
+- `Cleanup` 和 `Tester` 现在也属于写模式。
+- `Step` 仍然只在 Architect / Refactor / Optimize 计划确认后进入。
+- 不再在本文件维护共享写前置，避免和 `SKILL.md`、模式 README 重复。

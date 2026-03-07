@@ -58,7 +58,7 @@
 进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
 - `.autodev/postmortem.md` - 病例库，查找历史类似病例
 
-**注意**：context-snapshot 和 git log 已在 `_index.md` 通用前置步骤中强制执行。
+**注意**：context-snapshot、git log、分支守卫等共享动作，已在 `references/write-preflight.md` 中统一执行。
 
 ## 流程
 
@@ -172,7 +172,7 @@
 
 ### Phase 4.5: 治疗后即时验证
 
-⚠️ **必须读取** `references/principles/auto-testing.md` 了解完整流程
+⚠️ **必须读取** `references/principles/test-verification.md` 了解完整流程
 
 **修复代码后，必须即时验证**：
 

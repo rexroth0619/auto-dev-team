@@ -1,12 +1,14 @@
 # Refactor 模式 (代码重构)
 
-> 适用: 代码太乱、想整理、想重构 | 产出: current_steps.md
+> 适用: 代码太乱、想整理、想重构 | 产出: current-steps.md
 
 ## AI 必须主动读取
 
 进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
 - `.autodev/project-map.md` - 了解项目结构
 - 用户提到的目标文件
+
+⚠️ Refactor 进入前必须先执行 `references/write-preflight.md`。
 
 ## 流程
 
@@ -34,6 +36,7 @@ AI:   分析并输出:
          Q1: 中性动作 or 业务特化?
          Q2: 未来其他场景会用吗?
          Q3: 抽象后 API 更简单吗?
+         参考: `references/principles/abstraction-rules.md`
 ```
 
 ### Phase 2: 影响范围分析
@@ -63,7 +66,7 @@ AI:   📋 重构方案:
 
 ### Phase 4: 渐进执行 (增量可测)
 ```
-AI:   生成 Step 计划，写入 current_steps.md，包含:
+AI:   生成 Step 计划，写入 current-steps.md，包含:
       
       ## 关键决策 (防遗忘)
       - **向后兼容策略**: [具体策略]
@@ -174,8 +177,8 @@ AI:   1. 生成重构方案（上一步）
 ━━━━━━━━━━━━━━━━━━━━
 
 📌 下一步:
-[1] 执行原计划（进入 auto-dev-team/step 流程）- 逐步执行，每步验证回归
-[2] 执行修订计划（进入 auto-dev-team/step 流程）- 逐步执行，每步验证回归
-[3] 信任模式（进入 auto-dev-team/step 流程）- 连续执行，完成后统一验证
+[1] 执行原计划（进入 auto-dev-team/step 流程）- 逐步执行，每步 1 个检查点
+[2] 执行修订计划（进入 auto-dev-team/step 流程）- 逐步执行，每步 1 个检查点
+[3] 信任模式（进入 auto-dev-team/step 流程）- 连续执行，完成后 1 个检查点
 [0] 取消
 ```

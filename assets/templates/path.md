@@ -54,26 +54,35 @@ server {
 |------|-----|
 | 远程仓库 (origin) | `git@github.com:用户名/仓库名.git` |
 | 备用仓库 (gitee) | `git@gitee.com:用户名/仓库名.git` |
-| 主分支 | `main` |
-| 开发分支 | `dev` |
 
-### 分支策略
+### 分支策略（auto-dev-team 专用）
 
-- `main`: 生产环境代码，只接受 PR 合并
-- `dev`: 开发分支，日常开发在此
-- `feature/*`: 功能分支，开发完成后合并到 dev
-- `hotfix/*`: 紧急修复分支，修复后同时合并到 main 和 dev
+| 配置项 | 值 | 说明 |
+|--------|-----|------|
+| `integration_branch` | `main` | 功能完成后合并到的目标分支 |
+| `protected_branches` | `main, master, production, release/*` | 受保护分支，AI 不会直接在上面操作 |
+| `integration_mode` | `merge_allowed` | `merge_allowed`=可本地合并，`pr_only`=只推工作分支创建PR |
+| `push_default` | `false` | 是否默认推送到远程（建议 false，由用户确认后推送） |
+
+### 分支命名规范
+
+- `main` / `master`: 生产环境代码
+- `dev` / `develop`: 开发分支
+- `feature/*`: 功能分支
+- `hotfix/*`: 紧急修复分支
+- `autodev/*`: AI 工作分支（auto-dev-team 自动创建）
 
 ### Commit 规范
 
 ```
-类型: 一句话描述
+「{指纹}」{类型}: {一句话描述}
 
 - 改动1
 - 改动2
 ```
 
-类型: `feat` | `fix` | `refactor` | `perf` | `docs` | `chore`
+**指纹**：≤10 字业务功能摘要，如 `会员登录#01`  
+**类型**：`feat` | `fix` | `refactor` | `perf` | `docs` | `chore`
 
 ## 数据库
 

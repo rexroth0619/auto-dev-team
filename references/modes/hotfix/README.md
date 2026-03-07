@@ -9,9 +9,13 @@
 最小改动，快速恢复
 ```
 
+⚠️ Hotfix 进入前必须先执行 `references/write-preflight.md`。
+
 ## 流程
 
-### 0. 创建检查点
+### 0. 检查点
+
+修复完成后建立 1 个检查点。详见 `references/principles/checkpoint-mechanism.md`。
 
 ### 1. 快速定位
 ```
