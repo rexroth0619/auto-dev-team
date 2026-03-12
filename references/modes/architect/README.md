@@ -216,32 +216,8 @@ AI:   1. 评估复杂度:
 
 ### Phase 3.9: ⭐ 自动会诊（强制）
 
-**方案输出后，必须自动调用 Critique Subagent 进行独立审查**
-
-```
-AI:   1. 生成计划（上一步）
-      2. ⭐ 自动调用 Critique Subagent
-         - 传递：【用户原始需求】+ 计划内容、影响范围、关键决策
-         - 不传递：AI 的思考过程
-      3. Subagent 执行两阶段审查:
-         
-         阶段 A: 需求澄清检查
-         ├── 用户需求是否合理？是否有更好的方式？
-         ├── 需求是否有歧义？是否缺少关键信息？
-         └── ⚠️ 有问题 → 暂停，输出澄清问题，等用户回答
-         
-         阶段 B: 方案审查（澄清通过后）
-         └── 根因验证、过度设计、成本审计、副作用
-         
-      4. 根据 Subagent 结果:
-         - 有澄清问题 → 输出问题，等待用户回答后重新生成方案
-         - 无澄清问题 → 输出会诊报告 + 原计划/修订计划
-      5. 等待用户选择执行哪一个
-```
-
-**⛔ 禁止跳过会诊直接让用户选择执行**
-**⛔ 禁止会诊后直接执行，必须等待用户选择**
-**⛔ 禁止在需求有澄清问题时输出方案选项**
+方案输出后，按 `references/principles/critique.md` 的模式集成流程执行自动会诊。
+本模式传递：【用户原始需求】+ 计划内容、影响范围、关键决策。
 
 ### Phase 3 结束
 ```
@@ -254,9 +230,9 @@ AI:   1. 生成计划（上一步）
 ━━━━━━━━━━━━━━━━━━━━
 
 📌 下一步:
-[1] 执行原计划（进入 auto-dev-team/step 流程）- 逐步执行，每步 1 个检查点
-[2] 执行修订计划（进入 auto-dev-team/step 流程）- 逐步执行，每步 1 个检查点
-[3] 信任模式（进入 auto-dev-team/step 流程）- 连续执行，完成后 1 个检查点
+[1] 执行原计划（进入 auto-dev-team/step 流程）- 逐步执行，每步 1 个 💾 存档
+[2] 执行修订计划（进入 auto-dev-team/step 流程）- 逐步执行，每步 1 个 💾 存档
+[3] 信任模式（进入 auto-dev-team/step 流程）- 🎯 里程碑后连续执行，完成后 1 个 💾 存档
 [0] 取消
 ```
 
@@ -268,4 +244,4 @@ AI:   1. 生成计划（上一步）
 
 - 共享写前置已按 `references/write-preflight.md` 执行。
 - 若本计划会创建或修改 `.feature` / step definitions，先读 `references/principles/bdd-testing.md`。
-- Step 阶段的影响分析、即时验证、检查点、信任模式与任务收尾，均以 `references/modes/step/README.md`、`references/principles/test-verification.md` 和 `references/principles/checkpoint-mechanism.md` 为准。
+- Step 阶段的影响分析、即时验证、存档、信任模式（含里程碑）与任务收尾，均以 `references/modes/step/README.md`、`references/principles/test-verification.md` 和 `references/principles/checkpoint-mechanism.md` 为准。

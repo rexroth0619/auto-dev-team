@@ -17,13 +17,13 @@
 
 ## 每步流程
 
-### 0. 检查点（Step 模式）
+### 0. 存档（Step 模式）
 
-每步代码变更完成后，建立 1 个检查点。详见 `references/principles/checkpoint-mechanism.md`。
+每步代码变更完成且验证通过后，建立 1 个存档。详见 `references/principles/checkpoint-mechanism.md`。
 
 **输出格式**：
 ```
-【已建立检查点】分支:{工作分支} 指纹:{业务摘要}#{序号} 哈希:{hash}
+💾【存档】{业务摘要}#{序号} → {hash}
 ```
 
 ### 1. 开始声明
@@ -218,8 +218,9 @@ AI 必须自动评估本步复杂度：
 
 用户说"信任模式"时：
 - 可连续执行多步，无需每步确认
-- **整个任务完成后**建立 1 个检查点（非每步）
-- 遇到问题立即停止
+- 🎯 开始前建立里程碑「{任务}#信任起点」
+- **整个任务完成后**建立 1 个存档（非每步）
+- 遇到问题立即停止，按 `references/principles/checkpoint-mechanism.md` 的读档模块展示存档列表
 - 完成后统一报告所有改动，并询问是否合并/推送
 
 详见 `references/principles/checkpoint-mechanism.md`。
@@ -249,10 +250,11 @@ AI 必须自动评估本步复杂度：
    - module-registry.md (新增可复用组件)
    - 输出: "📝 已自动更新: xxx"
 3. 如有核心逻辑，询问: "是否补充单元测试？"
-4. 建立检查点（按 `references/principles/checkpoint-mechanism.md`）:
-   - 输出: "【已建立检查点】分支:{branch} 指纹:{fingerprint} 哈希:{hash}"
+4. 建立存档（按 `references/principles/checkpoint-mechanism.md`）:
+   - 输出: "💾【存档】{fingerprint} → {hash}"
 5. "✅ 任务完成"
-6. 里程碑询问: 是否合并到集成分支、是否推送
+6. 询问是否建立 🎯 里程碑「{任务}#完成」
+7. 合并/推送询问: 是否合并到集成分支、是否推送
    - 详见 `references/principles/checkpoint-mechanism.md`
 ```
 
@@ -280,7 +282,7 @@ AI: "📒 auto-dev-team - 收尾 @{任务名}
 ✅ 任务"[任务名]"已完成，共执行 [N] 步
 
 🌿 工作分支: [分支名]
-📍 检查点: [hash]「[指纹]」
+📍 存档: 💾 [hash]「[指纹]」
 ━━━━━━━━━━━━━━━━━━━━
 📌 下一步:
 [1] 合并到 {集成分支} 并推送
@@ -300,7 +302,7 @@ AI: "📒 auto-dev-team - 收尾 @{任务名}
 如果本步执行失败:
 1. 立即停止，不要尝试"修复后继续"
 2. 报告: 失败原因 + 已改动的文件
-3. 询问: "是否回退本步改动？"
+3. 按 `references/principles/checkpoint-mechanism.md` 的读档模块展示存档列表，让用户选择回退目标
 ```
 
 ## 途中微任务

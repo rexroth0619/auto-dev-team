@@ -22,7 +22,7 @@
 
 ## Git 策略配置
 
-`path.md` 中的 Git 配置供检查点机制使用，详见 `references/principles/checkpoint-mechanism.md`。
+`path.md` 中的 Git 配置供版本保护机制使用，详见 `references/principles/checkpoint-mechanism.md`。
 
 ## 引用规则
 

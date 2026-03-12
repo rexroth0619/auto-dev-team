@@ -50,7 +50,7 @@ AI:   扫描:
 2. 用户确认范围
 3. 逐项清理
 4. 验证
-5. 建立检查点（详见 `references/principles/checkpoint-mechanism.md`）
+5. 建立存档（详见 `references/principles/checkpoint-mechanism.md`）
 6. 自动更新 module-registry.md (如删除了已注册组件)
 ```
 
@@ -58,7 +58,7 @@ AI:   扫描:
 
 - 删除前必须确认无调用
 - 批量删除需用户二次确认
-- 检查点机制确保可回退（详见 `references/principles/checkpoint-mechanism.md`）
+- 版本保护机制确保可回退（详见 `references/principles/checkpoint-mechanism.md`）
 
 ## 清理完成后选项
 
