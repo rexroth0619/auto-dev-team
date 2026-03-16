@@ -15,6 +15,9 @@
 - 模式判断和写前置分离
 - Principles 按模式、阶段、产物触发
 - 所有改动都要求验证和可回退
+- 代码变更后默认执行后台自动测试
+- 前端用户链路测试由 AI 主动判断并提示
+- 大测试使用 `.autodev/current-test.md` 记录场景、执行和风险
 
 ## 当前入口结构
 
@@ -39,6 +42,7 @@ auto-dev-team/
 ├── assets/
 │   └── templates/
 │       ├── context-snapshot.md
+│       ├── current-test.md
 │       ├── current-steps.md
 │       ├── forbidden-zones.md
 │       ├── module-registry.md
@@ -50,7 +54,6 @@ auto-dev-team/
     ├── mode-index.md
     ├── write-preflight.md
     ├── modes/
-    │   ├── _index.md
     │   ├── architect/README.md
     │   ├── cleanup/README.md
     │   ├── debug/README.md
@@ -78,10 +81,19 @@ auto-dev-team/
 | Refactor | 重构、拆分、提取 | 控制风险地下刀 |
 | Optimize | 性能问题 | 先诊断再优化 |
 | Cleanup | 删除冗余、死代码 | 安全清理 |
-| Tester | 新增测试、补覆盖 | 测试资产维护 |
+| Tester | 新增测试、补覆盖、验证 use case | 测试资产维护 |
 | Survey | 了解项目结构 | 项目测绘 |
 | Explain | 解释代码 | 帮助理解 |
 | Step | Architect / Refactor / Optimize 的执行阶段 | 逐步落地 |
+
+## V1 测试协议
+
+- `行为场景层`：PM 可读的 use case、异常链路、边界 case。
+- `后台自动测试层`：代码变更后默认执行，优先覆盖改动点、边界和直接影响面。
+- `前端链路测试层`：命中页面流程、跳转、会话、权限、表单等风险时，AI 主动提示是否执行 Playwright。
+- `人工验收层`：视觉、体感、外部系统等难以稳定自动化的部分。
+- `小测试`：输出 `🧾 测试回执`。
+- `大测试`：创建 `.autodev/current-test.md`，持续记录场景矩阵、执行状态和剩余风险。
 
 ## 使用方式
 

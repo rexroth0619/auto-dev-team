@@ -7,8 +7,6 @@
 进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
 - `.autodev/project-map.md` - 了解项目结构
 
-⚠️ Cleanup 也属于写模式，进入前必须先执行 `references/write-preflight.md`。
-
 ## 清理类型
 
 ### 1. 死代码清理
@@ -48,10 +46,12 @@ AI:   扫描:
 ```
 1. 扫描 → 输出清单
 2. 用户确认范围
-3. 逐项清理
-4. 验证
-5. 建立存档（详见 `references/principles/checkpoint-mechanism.md`）
-6. 自动更新 module-registry.md (如删除了已注册组件)
+3. 💿 执行前快照闸门（强制）
+   - 必须输出 "💿 已保护" 或 "💿 闸门通过" 后才能继续
+4. 逐项清理
+5. 验证
+6. 建立存档（详见 references/principles/checkpoint-mechanism.md）
+7. 自动更新 module-registry.md (如删除了已注册组件)
 ```
 
 ## 安全规则

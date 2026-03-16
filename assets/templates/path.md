@@ -61,7 +61,7 @@ server {
 |--------|-----|------|
 | `integration_branch` | `main` | 功能完成后合并到的目标分支 |
 | `protected_branches` | `main, master, production, release/*` | 受保护分支，AI 不会直接在上面操作 |
-| `integration_mode` | `merge_allowed` | `merge_allowed`=可本地合并，`pr_only`=只推工作分支创建PR |
+| `integration_mode` | `merge_allowed` | `merge_allowed`=个人开发（可本地合并），`pr_only`=团队协作（只推工作分支创建PR，拒绝本地合并） |
 | `push_default` | `false` | 是否默认推送到远程（建议 false，由用户确认后推送） |
 
 ### 分支命名规范
@@ -71,6 +71,10 @@ server {
 - `feature/*`: 功能分支
 - `hotfix/*`: 紧急修复分支
 - `autodev/*`: AI 工作分支（auto-dev-team 自动创建）
+
+### Milestone Tag 说明
+
+`milestone/*` tag 仅供本地回退使用，请勿通过 `git push --tags` 推送到远程。
 
 ### Commit 规范
 

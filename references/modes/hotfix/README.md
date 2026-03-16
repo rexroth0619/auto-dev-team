@@ -9,13 +9,11 @@
 最小改动，快速恢复
 ```
 
-⚠️ Hotfix 进入前必须先执行 `references/write-preflight.md`。
-
 ## 流程
 
 ### 0. 版本保护
 
-- 💿 修复前：按 `references/principles/checkpoint-mechanism.md` 的智能触发逻辑判断是否需要保护快照。
+- 💿 修复前（强制）：按 `references/principles/checkpoint-mechanism.md` 的"执行前快照闸门"执行。用户确认方案后、第一行代码写入前，必须通过闸门。
 - 💾 修复完成且验证通过后：建立 1 个存档。详见 `references/principles/checkpoint-mechanism.md`。
 
 ### 1. 快速定位
@@ -34,7 +32,10 @@ AI:   1. 跳过深度分析
 
 ### 2. 快速修复
 ```
-AI:   1. 执行最小改动 (插入 log: [HOTFIX-{问题}])
+AI:   0. 💿 执行前快照闸门（强制）
+         - 必须输出 "💿 已保护" 或 "💿 闸门通过" 后才能继续
+         - 规则见 references/principles/checkpoint-mechanism.md
+      1. 执行最小改动 (插入 log: [HOTFIX-{问题}])
       2. "⚠️ 这是临时止血，非根治"
       3. How to Test
          

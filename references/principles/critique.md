@@ -165,7 +165,7 @@ Critique Subagent 必须：
 
 ## 模式集成（各模式会诊的共用入口）
 
-各写模式在方案输出后，统一按本节执行会诊。各模式 README 只需写：
+各写入模式在方案输出后，统一按本节执行会诊。各模式 README 只需写：
 
 ```
 ⭐ 方案输出后，按 `references/principles/critique.md` 的模式集成流程执行自动会诊。

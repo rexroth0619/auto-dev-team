@@ -48,7 +48,8 @@
 
 1. 检查 `.autodev/path.md` 是否存在
 2. 不存在时，使用 `assets/templates/path.md` 模板创建
-3. 输出: `📄 已创建: .autodev/path.md（使用模板初始化，请填写实际配置）`
+3. 确认 `.git/info/exclude` 包含 `.autodev/`（由 write-preflight 统一处理）
+4. 输出: `📄 已创建: .autodev/path.md（使用模板初始化，请填写实际配置）`
 
 ## 模板位置
 

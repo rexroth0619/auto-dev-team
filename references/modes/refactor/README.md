@@ -8,8 +8,6 @@
 - `.autodev/project-map.md` - 了解项目结构
 - 用户提到的目标文件
 
-⚠️ Refactor 进入前必须先执行 `references/write-preflight.md`。
-
 ## 流程
 
 ### Phase 1: 异味识别
@@ -153,8 +151,8 @@ AI:   生成 Step 计划，写入 current-steps.md，包含:
 ━━━━━━━━━━━━━━━━━━━━
 
 📌 下一步:
-[1] 执行原计划（进入 auto-dev-team/step 流程）- 逐步执行，每步 1 个 💾 存档
-[2] 执行修订计划（进入 auto-dev-team/step 流程）- 逐步执行，每步 1 个 💾 存档
-[3] 信任模式（进入 auto-dev-team/step 流程）- 🎯 里程碑后连续执行，完成后 1 个 💾 存档
+[1] 执行原计划（进入 auto-dev-team/step 流程）- 💿 自动快照，逐步执行，每步 1 个 💾 存档
+[2] 执行修订计划（进入 auto-dev-team/step 流程）- 💿 自动快照，逐步执行，每步 1 个 💾 存档
+[3] 信任模式（进入 auto-dev-team/step 流程）- 🎯 里程碑 + 💿 快照后连续执行，完成后 1 个 💾 存档
 [0] 取消
 ```

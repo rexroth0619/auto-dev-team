@@ -8,8 +8,6 @@
 - `.autodev/project-map.md` - 了解项目结构
 - 用户提到的目标文件
 
-⚠️ Optimize 进入前必须先执行 `references/write-preflight.md`。
-
 ## Phase 1: 性能诊断
 
 ```
@@ -61,6 +59,10 @@ AI:   📋 优化方案:
 
 ### 单点优化
 ```
+0. 💿 执行前快照闸门（强制）
+   - 必须输出 "💿 已保护" 或 "💿 闸门通过" 后才能继续
+   - 规则见 references/principles/checkpoint-mechanism.md
+
 1. 执行优化 (插入 log: [OPT-{优化点}])
    
    必须包含:

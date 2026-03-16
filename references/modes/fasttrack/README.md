@@ -9,13 +9,11 @@
 - 修小 bug
 - 单点改动
 
-⚠️ FastTrack 仍属于写模式，进入前必须先执行 `references/write-preflight.md`。
-
 ## 流程
 
 ### 0. 版本保护
 
-- 💿 改动前：按 `references/principles/checkpoint-mechanism.md` 的智能触发逻辑判断是否需要保护快照。
+- 💿 改动前（强制）：按 `references/principles/checkpoint-mechanism.md` 的"执行前快照闸门"执行。用户确认方案后、第一行代码写入前，必须通过闸门。
 - 💾 改动完成且验证通过后：建立 1 个存档。详见 `references/principles/checkpoint-mechanism.md`。
 
 ### 1. 范围检查
@@ -51,7 +49,10 @@ AI:   📋 保留性确认:
 
 ### 2. 直接执行
 ```
-AI:   1. 执行改动 (插入 log: [SHORT-{主题}])
+AI:   0. 💿 执行前快照闸门（强制）
+         - 必须输出 "💿 已保护" 或 "💿 闸门通过" 后才能继续
+         - 规则见 references/principles/checkpoint-mechanism.md
+      1. 执行改动 (插入 log: [SHORT-{主题}])
       2. 输出改动摘要
       3. How to Test (简化版)
 ```

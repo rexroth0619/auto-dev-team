@@ -1,6 +1,6 @@
 # 模式索引
 
-> 先选模式，再读唯一的模式文档。写模式在进入具体流程前，必须先读 `references/write-preflight.md`。
+> 先选模式，再读唯一的模式文档。写入模式在进入具体流程前，必须先读 `references/write-preflight.md`。
 
 ## 读取顺序
 
@@ -11,7 +11,7 @@
 
 ## 模式匹配规则（按顺序命中）
 
-| # | 模式 | 触发场景 | 读取路径 | 是否写模式 |
+| # | 模式 | 触发场景 | 读取路径 | 是否写入模式 |
 |---|------|----------|----------|-----------|
 | 1 | Hotfix | 线上、紧急、生产问题、先止血 | `references/modes/hotfix/README.md` | 是 |
 | 2 | Debug | bug、报错、异常、不工作 | `references/modes/debug/README.md` | 是 |
@@ -24,12 +24,16 @@
 | 9 | Explain | 解释代码、说明流程、帮助理解 | `references/modes/explain/README.md` | 否 |
 | 10 | Architect | 新功能、实现需求、开发能力 | `references/modes/architect/README.md` | 是 |
 
+## 写入意图兜底
+
+用户说"帮我改一下"/"调整一下"/"修改 xxx"等，即使未明确匹配上述模式：
+- 视为写入意图，默认进入 **FastTrack** 模式
+- 必须先走 `references/write-preflight.md` + 执行前快照闸门
+- ⛔ 禁止未经模式判断就直接写文件
+
 ## 渐进式披露规则
 
 - 禁止同时读取多个模式的 `README.md`。
 - 禁止跳过模式判断直接读模式文件。
 - 禁止把共享写前置复制到每个模式里重复维护。
 
-## 兼容说明
-
-旧入口 `references/modes/_index.md` 继续保留，但 canonical 入口改为本文件。
