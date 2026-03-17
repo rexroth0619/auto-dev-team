@@ -20,6 +20,17 @@
 | 数据目录 | `/var/data/项目名` |
 | 备份目录 | `/var/backups/项目名` |
 
+## 运行与观测入口
+
+| 名称 | 类型 | 启动方式 | 查看方式 | 用途 |
+|------|------|----------|----------|------|
+| web-ui | `browser_console` | `pnpm dev` / `npm run dev` | 浏览器控制台 / Playwright console | 前端交互与页面脚本 |
+| api-server | `process_stdout` | `pnpm dev:api` / `uvicorn ...` | 终端输出 | 后端逻辑与请求处理 |
+| worker-log | `app_log_file` | - | `tail -f logs/worker.log` | 异步任务、队列、定时任务 |
+| api-trace | `network_trace` | `curl` / Playwright / 浏览器 Network | 请求参数、状态码、响应 | 接口链路排查 |
+| test-runner | `test_runner_output` | `pnpm test` / `pytest -q` | 测试命令输出 | 自动测试与失败定位 |
+| artifact-check | `artifact_snapshot` | `node -e` / `python -c` / 自定义脚本 | 文件、数据库、DOM、JSON 快照 | 验证副作用与结果产物 |
+
 ## Nginx 配置
 
 | 项目 | 路径/值 |
@@ -126,6 +137,12 @@ ssh user@server "cd /var/www/项目名 && git pull && npm install && pm2 restart
 
 # 查看日志
 ssh user@server "tail -f /var/log/项目名/app.log"
+
+# 观察特定接口
+curl -i http://localhost:3000/api/example
+
+# 查看测试输出
+pytest -q
 
 # 重启服务
 ssh user@server "pm2 restart 项目名"

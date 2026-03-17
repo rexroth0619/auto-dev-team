@@ -1,0 +1,7 @@
+interface:
+  display_name: "Auto Dev Team"
+  short_description: "AI workflow for coding, debugging, testing, and refactors"
+  default_prompt: "Use $auto-dev-team to plan, implement, debug, and verify a software change safely."
+
+policy:
+  allow_implicit_invocation: true

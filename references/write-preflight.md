@@ -22,7 +22,7 @@
    - 首次创建 `.autodev/` 时，检查 `.git/info/exclude` 是否已包含 `.autodev/`，若没有则追加。
    - 输出：`🛡️ 已将 .autodev/ 加入 .git/info/exclude（本地忽略，不影响项目 .gitignore）`
 2. 读取 `.autodev/context-snapshot.md`，恢复最近任务上下文。
-3. 若任务涉及 Git、部署、路径、环境、服务端配置，先读取 `.autodev/path.md`。
+3. 若任务涉及 Git、部署、路径、环境、服务端配置、运行时路径、日志路径或控制台入口，先读取 `.autodev/path.md`。
 4. 执行 `git log -5 --oneline`，判断最近改动与当前任务的关联或冲突。
 5. 执行分支守卫：
    - 当前位于受保护分支时，按 `references/principles/checkpoint-mechanism.md` 创建工作分支。
@@ -37,7 +37,8 @@
 ## 测试台账规则
 
 - `.autodev/current-steps.md`：记录多步执行计划、每步覆盖场景、每步测试回执。
-- `.autodev/current-test.md`：记录大测试的场景矩阵、执行记录、待业务确认问题、剩余风险。
+- `.autodev/current-test.md`：记录大测试的场景矩阵、执行记录、待业务确认问题、剩余风险，以及关键观测结论。
+- `.autodev/current-debug.md`：记录复杂 Debug 的多轮假设、观测差异、修复与复诊结论。
 - 命中以下任一条件，视为**大测试**，缺失时必须初始化 `.autodev/current-test.md`：
   - 认证、支付、权限、审批、上传下载
   - 多步表单、多页面跳转、会话状态、核心用户链路
@@ -55,10 +56,20 @@
 | 任意代码或配置写入前 | `references/principles/checkpoint-mechanism.md` |
 | 开始实际执行代码改动时 | `references/principles/impact-analysis.md` |
 | 开始实际执行代码改动时 | `references/principles/test-verification.md` |
+| 任意会改变运行行为的代码或配置写入，在进入验证阶段前 | `references/principles/observation-driven-verification.md` |
 | 进入 Step 执行阶段时 | `references/principles/incremental-testable.md` |
 | 新增或修改 `.feature` / step definitions 时 | `references/principles/bdd-testing.md` |
 | 做抽象、提取共享模块、设计通用接口时 | `references/principles/abstraction-rules.md` |
 | 准备写入 Pattern 时 | `references/patterns/README.md` |
+
+## 观测驱动验证启用规则
+
+- Architect：计划阶段必须为每个 Step 标注观测驱动验证档位与观测面。
+- Step / FastTrack / Hotfix / Tester：只要当前改动影响运行行为，默认至少执行 `L1 轻量观测验证`。
+- Debug：默认执行 `L2 标准观测验证`，复杂问题直接升到 `L3 重度观测验证`。
+- Refactor：默认执行 `L3 重度观测验证`，建立 before / after 基线。
+- 回归定位：默认执行 `L3`，优先建立可重复运行的 oracle。
+- 复杂 Debug / 回归定位：若需要多轮诊断，创建或更新 `.autodev/current-debug.md`。
 
 ## Patterns 按需读取
 
@@ -69,7 +80,7 @@
 ## 完成动作（写入模式通用）
 
 1. 先做影响范围分析。
-2. 再执行后台自动测试，必要时发起前端链路测试判断，并保留证据 / 测试回执。
+2. 再执行后台自动测试 + 对应档位的观测驱动验证，必要时发起前端链路测试判断，并保留证据 / 测试回执。
 3. 再建立存档，输出固定回执：
 
 ```
@@ -83,5 +94,6 @@
 - 跳过共享前置直接开始写代码。
 - 未读 `path.md` 就做 Git / 部署 / 服务器路径相关操作。
 - 跳过验证直接建立存档。
+- 把观测驱动验证误写成“只在测试失败后才启用”。
 - 命中大测试却不创建 / 更新 `.autodev/current-test.md`。
 - 把 `Cleanup`、`Tester` 当成"非写入模式"处理。
