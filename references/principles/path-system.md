@@ -1,6 +1,6 @@
 # 路径清单机制 (path.md)
 
-> 📍 所有固定路径和配置的唯一真相来源
+> 📍 所有项目环境、部署、运行入口、Git 路径信息的唯一真相来源。Skill 自身的策略阈值不写在这里，放到 `.autodev/autodev-config.json`。
 
 ## 机制说明
 
@@ -21,9 +21,14 @@
 | **第三方服务** | API 端点、控制台地址、文档链接 |
 | **常用命令** | 部署、重启、备份等命令速查 |
 
-## Git 策略配置
+## Git 路径与分支配置
 
 `path.md` 中的 Git 配置供版本保护机制使用，详见 `references/principles/checkpoint-mechanism.md`。
+
+Skill 策略阈值职责划分：
+
+- `.autodev/path.md`：路径、环境、部署、Git 事实
+- `.autodev/autodev-config.json`：会诊阈值、版本保护策略、日志开关等 skill 行为配置
 
 ## 引用规则
 

@@ -1,6 +1,6 @@
 # 写入模式共享前置
 
-> 所有会写文件、改配置、生成测试或落存档的流程，都先走这里。
+> 所有会写文件、改配置、生成测试或落存档的流程，都先走这里。默认保持 strict 行为；策略细节可由 `.autodev/autodev-config.json` 调整。
 
 ## 适用模式
 
@@ -16,23 +16,29 @@
 
 `Survey` 和 `Explain` 默认只读，不进入本流程。
 
-## 共享前置步骤
+## 共享前置步骤（默认 strict）
 
-1. 检查 `.autodev/` 是否存在，缺失时用 `assets/templates/` 初始化必需文档。
-   - 首次创建 `.autodev/` 时，检查 `.git/info/exclude` 是否已包含 `.autodev/`，若没有则追加。
-   - 输出：`🛡️ 已将 .autodev/ 加入 .git/info/exclude（本地忽略，不影响项目 .gitignore）`
+1. 初始化 `.autodev/`。
+   - 优先执行 `scripts/init-autodev.sh`
+   - 若脚本不可用，再手工复制 `assets/templates/` 中的必需模板
+   - 必需文档包括 `.autodev/autodev-config.json`
 2. 读取 `.autodev/context-snapshot.md`，恢复最近任务上下文。
-3. 若任务涉及 Git、部署、路径、环境、服务端配置、运行时路径、日志路径或控制台入口，先读取 `.autodev/path.md`。
-4. 执行 `git log -5 --oneline`，判断最近改动与当前任务的关联或冲突。
-5. 执行分支守卫：
-   - 当前位于受保护分支时，按 `references/principles/checkpoint-mechanism.md` 创建工作分支。
-   - 禁止在受保护分支上直接改代码。
-6. 🎯 建立里程碑（任务开始基线）：
-   - 按 `references/principles/checkpoint-mechanism.md` 建立里程碑。
-   - 输出里程碑回执。
-7. 💿 注册执行前快照闸门：
-   - 不在此步建立快照，延迟到实际执行指令到达时强制触发。
-   - 闸门规则见 `references/principles/checkpoint-mechanism.md` 的"执行前快照闸门"。
+3. 读取 `.autodev/autodev-config.json`，加载 skill 策略。
+4. 若任务涉及 Git、部署、路径、环境、服务端配置、运行时路径、日志路径或控制台入口，先读取 `.autodev/path.md`。
+5. 读取 `references/gotchas.md` 中与当前任务最相关的部分。
+   - Git / 回退 / 分支 / 存档任务：重点看 checkpoint gotchas
+   - “添加 / 删除 / 重写”类编辑任务：重点看保留性 gotchas
+   - 跨模块 / monorepo / 契约变更：重点看影响分析 gotchas
+6. 执行 `git log -5 --oneline`，判断最近改动与当前任务的关联或冲突。
+7. 执行分支守卫。
+   - 优先执行 `scripts/checkpoint.sh ensure-branch <task-slug>`
+   - 若脚本不可用，按 `references/principles/checkpoint-mechanism.md` 手工执行
+8. 🎯 建立里程碑（任务开始基线）。
+   - 默认开启；优先执行 `scripts/checkpoint.sh milestone "<任务>#起点" "任务开始前基线" <task-slug>`
+   - 若脚本不可用，按 `references/principles/checkpoint-mechanism.md` 手工执行
+9. 💿 注册执行前快照闸门。
+   - 不在此步建立快照，延迟到实际执行指令到达时强制触发
+   - 优先执行 `scripts/checkpoint.sh snapshot-gate <task>`
 
 ## 测试台账规则
 
@@ -51,7 +57,6 @@
 | 触发条件 | 必须读取 |
 |----------|----------|
 | 所有写入模式进入时 | `references/principles/critique.md` |
-| 所有写入模式进入时 | `references/principles/over-engineering.md` |
 | 涉及 Git / 部署 / 路径 / 环境时 | `references/principles/path-system.md` |
 | 任意代码或配置写入前 | `references/principles/checkpoint-mechanism.md` |
 | 开始实际执行代码改动时 | `references/principles/impact-analysis.md` |
@@ -83,7 +88,7 @@
 2. 再执行后台自动测试 + 对应档位的观测驱动验证，必要时发起前端链路测试判断，并保留证据 / 测试回执。
 3. 再建立存档，输出固定回执：
 
-```
+```text
 💾【存档】{任务}#{序号} → {hash}
 ```
 
@@ -96,4 +101,4 @@
 - 跳过验证直接建立存档。
 - 把观测驱动验证误写成“只在测试失败后才启用”。
 - 命中大测试却不创建 / 更新 `.autodev/current-test.md`。
-- 把 `Cleanup`、`Tester` 当成"非写入模式"处理。
+- 把 `Cleanup`、`Tester` 当成“非写入模式”处理。

@@ -7,13 +7,15 @@
 
 ## 简介
 
-`auto-dev-team` 基于 [Agent Skills 规范](https://agentskills.io/specification) 构建，目标是把“开发流程知识”拆成可组合、可按需加载的文档，而不是把所有规则都堆进 `SKILL.md`。
+`auto-dev-team` 基于 [Agent Skills 规范](https://agentskills.io/specification) 构建，目标是把“开发流程知识”拆成可组合、可按需加载的文档和脚本，而不是把所有规则都堆进 `SKILL.md`。
 
 核心思路：
 
 - 主入口保持轻量
 - 模式判断和写前置分离
 - Principles 按模式、阶段、产物触发
+- 机械步骤优先交给脚本，减少重复推理
+- Skill 策略由 `.autodev/autodev-config.json` 配置
 - 所有改动都要求验证和可回退
 - 代码变更后默认执行后台自动测试
 - 前端用户链路测试由 AI 主动判断并提示
@@ -41,6 +43,7 @@ auto-dev-team/
 │       └── test-writer.md
 ├── assets/
 │   └── templates/
+│       ├── autodev-config.json
 │       ├── context-snapshot.md
 │       ├── current-test.md
 │       ├── current-steps.md
@@ -50,8 +53,14 @@ auto-dev-team/
 │       ├── postmortem.md
 │       ├── project-map.md
 │       └── verification-checklist.md
+├── scripts/
+│   ├── checkpoint.sh
+│   └── init-autodev.sh
 └── references/
+    ├── gotchas.md
     ├── mode-index.md
+    ├── shared/
+    │   └── flow-snippets.md
     ├── write-preflight.md
     ├── modes/
     │   ├── architect/README.md
@@ -105,6 +114,14 @@ auto-dev-team/
 - “这个接口突然报 500”
 - “把按钮颜色改成蓝色”
 - “这段代码太乱了，帮我重构”
+
+## 配置与脚本
+
+- 项目环境与路径：`.autodev/path.md`
+- Skill 策略与阈值：`.autodev/autodev-config.json`
+- 初始化 `.autodev/`：`scripts/init-autodev.sh`
+- 版本保护原语：`scripts/checkpoint.sh`
+- 高频坑位沉淀：`references/gotchas.md`
 
 ## PM 资源
 

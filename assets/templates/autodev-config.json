@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "preferred_language": "zh-CN",
+  "protected_branches": [
+    "main",
+    "master",
+    "production",
+    "release/*"
+  ],
+  "integration_mode": "merge_allowed",
+  "critique": {
+    "enabled": true,
+    "threshold": "all_write_modes",
+    "fallback_to_local_checklist": true,
+    "require_user_choice_after_plan": true
+  },
+  "checkpoint": {
+    "milestone_on_write_start": true,
+    "snapshot_gate": "always_before_write",
+    "archive_after_each_verified_step": true,
+    "fail_close_before_write": true
+  },
+  "testing": {
+    "default_backend_tests": true,
+    "frontend_prompt_on_user_flow": true,
+    "big_test_current_test_required": true
+  },
+  "logging": {
+    "usage_log_enabled": false,
+    "receipt_verbosity": "full"
+  }
+}
