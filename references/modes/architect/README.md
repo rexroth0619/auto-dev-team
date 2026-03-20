@@ -171,6 +171,12 @@ AI:   1. 评估复杂度:
 
 发现需要大量重构 → “建议先用 Refactor 模式处理 xxx，再回来做新功能”
 
+## 菜单输出约定
+
+- 菜单型 UI 遵循 `references/shared/menu-contract.md`
+- 阶段推进优先复用 `references/shared/flow-snippets.md` 中的 `phase-confirm` 模板
+- 会诊后的执行分叉优先复用 `references/shared/flow-snippets.md` 中的 `plan-choice` 模板
+
 ## 阶段结束选项
 
 ### Phase 0 结束

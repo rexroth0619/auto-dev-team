@@ -22,21 +22,25 @@
    - 优先执行 `scripts/init-autodev.sh`
    - 若脚本不可用，再手工复制 `assets/templates/` 中的必需模板
    - 必需文档包括 `.autodev/autodev-config.json`
-2. 读取 `.autodev/context-snapshot.md`，恢复最近任务上下文。
-3. 读取 `.autodev/autodev-config.json`，加载 skill 策略。
-4. 若任务涉及 Git、部署、路径、环境、服务端配置、运行时路径、日志路径或控制台入口，先读取 `.autodev/path.md`。
-5. 读取 `references/gotchas.md` 中与当前任务最相关的部分。
+   - 必须确保 `.autodev/temp/` 存在，用于承接 AI 生成的临时产物
+2. 执行工作区边界检查。
+   - AI 生成的临时台账、调试输出、草稿、诊断材料，必须统一写入 `.autodev/temp/`
+   - 若发现仓库其他路径存在 AI 生成的非交付临时文件，先迁移到 `.autodev/temp/`、清理，或加入 ignore 后再继续
+3. 读取 `.autodev/context-snapshot.md`，恢复最近任务上下文。
+4. 读取 `.autodev/autodev-config.json`，加载 skill 策略。
+5. 若任务涉及 Git、部署、路径、环境、服务端配置、运行时路径、日志路径或控制台入口，先读取 `.autodev/path.md`。
+6. 读取 `references/gotchas.md` 中与当前任务最相关的部分。
    - Git / 回退 / 分支 / 存档任务：重点看 checkpoint gotchas
    - “添加 / 删除 / 重写”类编辑任务：重点看保留性 gotchas
    - 跨模块 / monorepo / 契约变更：重点看影响分析 gotchas
-6. 执行 `git log -5 --oneline`，判断最近改动与当前任务的关联或冲突。
-7. 执行分支守卫。
+7. 执行 `git log -5 --oneline`，判断最近改动与当前任务的关联或冲突。
+8. 执行分支守卫。
    - 优先执行 `scripts/checkpoint.sh ensure-branch <task-slug>`
    - 若脚本不可用，按 `references/principles/checkpoint-mechanism.md` 手工执行
-8. 🎯 建立里程碑（任务开始基线）。
+9. 🎯 建立里程碑（任务开始基线）。
    - 默认开启；优先执行 `scripts/checkpoint.sh milestone "<任务>#起点" "任务开始前基线" <task-slug>`
    - 若脚本不可用，按 `references/principles/checkpoint-mechanism.md` 手工执行
-9. 💿 注册执行前快照闸门。
+10. 💿 注册执行前快照闸门。
    - 不在此步建立快照，延迟到实际执行指令到达时强制触发
    - 优先执行 `scripts/checkpoint.sh snapshot-gate <task>`
 

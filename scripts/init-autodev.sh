@@ -32,6 +32,7 @@ AUTODEV_DIR="$REPO_ROOT/.autodev"
 EXCLUDE_FILE="$REPO_ROOT/.git/info/exclude"
 
 mkdir -p "$AUTODEV_DIR"
+mkdir -p "$AUTODEV_DIR/temp"
 
 copy_if_missing() {
   local source_file="$1"

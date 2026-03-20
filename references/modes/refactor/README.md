@@ -124,6 +124,12 @@ AI:   生成 Step 计划，写入 current-steps.md，包含:
 
 如发现需要新功能支撑重构 → "建议暂停，先实现 xxx 功能后再继续重构"
 
+## 菜单输出约定
+
+- 菜单型 UI 遵循 `references/shared/menu-contract.md`
+- 阶段推进优先复用 `references/shared/flow-snippets.md` 中的 `phase-confirm` 模板
+- 会诊后的执行分叉优先复用 `references/shared/flow-snippets.md` 中的 `plan-choice` 模板
+
 ## 阶段结束选项
 
 ### Phase 2 结束

@@ -17,6 +17,12 @@
 ⛔ 禁止把“当前层已验证”说成“整条用户链路已完成”
 ```
 
+## 菜单输出约定
+
+- 菜单型 UI 遵循 `references/shared/menu-contract.md`
+- 通用“继续 / 切换 / 结束”优先复用 `references/shared/flow-snippets.md` 中的 `continue-switch-end` 模板
+- 任务完成后的动作选择优先复用 `references/shared/flow-snippets.md` 中的 `completion-actions` 模板
+
 ## 每步流程
 
 ### 0. 存档（Step 模式）

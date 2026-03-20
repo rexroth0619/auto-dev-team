@@ -86,6 +86,13 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 `.autodev/` 存放在项目根目录下，通过 `.git/info/exclude` 忽略（本地生效，不入库）。
 首次创建 `.autodev/` 时自动追加忽略规则；如需团队共享，确认后可追加到 `.gitignore`。
 
+### 工作区边界
+
+- 结构化长期记忆文档保留在 `.autodev/` 根下（如 `context-snapshot.md`、`current-steps.md`、`current-test.md`）。
+- AI 生成的临时台账、调试输出、草稿、诊断材料，一律写入 `.autodev/temp/`。
+- 非最终交付物，不得写入仓库其他路径。
+- 若工具必须在 `.autodev/temp/` 之外生成临时文件，生成后必须立即清理，或加入 ignore 后再继续执行。
+
 ### 必需文档
 
 | 文档 | 用途 | 模板 |
@@ -134,8 +141,10 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
   - 处理分支守卫、里程碑、快照闸门、存档、读档、回退
 - `references/gotchas.md`
   - 高信号坑位；优先放真实踩坑经验，而不是通用编程常识
+- `references/shared/menu-contract.md`
+  - 菜单型 UI 的统一协议；用于阶段确认、计划选择、任务收尾等编号菜单
 - `references/shared/flow-snippets.md`
-  - 共用回执、会诊、测试回执、下一步模板
+  - 共用回执、会诊、测试回执、菜单骨架模板
 
 ## Patterns
 
@@ -171,3 +180,4 @@ Patterns 改为按需读取，不再每个任务一上来强制预读。
 - 技术用户：偏技术、简洁
 - 业务用户：偏业务、附带通俗解释
 - 用户说“直接执行”“不用解释”时，减少说明但不减少验证
+- 菜单型 UI 遵循 `references/shared/menu-contract.md`，保持轻量引导，不做 railroading
