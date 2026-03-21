@@ -212,11 +212,11 @@ create_milestone() {
 ━━━━━━━━━━━━━━━━━━━━
 🎯 里程碑
 ━━━━━━━━━━━━━━━━━━━━
-指纹: $fingerprint
-哈希: $hash
-标签: $tag_name
+指纹: ${fingerprint}
+哈希: ${hash}
+标签: ${tag_name}
 ━━━━━━━━━━━━━━━━━━━━
-💡 随时可说「回退到 $fingerprint」
+💡 随时可说「回退到 ${fingerprint}」
 ━━━━━━━━━━━━━━━━━━━━
 EOF
 }
