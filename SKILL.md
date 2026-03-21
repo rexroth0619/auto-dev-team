@@ -141,6 +141,8 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
   - 初始化 `.autodev/`、复制模板、补 `autodev-config.json`
 - `scripts/checkpoint.sh`
   - 处理分支守卫、里程碑、快照闸门、存档、读档、回退
+- `scripts/checkpoint-selftest.sh`
+  - 最小回归验证 checkpoint 脚本，防止里程碑 / 存档 / 列表输出回归
 - `references/gotchas.md`
   - 高信号坑位；优先放真实踩坑经验，而不是通用编程常识
 - `references/shared/menu-contract.md`

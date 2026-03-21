@@ -2,6 +2,8 @@
 
 > 适用: 改文案、调样式、修小问题 | 限制: ≤2文件, ≤30行 | 超限自动升级为 Architect
 
+⚠️ 若当前改动命中 GUI-capable task，执行验证前必须读取 `references/principles/gui-autonomous-loop.md`。
+
 ## 适用场景
 
 - 改文案
@@ -62,6 +64,16 @@ AI:   0. 💿 执行前快照闸门（强制）
 🈶 验证:
 - 过滤 `[SHORT-{主题}]` 应看到: [关键 log 输出]
 - 操作 [xxx]: [预期结果]
+```
+
+若当前改动命中 GUI-capable task：
+
+```text
+GUI 自治验收:
+- 默认执行 GUI executor（Web 默认 Playwright）
+- 优先可视化执行；做不到用户可见时，必须保留 screenshot / trace / console / network 证据
+- 若 GUI case 失败，先修复再重跑同一 case，最多 3 次
+- GUI Gate 未满足前，不能宣称本次 FastTrack 完成
 ```
 
 若当前改动无法由 AI 完成自动验证（如 Figma 插件、私有控制台、复杂交互、真机 / 外设）：

@@ -33,6 +33,16 @@
 | test-runner | `test_runner_output` | `pnpm test` / `pytest -q` | 测试命令输出 | 自动测试与失败定位 |
 | artifact-check | `artifact_snapshot` | `node -e` / `python -c` / 自定义脚本 | 文件、数据库、DOM、JSON 快照 | 验证副作用与结果产物 |
 
+## GUI 自治验收入口
+
+| 项目 | 值 |
+|------|-----|
+| 默认 GUI executor | `Playwright` / `桌面 driver` / `manual_only` |
+| headed 命令 | `npx playwright test --headed` |
+| trace / 截图产物路径 | `.autodev/temp/gui/` / `playwright-report/` / 自定义路径 |
+| 测试账号 / 种子数据 | `[请填写]` |
+| 用户可见执行限制 | `[无 / 远端环境无法开窗 / 仅本地可见]` |
+
 ## Nginx 配置
 
 | 项目 | 路径/值 |

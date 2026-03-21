@@ -121,6 +121,7 @@ auto-dev-team/
 - Skill 策略与阈值：`.autodev/autodev-config.json`
 - 初始化 `.autodev/`：`scripts/init-autodev.sh`
 - 版本保护原语：`scripts/checkpoint.sh`
+- checkpoint 自检：`scripts/checkpoint-selftest.sh`
 - 高频坑位沉淀：`references/gotchas.md`
 
 ## PM 资源

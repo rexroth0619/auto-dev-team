@@ -2,6 +2,8 @@
 
 > 适用: 线上出问题、紧急、需要快速止血 | 原则: 先止血后复盘，最小改动 | 产出: postmortem [HOTFIX]
 
+⚠️ 若本次故障位于 GUI 链路，执行验证前必须读取 `references/principles/gui-autonomous-loop.md`。
+
 ## 核心原则
 
 ```
@@ -42,6 +44,16 @@ AI:   0. 💿 执行前快照闸门（强制）
          过滤 `[HOTFIX-{问题}]` 应看到:
          → [HOTFIX-{问题}] 修复点: xxx
          → [HOTFIX-{问题}] 验证: xxx
+```
+
+若本次故障位于 GUI 链路：
+
+```text
+GUI 止血验证:
+- 默认执行 GUI executor 复现原故障路径
+- 证据至少保留 screenshot / console / network / 关键操作时间线
+- 止血后必须重跑原 GUI case，确认症状消失
+- 若 GUI Gate 未满足，只能声明“已止血到当前层”，不能说“整条用户链路已恢复”
 ```
 
 ### 3. 事后补票 (强制)
