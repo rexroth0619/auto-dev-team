@@ -18,7 +18,7 @@
 - Skill 策略由 `.autodev/autodev-config.json` 配置
 - 所有改动都要求验证和可回退
 - 代码变更后默认执行后台自动测试
-- 前端用户链路测试由 AI 主动判断并提示
+- GUI-capable task 默认进入 GUI 自治验收闭环
 - 大测试使用 `.autodev/current-test.md` 记录场景、执行和风险
 
 ## 当前入口结构
@@ -95,11 +95,11 @@ auto-dev-team/
 | Explain | 解释代码 | 帮助理解 |
 | Step | Architect / Refactor / Optimize 的执行阶段 | 逐步落地 |
 
-## V1 测试协议
+## V2 测试协议
 
 - `行为场景层`：PM 可读的 use case、异常链路、边界 case。
 - `后台自动测试层`：代码变更后默认执行，优先覆盖改动点、边界和直接影响面。
-- `前端链路测试层`：命中页面流程、跳转、会话、权限、表单等风险时，AI 主动提示是否执行 Playwright。
+- `GUI 自治验收层`：命中页面流程、窗口、表单、会话、权限、可交互界面等风险时，AI 默认执行 GUI executor；Web 默认 Playwright。
 - `人工验收层`：视觉、体感、外部系统等难以稳定自动化的部分。
 - `小测试`：输出 `🧾 测试回执`。
 - `大测试`：创建 `.autodev/current-test.md`，持续记录场景矩阵、执行状态和剩余风险。

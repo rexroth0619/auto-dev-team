@@ -22,7 +22,12 @@
   },
   "testing": {
     "default_backend_tests": true,
-    "frontend_prompt_on_user_flow": true,
+    "gui_autorun_on_gui_task": true,
+    "gui_visible_execution": "preferred",
+    "gui_block_completion_until_passed": true,
+    "gui_case_matrix_required": true,
+    "gui_evidence_required": true,
+    "gui_autofix_retry_limit": 3,
     "big_test_current_test_required": true
   },
   "logging": {

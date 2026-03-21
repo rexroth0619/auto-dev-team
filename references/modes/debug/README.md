@@ -59,6 +59,7 @@
 - `.autodev/postmortem.md` - 病例库，查找历史类似病例
 - 若存在 `.autodev/current-debug.md`，一并读取
 - `references/principles/observation-driven-verification.md` - 本模式默认按 `L2` 启用观测驱动验证
+- 若问题位于 GUI 链路，读取 `references/principles/gui-autonomous-loop.md`
 
 **注意**：context-snapshot、git log、分支守卫等共享动作，已在 `references/write-preflight.md` 中统一执行。
 
@@ -112,6 +113,7 @@
 
       2. 选择主观测面 + 备用观测面
          - 主观测面优先选 AI 可直接访问、最贴近病灶的位置
+         - GUI 问题优先复用 action timeline / screenshot / console / network 组成的 evidence bundle
          - 复杂链路 / 异步问题 / 回归定位 → 升到 L3
 
       3. 写出预期观测：
@@ -127,7 +129,7 @@
          → 分支
          → 结果 / 副作用
 
-      5. AI 自己运行最小复现，自己采集实际观测
+      5. AI 自己运行最小复现；若问题位于 GUI 链路，优先用 GUI executor 复现并自己采集实际观测
 
       6. 对比预期观测 vs 实际观测
          → 缺失 / 错序 / 值不符 / 分支错位 / 多余副作用
@@ -155,7 +157,7 @@
       4. 等待用户选择（禁止先执行）
       5. 💿 执行前快照闸门（强制）
          - 必须输出 "💿 已保护" 或 "💿 闸门通过" 后才能继续
-      6. 确认后执行，观察治疗效果（复用同一组观测场景）
+      6. 确认后执行，观察治疗效果（复用同一组观测场景；GUI 问题则复用同一组 GUI case + evidence bundle）
       7. 清理所有临时 [DEBUG-*] 诊断探针，仅保留必要基础观测
 ```
 

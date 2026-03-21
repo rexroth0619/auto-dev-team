@@ -66,6 +66,7 @@
 | 开始实际执行代码改动时 | `references/principles/impact-analysis.md` |
 | 开始实际执行代码改动时 | `references/principles/test-verification.md` |
 | 任意会改变运行行为的代码或配置写入，在进入验证阶段前 | `references/principles/observation-driven-verification.md` |
+| 命中 GUI-capable task（页面、窗口、表单、可点击界面）时 | `references/principles/gui-autonomous-loop.md` |
 | 进入 Step 执行阶段时 | `references/principles/incremental-testable.md` |
 | 新增或修改 `.feature` / step definitions 时 | `references/principles/bdd-testing.md` |
 | 做抽象、提取共享模块、设计通用接口时 | `references/principles/abstraction-rules.md` |
@@ -80,6 +81,14 @@
 - 回归定位：默认执行 `L3`，优先建立可重复运行的 oracle。
 - 复杂 Debug / 回归定位：若需要多轮诊断，创建或更新 `.autodev/current-debug.md`。
 
+## GUI 自治验收闭环启用规则
+
+- 任何 GUI-capable task 默认进入 `GUI 自治验收闭环`。
+- Web GUI 默认选择 Playwright；其他 GUI 选择当前环境可用的 executor。
+- GUI use case 未达到 `已通过 / 暂不可执行 / 用户明确禁用` 前，不得宣称任务完成。
+- GUI 闭环执行失败时，默认进入“采证 → 修复 → 重跑同一 case”的自修复循环，最多 3 轮。
+- 命中 GUI fallback 时，必须输出 `🧭 开发者手测教程`，不能只写“请手动验证”。
+
 ## Patterns 按需读取
 
 - Architect / Refactor / Optimize：默认检查是否有可复用 Pattern。
@@ -89,7 +98,7 @@
 ## 完成动作（写入模式通用）
 
 1. 先做影响范围分析。
-2. 再执行后台自动测试 + 对应档位的观测驱动验证，必要时发起前端链路测试判断，并保留证据 / 测试回执。
+2. 再执行后台自动测试 + 对应档位的观测驱动验证；若命中 GUI-capable task，继续执行 `GUI 自治验收闭环` 并保留证据 / 测试回执。
 3. 再建立存档，输出固定回执：
 
 ```text

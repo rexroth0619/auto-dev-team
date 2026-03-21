@@ -47,7 +47,7 @@ AI:   0. （若 Phase 0 已读取则跳过）主动读取 project-map.md 和 mod
       3. 若项目已有 BDD 框架，且场景适合用 `.feature` 沉淀：
          - 路径: features/{功能名}.feature
          - 无法自动化的场景标注 @manual
-      4. 标注是否命中前端链路测试风险（页面流程 / 跳转 / 会话 / 权限 / 表单）
+      4. 标注是否命中 GUI-capable task（页面流程 / 跳转 / 会话 / 权限 / 表单 / 任意可交互界面）
       5. "场景覆盖全了吗？需要补充吗？"
 
 用户: 确认 / 补充场景 / 回答待确认问题
@@ -59,7 +59,7 @@ AI:   0. （若 Phase 0 已读取则跳过）主动读取 project-map.md 和 mod
 AI:   0. 测试环境检查:
          - 后台自动测试框架（单测 / 集成 / 契约）
          - BDD 框架（如有）
-         - 前端链路工具（Playwright / Cypress 等，如有）
+         - GUI executor（Playwright / 桌面 GUI driver / 宿主操作入口 等，如有）
 
       1. 查 module-registry: "搜索 [关键词]: 找到 xxx / 未找到"
 
@@ -85,7 +85,8 @@ AI:   0. 测试环境检查:
          - 小测试：单模块、低风险、非关键链路
          - 大测试：认证 / 支付 / 权限 / 多步流程 / 跨模块 / 契约变更 / 业务规则不清
          - 是否需要 `.autodev/current-test.md`
-         - 是否需要前端链路测试提示
+         - 是否需要进入 GUI 自治验收闭环
+         - GUI executor、可视化执行策略、失败后自修复轮次
          - 观测驱动验证档位：行为改动默认至少 `L1`；跨模块 / 状态流转 / 异步 / 权限等场景升到 `L2`
 
       5. 🔷 抽象潜力评估（三问法则）
@@ -106,13 +107,15 @@ AI:   1. 评估复杂度:
          - 每步都要写明覆盖哪些场景
          - 每步都要写明后台自动测试如何跑
          - 每步都要写明观测驱动验证档位与主观测面
-         - 若当前步骤尚不具备前端联调条件，必须明确写“暂不可执行”
+         - 命中 GUI-capable task 的步骤，必须写明 GUI executor、可视化执行策略、GUI case matrix
+         - 若当前步骤尚不具备 GUI 联调条件，必须明确写“暂不可执行”
 
       3. 计划必须落实 Phase 2 的模块策略:
          - 每步标注目标文件（融入还是新建）
          - 每步标注覆盖场景
          - 每步标注后台自动测试方式
          - 每步标注观测驱动验证档位、主观测面、备用观测面
+         - GUI 步骤标注 executor、可视化执行策略、关键 GUI case、Gate 结论
 
       4. 写入 `current-steps.md`，包含:
          - Log 标识: [DEV-{任务主题}]
@@ -121,6 +124,7 @@ AI:   1. 评估复杂度:
          - 测试台账路径: [无 / .autodev/current-test.md]
          - 每步的目标文件 + 覆盖场景 + 后台自动测试
          - 每步的观测驱动验证档位 + 主/备用观测面
+         - 每步的 GUI 自治验收信息（是否命中 / executor / 可视化执行 / 关键 case / Gate）
          - 每步的 AI 执行版 How to Test（预期观测 + 通过标准）
 
       5. 若命中大测试:
@@ -135,7 +139,7 @@ AI:   1. 评估复杂度:
 - 执行时每步使用 `[DEV-{主题}-Step{N}]` log 追踪流程
 - 每步必须能独立验证，禁止积攒到最后
 - 新功能不是“等失败再观测”，每个有行为改动的 Step 默认至少执行一轮 `L1` 观测驱动验证
-- 用户链路风险在计划阶段就要显式标出来，避免后面才想起前端验收
+- GUI-capable task 在计划阶段就要显式标出来，避免后面才想起界面验收
 
 ### Phase 3.5: PM 摘要（自适应）
 
@@ -149,7 +153,7 @@ AI:   1. 评估复杂度:
 预计改动: X 个文件
 风险等级: 🟢低 / 🟡中 / 🔴高
 测试等级: 小测试 / 大测试
-前端链路测试: 不触发 / 后续建议执行
+GUI 自治验收: 不触发 / 默认执行 / 暂不可执行
 可回退: ✅ 随时可以撤销
 ```
 
@@ -230,4 +234,4 @@ AI:   1. 评估复杂度:
 - 共享写前置已按 `references/write-preflight.md` 执行。
 - 若本计划会创建或修改 `.feature` / step definitions，先读 `references/principles/bdd-testing.md`。
 - 若本任务为大测试，先读 `.autodev/current-test.md`。
-- Step 阶段的影响分析、后台自动测试、前端链路测试判断、存档、信任模式（含里程碑）与任务收尾，均以 `references/modes/step/README.md`、`references/principles/test-verification.md` 和 `references/principles/checkpoint-mechanism.md` 为准。
+- Step 阶段的影响分析、后台自动测试、GUI 自治验收闭环、存档、信任模式（含里程碑）与任务收尾，均以 `references/modes/step/README.md`、`references/principles/test-verification.md`、`references/principles/gui-autonomous-loop.md` 和 `references/principles/checkpoint-mechanism.md` 为准。

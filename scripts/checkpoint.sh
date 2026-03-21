@@ -260,7 +260,7 @@ archive_commit() {
 }
 
 list_archives() {
-  local -a milestones snapshots archives
+  local -a milestones=() snapshots=() archives=()
   local hash subject
   while IFS=$'\t' read -r hash subject; do
     [[ "$subject" != *"「"* ]] && continue
@@ -279,21 +279,27 @@ list_archives() {
   echo "📍 存档列表"
   echo "━━━━━━━━━━━━━━━━━━━━"
   local idx=1 item
-  for item in "${milestones[@]}"; do
-    IFS='|' read -r hash subject <<<"$item"
-    echo "[$idx] 🎯 $hash$subject"
-    idx=$((idx + 1))
-  done
-  for item in "${snapshots[@]}"; do
-    IFS='|' read -r hash subject <<<"$item"
-    echo "[$idx] 💿 $hash$subject"
-    idx=$((idx + 1))
-  done
-  for item in "${archives[@]}"; do
-    IFS='|' read -r hash subject <<<"$item"
-    echo "[$idx] 💾 $hash$subject"
-    idx=$((idx + 1))
-  done
+  if (( ${#milestones[@]} )); then
+    for item in "${milestones[@]}"; do
+      IFS='|' read -r hash subject <<<"$item"
+      echo "[$idx] 🎯 ${hash} ${subject}"
+      idx=$((idx + 1))
+    done
+  fi
+  if (( ${#snapshots[@]} )); then
+    for item in "${snapshots[@]}"; do
+      IFS='|' read -r hash subject <<<"$item"
+      echo "[$idx] 💿 ${hash} ${subject}"
+      idx=$((idx + 1))
+    done
+  fi
+  if (( ${#archives[@]} )); then
+    for item in "${archives[@]}"; do
+      IFS='|' read -r hash subject <<<"$item"
+      echo "[$idx] 💾 ${hash} ${subject}"
+      idx=$((idx + 1))
+    done
+  fi
   echo "━━━━━━━━━━━━━━━━━━━━"
   echo "回退到哪个？（输入序号或指纹）"
   echo "━━━━━━━━━━━━━━━━━━━━"

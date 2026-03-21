@@ -13,7 +13,7 @@
 
 | ID | 场景 | 来源 | 测试层 | 状态 | 备注 |
 |----|------|------|--------|------|------|
-| S1 | | 用户提出 / AI补充 / 待确认 | unit / integration / bdd / e2e / manual | 待写 / 待跑 / 通过 / 失败 / 待业务确认 | |
+| S1 | | 用户提出 / AI补充 / 待确认 | unit / integration / bdd / gui / manual | 待写 / 待跑 / 通过 / 失败 / 待业务确认 | |
 
 ## 后台自动测试计划
 
@@ -26,15 +26,19 @@
 - 备用观测面:
 - 预期观测摘要:
 
-## 前端链路测试计划
+## GUI 自治验收计划
 
-- 状态: 未触发 / 建议执行 / 已执行 / 用户暂不执行 / 暂不可执行
+- 状态: 未触发 / 规划中 / 执行中 / 已通过 / 失败修复中 / 用户禁用 / 暂不可执行 / Manual only
+- Executor:
+- 可视化执行:
 - 原因:
 - 计划场景:
+- 证据要求: [timeline / screenshot / console / network / trace]
+- 修复轮次上限: [默认 3]
 
 ## 开发者手测教程（如需）
 
-- 触发原因: [Manual only / @manual / 前端链路暂不可执行 / 私有观测面]
+- 触发原因: [Manual only / @manual / GUI 暂不可执行 / 私有观测面]
 - 前置条件:
 - 操作步骤:
   1. 
@@ -55,6 +59,13 @@
 - 命令 / 方式:
 - 结果:
 - 证据:
+- GUI 证据:
+  - timeline:
+  - screenshot:
+  - console:
+  - network:
+  - backend trace:
+- GUI Gate 结论:
 - 观测对比:
   - 预期:
   - 实际:

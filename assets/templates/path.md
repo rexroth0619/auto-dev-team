@@ -26,6 +26,7 @@
 | 名称 | 类型 | 启动方式 | 查看方式 | 用途 |
 |------|------|----------|----------|------|
 | web-ui | `browser_console` | `pnpm dev` / `npm run dev` | 浏览器控制台 / Playwright console | 前端交互与页面脚本 |
+| gui-executor | `browser_console` / `network_trace` | `npx playwright test --headed` / 对应 GUI driver 命令 | 可视化窗口 / trace viewer / GUI 日志 | GUI 自治验收闭环 |
 | api-server | `process_stdout` | `pnpm dev:api` / `uvicorn ...` | 终端输出 | 后端逻辑与请求处理 |
 | worker-log | `app_log_file` | - | `tail -f logs/worker.log` | 异步任务、队列、定时任务 |
 | api-trace | `network_trace` | `curl` / Playwright / 浏览器 Network | 请求参数、状态码、响应 | 接口链路排查 |

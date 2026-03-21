@@ -77,6 +77,8 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 - 文件写入前必须完成版本保护闸门
 - 代码更新后默认先执行后台自动测试
 - 行为变化必须做至少一轮对应档位的观测驱动验证
+- 命中 GUI-capable task 时，默认进入 `GUI 自治验收闭环`
+- GUI use case 未达到 `已通过 / 暂不可执行 / 用户禁用 / Manual only` 前，不得宣称完成
 - 验证通过后才允许建立存档
 
 完整激活矩阵见 `references/write-preflight.md`。
