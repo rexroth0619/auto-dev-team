@@ -21,15 +21,16 @@ AI 检查项目当前测试能力:
 
 1. 后台自动测试:
    ✅ 已配置 (vitest / jest / pytest / go test / ...)
-   ❌ 未配置 → 推荐最小可行方案
+   ❌ 未配置 -> 推荐最小可行方案
 
 2. BDD 框架:
    ✅ 已配置 (cucumber / behave / godog / ...)
-   ❌ 未配置 → 不强制安装，可先用行为场景矩阵
+   ❌ 未配置 -> 不强制安装，可先用行为场景矩阵
 
 3. GUI executor:
    ✅ 已配置 (Playwright / 桌面 driver / 宿主操作入口 / ...)
-   ❌ 未配置 → 记录为“暂不可自动化”
+      - Web GUI 优先检查是否已有 `node xxx.ui.test.js` 或 `npx playwright test`
+   ❌ 未配置 -> 记录为“暂不可自动化”
 
 4. 现有覆盖:
    - 目标 use case 是否已有测试？
@@ -85,10 +86,10 @@ AI 为每个场景选择测试层:
 
 ### 测试资产优先级
 
-1. 修 bug → 优先补“原始失败场景”的保护性测试
-2. 核心逻辑 → 补单元 / 集成测试
-3. 用户链路 / GUI → 在条件成熟时默认执行 GUI executor
-4. 视觉 / 体感 → 输出人工验收步骤
+1. 修 bug -> 优先补“原始失败场景”的保护性测试
+2. 核心逻辑 -> 补单元 / 集成测试
+3. 用户链路 / GUI -> 在条件成熟时默认执行 GUI executor；Web GUI 优先评估 `Script-first Playwright`
+4. 视觉 / 体感 -> 输出人工验收步骤
 
 ### 强制规则
 
@@ -111,39 +112,20 @@ AI 为每个场景选择测试层:
 
 1. 先执行后台自动测试
 2. 再执行对应档位的观测驱动验证
-3. 若命中 GUI-capable task → 默认执行 GUI 自治验收闭环
-4. 若为大测试 → 更新 `.autodev/current-test.md`
-5. 输出 `🧾 测试回执`
+3. 若当前步骤或功能已接通 GUI -> 默认执行 GUI 自治验收闭环
+4. 若为多步骤任务，遵守“先当前层后端，再本步 GUI；最后再做功能级整体回归”
+5. 若为大测试 -> 更新 `.autodev/current-test.md`
+6. 输出 `🧾 测试回执`
 
 ### 输出格式
 
-```text
-🧾 测试回执
-测试等级: [小测试 / 大测试]
-覆盖场景: [列出]
-后台自动测试:
-- 方式: ...
-- 命令: ...
-- 结果: ...
-- 证据: ...
-观测对比验证:
-- 档位: ...
-- 主观测面: ...
-- 备用观测面: ...
-- 预期观测: ...
-- 实际观测: ...
-- 差异结论: ...
-GUI 自治验收:
-- 状态: [未触发 / 规划中 / 执行中 / 已通过 / 失败修复中 / 暂不可执行 / 用户禁用 / Manual only]
-- Executor: [...]
-- 可视化执行: [required / preferred / unavailable]
-- 覆盖用例: [...]
-- 证据: [timeline / screenshot / console / network / trace]
-- 修复轮次: [0 / 1 / 2 / 3]
-- Gate 结论: [允许完成 / 不允许完成]
-待业务确认: [无 / 列出]
-剩余风险: [无 / 列出]
-```
+输出字段与完整模板统一以 `references/principles/test-verification.md` 为准。
+
+Tester 模式只需额外强调：
+
+- 当前补的是哪一层测试资产
+- 是否采用 `Script-first Playwright`
+- 当前是 Step 级增量验证，还是 Feature 级整体回归
 
 ## Phase 5: 处理结果
 
@@ -178,7 +160,7 @@ GUI 自治验收:
 | PM 突然想到一个 use case | 先翻译成行为场景，再查现有覆盖 |
 | 修 bug 后补保护性测试 | 优先写失败测试，再修代码 |
 | 新功能需要补回归 | 补场景矩阵 + 后台自动测试 + 轻量观测验证 |
-| 想确认 GUI 用户链路 | 命中 GUI-capable task 时默认执行 GUI executor |
+| 想确认 GUI 用户链路 | 命中 GUI-capable task 时默认执行 GUI executor；Web 优先评估 `Script-first Playwright` |
 
 ## 禁止行为
 

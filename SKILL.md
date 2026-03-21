@@ -145,6 +145,12 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
   - 最小回归验证 checkpoint 脚本，防止里程碑 / 存档 / 列表输出回归
 - `references/gotchas.md`
   - 高信号坑位；优先放真实踩坑经验，而不是通用编程常识
+- `assets/templates/playwright-script-loop.js`
+  - Web GUI 的脚本式 Playwright 闭环模板，适合本地快速验证与自修复
+- `assets/templates/gui-case-matrix.md`
+  - GUI 用例矩阵模板，统一记录前置条件、页面变化、网络与副作用预期
+- `assets/templates/gui-evidence-bundle.md`
+  - GUI 证据包模板，统一 timeline / screenshot / console / network / page state
 - `references/shared/menu-contract.md`
   - 菜单型 UI 的统一协议；用于阶段确认、计划选择、任务收尾等编号菜单
 - `references/shared/flow-snippets.md`

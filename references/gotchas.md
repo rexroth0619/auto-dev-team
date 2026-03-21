@@ -26,6 +26,11 @@
 - 大测试命中后别忘了维护 `.autodev/current-test.md`。
 - 命中 GUI-capable task 却只写“建议执行”= 还没执行。
 - GUI 失败后必须重跑同一 case，不能只修代码不复验。
+- Web GUI 不要只会写 `@playwright/test`；`node xxx.ui.test.js` 的脚本式 Playwright 往往更适合本地快速闭环。
+- 脚本式 GUI 测试不要只堆 selector；优先抽出登录、上传、筛选、打开详情等业务 helper。
+- 上传 / 下载 / 媒体预览场景不要只断言按钮点击；至少补一层 network 或 response headers 断言。
+- 移动 Web 场景不要只改 viewport；优先考虑 device context、UA 和真实下载行为差异。
+- 如果 GUI case 失败，先分类是 locator、timing、frontend_state、network 还是 backend，不要一上来就说“Playwright 不稳定”。
 
 ## 模式切换
 

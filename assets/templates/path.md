@@ -38,10 +38,20 @@
 | 项目 | 值 |
 |------|-----|
 | 默认 GUI executor | `Playwright` / `桌面 driver` / `manual_only` |
-| headed 命令 | `npx playwright test --headed` |
-| trace / 截图产物路径 | `.autodev/temp/gui/` / `playwright-report/` / 自定义路径 |
+| script-first 命令 | `node agent_test/playwright/foo.ui.test.js` |
+| suite-first 命令 | `npx playwright test --headed` |
+| evidence bundle 路径 | `.autodev/temp/gui/` / `playwright-report/` / 自定义路径 |
 | 测试账号 / 种子数据 | `[请填写]` |
 | 用户可见执行限制 | `[无 / 远端环境无法开窗 / 仅本地可见]` |
+| 常用设备上下文 | `[Desktop Chrome / iPhone / Android / WeChat UA / ...]` |
+
+### GUI loop 约定
+
+- Web GUI 若已有 `node xxx.ui.test.js`，优先记录为 `Script-first Playwright`
+- 记录至少 1 条 headed 命令和 1 条 headless/CI 命令
+- 记录 evidence bundle 的落盘路径
+- 记录测试账号、种子数据、环境开关获取方式
+- 记录是否支持用户可见执行，以及限制条件
 
 ## Nginx 配置
 

@@ -90,6 +90,7 @@
 - 若当前步骤还不具备 GUI 联调条件，必须明确标记“GUI 暂不可执行”
 - Log 使用统一 fingerprint: `[DEV-{主题}-Step{N}]`
 - 只要本步影响运行行为，默认至少执行一轮 `L1 观测驱动验证`
+- 本步若已接通 GUI，遵守“先当前层后端，再本步最小 GUI case”；最后一步再做功能级整体回归
 
 ### 5. How to Test（强制）
 
@@ -166,6 +167,7 @@ GUI 自治验收:
 
 - 默认直接执行 GUI executor，不再停在“建议执行”
 - Web GUI 默认选择 Playwright；其他 GUI 使用当前环境可用的 executor
+- Web GUI 可采用 `Script-first Playwright` 或 `Suite-first Playwright`；前者更适合本地快速闭环与自修复
 - 执行时同步采集 evidence bundle：timeline / screenshot / console / network / page state / backend trace
 - 若失败，进入“采证 → 修复 → 重跑同一 case”的自修复循环，最多 3 次
 - 若最终状态为 `用户禁用` / `暂不可执行` / `Manual only`，且该链路仍需要开发者本地环境、私有控制台、真机或外部系统确认，则 Step 5.6 必须补 `🧭 开发者手测教程`
@@ -182,37 +184,14 @@ GUI 自治验收:
 
 #### Step 5.6: 输出测试回执（必须）
 
-```text
-🧾 测试回执
-测试等级: [小测试 / 大测试]
-覆盖场景: [列出]
-后台自动测试:
-- 方式: ...
-- 命令: ...
-- 结果: ...
-- 证据: ...
-观测对比验证:
-- 档位: ...
-- 主观测面: ...
-- 备用观测面: ...
-- 预期观测: ...
-- 实际观测: ...
-- 差异结论: ...
-GUI 自治验收:
-- 状态: [未触发 / 规划中 / 执行中 / 已通过 / 失败修复中 / 暂不可执行 / 用户禁用 / Manual only]
-- Executor: [...]
-- 可视化执行: [required / preferred / unavailable]
-- 覆盖用例: [...]
-- 证据: [timeline / screenshot / console / network / trace]
-- 修复轮次: [0 / 1 / 2 / 3]
-- Gate 结论: [允许完成 / 不允许完成]
-人工验收:
-- 状态: [不需要 / 已执行 / 需要开发者手测]
-- 原因: [无 / Manual only / @manual / GUI 暂不可执行 / 私有观测面]
-- 预期结果: [无 / 列出]
-待业务确认: [无 / 列出问题]
-剩余风险: [无 / 列出尚未覆盖的风险]
-```
+完整字段与输出格式统一以 `references/principles/test-verification.md` 为准。
+
+Step 模式必须额外说清：
+
+- 这是 Step 级增量验证，不是最终功能级验收
+- 本步是否已接通 GUI
+- 若已接通，跑的是哪一个最小 GUI case
+- 功能级整体回归会在最后一步完成
 
 若 `人工验收.状态 = 需要开发者手测`，紧跟输出：
 

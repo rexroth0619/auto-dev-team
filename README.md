@@ -19,6 +19,7 @@
 - 所有改动都要求验证和可回退
 - 代码变更后默认执行后台自动测试
 - GUI-capable task 默认进入 GUI 自治验收闭环
+- Web GUI 支持 `Script-first Playwright` 和 `Suite-first Playwright`
 - 大测试使用 `.autodev/current-test.md` 记录场景、执行和风险
 
 ## 当前入口结构
@@ -49,12 +50,16 @@ auto-dev-team/
 │       ├── current-steps.md
 │       ├── forbidden-zones.md
 │       ├── module-registry.md
+│       ├── gui-case-matrix.md
+│       ├── gui-evidence-bundle.md
 │       ├── path.md
+│       ├── playwright-script-loop.js
 │       ├── postmortem.md
 │       ├── project-map.md
 │       └── verification-checklist.md
 ├── scripts/
 │   ├── checkpoint.sh
+│   ├── checkpoint-selftest.sh
 │   └── init-autodev.sh
 └── references/
     ├── gotchas.md
@@ -100,6 +105,7 @@ auto-dev-team/
 - `行为场景层`：PM 可读的 use case、异常链路、边界 case。
 - `后台自动测试层`：代码变更后默认执行，优先覆盖改动点、边界和直接影响面。
 - `GUI 自治验收层`：命中页面流程、窗口、表单、会话、权限、可交互界面等风险时，AI 默认执行 GUI executor；Web 默认 Playwright。
+- `Web GUI executor`：既接受 `npx playwright test`，也接受 `node xxx.ui.test.js` 的脚本式 Playwright 闭环。
 - `人工验收层`：视觉、体感、外部系统等难以稳定自动化的部分。
 - `小测试`：输出 `🧾 测试回执`。
 - `大测试`：创建 `.autodev/current-test.md`，持续记录场景矩阵、执行状态和剩余风险。
