@@ -4,6 +4,15 @@
 
 ⚠️ 若当前改动命中 GUI-capable task，执行验证前必须读取 `references/principles/gui-autonomous-loop.md`。
 
+## 目录
+
+- 适用场景
+- 流程
+- 自动升级条件
+- 熔断机制
+- 执行完成后选项
+- 范围超限时选项
+
 ## 适用场景
 
 - 改文案
@@ -49,11 +58,26 @@ AI:   📋 保留性确认:
       ⛔ 若为"添加"操作，"删除项"必须为空
 ```
 
+### 1.95 Blast Radius 快速闸门（强制）
+
+```text
+AI:   运行 `scripts/blast-radius.py --file ... --symbol ... --mode fasttrack --task ... --write`
+      输出:
+      - `💥 Blast-radius 开始 - [BR-...] {...}`
+      - 风险等级
+      - 直接调用方 / 引用方
+      - 邻近测试
+      - Gate 结论
+
+      ⛔ 若 Blast Radius = 🔴 或目标无法定位 → 停止，升级为 Architect
+```
+
 ### 2. 直接执行
 ```
 AI:   0. 💿 执行前快照闸门（强制）
          - 必须输出 "💿 已保护" 或 "💿 闸门通过" 后才能继续
          - 规则见 references/principles/checkpoint-mechanism.md
+      0.5 通过 Blast Radius 闸门（强制）
       1. 执行改动 (插入 log: [SHORT-{主题}])
       2. 输出改动摘要
       3. How to Test (简化版)
@@ -62,6 +86,7 @@ AI:   0. 💿 执行前快照闸门（强制）
 ### 3. How to Test (简化版)
 ```
 🈶 验证:
+- 若执行后台自动测试 / API smoke / CLI 验证，先输出 `🗄️ 后端测试开始 - [BE-SHORT-{主题}-{场景}-{方式}] {scope=当前层 | layer=API/CLI/smoke | level=L1}`
 - 过滤 `[SHORT-{主题}]` 应看到: [关键 log 输出]
 - 操作 [xxx]: [预期结果]
 ```
@@ -70,6 +95,7 @@ AI:   0. 💿 执行前快照闸门（强制）
 
 ```text
 GUI 自治验收:
+- 真正拉起 GUI executor 前，先输出 `🖥️ 前端GUI测试开始 - [GUI-SHORT-{主题}-{caseID}-{executor}-r{轮次}] {scope=主验证 | visual=headed/headless | gate=GUI}`
 - 默认执行 GUI executor（Web 默认 Playwright）
 - 优先可视化执行；做不到用户可见时，必须保留 screenshot / trace / console / network 证据
 - 若 GUI case 失败，先修复再重跑同一 case，最多 3 次
@@ -106,6 +132,7 @@ GUI 自治验收:
 - 需要新建文件
 - 涉及接口变更
 - 可能影响其他模块
+- Blast Radius = 🔴 或影响范围超出原计划
 
 ## 熔断机制
 

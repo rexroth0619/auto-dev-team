@@ -2,6 +2,18 @@
 
 > 适用: 想写测试、补测试、验证某个 use case、检查覆盖缺口 | 产出: 测试文件；命中大测试时再产出 `current-test.md`
 
+## 目录
+
+- AI 必须主动读取
+- Phase 0: 环境与现有覆盖检查
+- Phase 1: 把需求翻译成行为场景
+- Phase 2: 选择测试落层
+- Phase 3: 写 / 补测试资产
+- Phase 4: 执行验证
+- Phase 5: 处理结果
+- 典型使用场景
+- 禁止行为
+
 ## AI 必须主动读取
 
 进入此模式时，AI 必须主动读取：
@@ -98,6 +110,7 @@ AI 为每个场景选择测试层:
 - 优先补最有价值的保护性测试
 - 能复用现有测试资产时，不重复造轮子
 - 若当前项目没有 BDD 框架，也可以先用场景矩阵和自动测试组合，不强制装框架
+- 第一行测试代码写入前，也要先做 Blast Radius，至少分析目标源文件和测试入口
 
 ## Phase 4: 执行验证
 
@@ -107,12 +120,18 @@ AI 为每个场景选择测试层:
 
 - 必须输出 `💿 已保护` 或 `💿 闸门通过`
 - 规则见 `references/principles/checkpoint-mechanism.md`
+- 随后必须执行 `scripts/blast-radius.py`
+  - 目标至少包括：被测源文件 / 关键符号
+  - 若本次会改已有测试入口，也把测试文件一起纳入目标
+  - 结果写入 `.autodev/current-blast-radius.md`
 
 ### 默认执行方式
 
 1. 先执行后台自动测试
+   - 真正执行命令前，先输出 `🗄️ 后端测试开始 - [BE-{任务指纹}-{Step|Feature}-{场景ID或场景组}-{测试方式}] {scope=当前层/功能级回归 | layer=规则/API/集成 | level=L1/L2/L3}`
 2. 再执行对应档位的观测驱动验证
 3. 若当前步骤或功能已接通 GUI -> 默认执行 GUI 自治验收闭环
+   - 真正拉起 GUI executor 前，先输出 `🖥️ 前端GUI测试开始 - [GUI-{任务指纹}-{Step|Feature}-{caseID}-{executor}-r{轮次}] {scope=主验证/supplemental | visual=headed/headless | gate=GUI}`
 4. 若为多步骤任务，遵守“先当前层后端，再本步 GUI；最后再做功能级整体回归”
 5. 若为大测试 -> 更新 `.autodev/current-test.md`
 6. 输出 `🧾 测试回执`

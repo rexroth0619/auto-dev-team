@@ -7,6 +7,21 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 
 > 像对待生命一样对待代码。入口保持轻量，细则按需加载。
 
+## 目录
+
+- 激活标识
+- 典型触发
+- 读取总顺序
+- 首要原则
+- 默认严格策略
+- `.autodev` 记忆与配置
+- 版本保护与任务收尾
+- Bundled Resources
+- Patterns
+- PM 资源与验收
+- 禁止行为（高信号）
+- 输出风格
+
 ## 激活标识
 
 进入任何模式时输出：`🔥 auto-dev-team - [模式名] 已激活`
@@ -75,9 +90,12 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
   - 能用 Subagent 时优先走独立会诊
   - 环境不支持时降级为本地 checklist，会诊能力不丢
 - 文件写入前必须完成版本保护闸门
+- 第一行代码写入前必须完成脚本化 Blast Radius 分析，默认执行 `scripts/blast-radius.py`
 - 代码更新后默认先执行后台自动测试
 - 行为变化必须做至少一轮对应档位的观测驱动验证
 - 命中 GUI-capable task 时，默认进入 `GUI 自治验收闭环`
+- 命中 GUI-capable task 时，必须先准备或更新 `.autodev/current-gui-test.js`，并确认它与当前改动直接对应
+- 历史 GUI 脚本只能作为补充回归，不能替代当前步骤的直连 GUI 验证
 - GUI use case 未达到 `已通过 / 暂不可执行 / 用户禁用 / Manual only` 前，不得宣称完成
 - 验证通过后才允许建立存档
 
@@ -90,7 +108,8 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 
 ### 工作区边界
 
-- 结构化长期记忆文档保留在 `.autodev/` 根下（如 `context-snapshot.md`、`current-steps.md`、`current-test.md`）。
+- 结构化长期记忆文档保留在 `.autodev/` 根下（如 `context-snapshot.md`、`current-steps.md`、`current-test.md`、`current-gui-test.js`）。
+- Blast Radius 报告保留在 `.autodev/blast-radius/`；最近一次结论镜像到 `.autodev/current-blast-radius.md`
 - AI 生成的临时台账、调试输出、草稿、诊断材料，一律写入 `.autodev/temp/`。
 - 非最终交付物，不得写入仓库其他路径。
 - 若工具必须在 `.autodev/temp/` 之外生成临时文件，生成后必须立即清理，或加入 ignore 后再继续执行。
@@ -113,11 +132,14 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 | `.autodev/current-steps.md` | 多步执行计划与逐步记录 | `assets/templates/current-steps.md` | 多步任务 / Step 模式 |
 | `.autodev/current-test.md` | 大测试场景矩阵、执行记录、剩余风险 | `assets/templates/current-test.md` | 大测试 / 关键链路 / 跨模块任务 |
 | `.autodev/current-debug.md` | 多轮诊断假设、观测记录、复诊结论 | `assets/templates/current-debug.md` | 复杂 Debug / 多轮排查 / 回归定位 |
+| `.autodev/current-gui-test.js` | 当前任务的 GUI 主测试入口，要求与本步改动直接对应 | `assets/templates/current-gui-test.js` | 命中 GUI-capable task 且可自动化时 |
+| `.autodev/current-blast-radius.md` | 最近一次 Blast Radius 结论、Gate 与验证范围 | `assets/templates/current-blast-radius.md` | 任意代码 / 测试 / 配置写入前 |
 
 配置职责拆分：
 
 - `.autodev/path.md`：项目环境、部署、Git、路径真相源
 - `.autodev/autodev-config.json`：skill 行为策略真相源
+  - 包括 blast radius 深度、输出、fail-close 策略
 
 `path.md` 的完整规则以 `references/principles/path-system.md` 为准。
 
@@ -129,10 +151,10 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 - 💿 **保护快照**：执行前强制闸门 + 智能补充，保护“改动前”状态
 - 💾 **存档**：每步改动验证通过后建立，使用业务指纹
 
-任何代码改动完成后，执行顺序固定为：
+任何代码改动的固定执行顺序为：
 
 ```text
-影响分析 → 即时验证 → 建立存档 → 任务完成报告
+脚本化 Blast Radius → 执行改动 → 即时验证 → 建立存档 → 任务完成报告
 ```
 
 ## Bundled Resources
@@ -143,10 +165,22 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
   - 处理分支守卫、里程碑、快照闸门、存档、读档、回退
 - `scripts/checkpoint-selftest.sh`
   - 最小回归验证 checkpoint 脚本，防止里程碑 / 存档 / 列表输出回归
+- `scripts/blast-radius.py`
+  - 写代码前的脚本化 Blast Radius 闸门；输出 `.autodev/current-blast-radius.md` 和 `.autodev/blast-radius/*.md`
+- `scripts/blast-radius-step.sh`
+  - Step 模式专用包装脚本；从 `.autodev/current-steps.md` 自动解析当前 Step 的 Blast Radius 目标与风险阈值
+- `scripts/blast-radius-selftest.sh`
+  - Blast Radius 脚本自检，确保报告产物与核心字段存在
+- `scripts/blast-radius-step-selftest.sh`
+  - Step 包装脚本自检，验证解析、转发与超阈值 fail-close
 - `references/gotchas.md`
   - 高信号坑位；优先放真实踩坑经验，而不是通用编程常识
 - `assets/templates/playwright-script-loop.js`
   - Web GUI 的脚本式 Playwright 闭环模板，适合本地快速验证与自修复
+- `assets/templates/current-gui-test.js`
+  - 当前任务专用 GUI 主脚本模板；默认 headed，要求填写与本步改动的直接对应关系
+- `assets/templates/current-blast-radius.md`
+  - 最新 Blast Radius 结论模板；脚本不可用时按此模板手工降级
 - `assets/templates/gui-case-matrix.md`
   - GUI 用例矩阵模板，统一记录前置条件、页面变化、网络与副作用预期
 - `assets/templates/gui-evidence-bundle.md`

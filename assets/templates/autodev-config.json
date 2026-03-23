@@ -20,6 +20,17 @@
     "archive_after_each_verified_step": true,
     "fail_close_before_write": true
   },
+  "blast_radius": {
+    "enabled": true,
+    "required_before_write": "always",
+    "script_entry": "scripts/blast-radius.py",
+    "default_reverse_depth": 2,
+    "max_refs_per_section": 25,
+    "include_neighbor_tests": true,
+    "update_current_report": true,
+    "fail_close_on_unknown_target": true,
+    "fail_close_on_risk_escalation": true
+  },
   "testing": {
     "default_backend_tests": true,
     "gui_autorun_on_gui_task": true,

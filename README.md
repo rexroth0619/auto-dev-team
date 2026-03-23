@@ -5,6 +5,18 @@
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-Compatible-blue)](https://agentskills.io)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+## 目录
+
+- 简介
+- 当前入口结构
+- 目录结构
+- 主要模式
+- V2 测试协议
+- 使用方式
+- 配置与脚本
+- PM 资源
+- 许可证
+
 ## 简介
 
 `auto-dev-team` 基于 [Agent Skills 规范](https://agentskills.io/specification) 构建，目标是把“开发流程知识”拆成可组合、可按需加载的文档和脚本，而不是把所有规则都堆进 `SKILL.md`。
@@ -17,6 +29,7 @@
 - 机械步骤优先交给脚本，减少重复推理
 - Skill 策略由 `.autodev/autodev-config.json` 配置
 - 所有改动都要求验证和可回退
+- 第一行代码写入前默认执行脚本化 Blast Radius
 - 代码变更后默认执行后台自动测试
 - GUI-capable task 默认进入 GUI 自治验收闭环
 - Web GUI 支持 `Script-first Playwright` 和 `Suite-first Playwright`
@@ -48,6 +61,7 @@ auto-dev-team/
 │       ├── context-snapshot.md
 │       ├── current-test.md
 │       ├── current-steps.md
+│       ├── current-blast-radius.md
 │       ├── forbidden-zones.md
 │       ├── module-registry.md
 │       ├── gui-case-matrix.md
@@ -58,6 +72,10 @@ auto-dev-team/
 │       ├── project-map.md
 │       └── verification-checklist.md
 ├── scripts/
+│   ├── blast-radius.py
+│   ├── blast-radius-step.sh
+│   ├── blast-radius-selftest.sh
+│   ├── blast-radius-step-selftest.sh
 │   ├── checkpoint.sh
 │   ├── checkpoint-selftest.sh
 │   └── init-autodev.sh
@@ -103,6 +121,8 @@ auto-dev-team/
 ## V2 测试协议
 
 - `行为场景层`：PM 可读的 use case、异常链路、边界 case。
+- `Blast Radius 闸门`：改代码前先扫描目标文件/符号、直接调用方、邻近测试、reverse import chain 和风险等级。
+- `Step Blast Radius wrapper`：Step 模式优先由 `scripts/blast-radius-step.sh` 从 `current-steps.md` 自动解析 target 和阈值，减少手填参数。
 - `后台自动测试层`：代码变更后默认执行，优先覆盖改动点、边界和直接影响面。
 - `GUI 自治验收层`：命中页面流程、窗口、表单、会话、权限、可交互界面等风险时，AI 默认执行 GUI executor；Web 默认 Playwright。
 - `Web GUI executor`：既接受 `npx playwright test`，也接受 `node xxx.ui.test.js` 的脚本式 Playwright 闭环。
@@ -126,6 +146,10 @@ auto-dev-team/
 - 项目环境与路径：`.autodev/path.md`
 - Skill 策略与阈值：`.autodev/autodev-config.json`
 - 初始化 `.autodev/`：`scripts/init-autodev.sh`
+- 写入前 Blast Radius：`scripts/blast-radius.py`
+- Step 模式 Blast Radius 包装：`scripts/blast-radius-step.sh`
+- Blast Radius 自检：`scripts/blast-radius-selftest.sh`
+- Step 包装自检：`scripts/blast-radius-step-selftest.sh`
 - 版本保护原语：`scripts/checkpoint.sh`
 - checkpoint 自检：`scripts/checkpoint-selftest.sh`
 - 高频坑位沉淀：`references/gotchas.md`

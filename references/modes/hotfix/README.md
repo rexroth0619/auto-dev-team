@@ -32,14 +32,28 @@ AI:   1. 跳过深度分析
       5. 等待用户选择执行哪一个
 ```
 
+### 1.5 Blast Radius 快速止血评估（强制）
+
+```text
+AI:   在第一行修复代码前，运行 `scripts/blast-radius.py`
+      目标: 本次止血文件 / 符号 / 原始故障路径
+      输出: 风险等级、直接调用方、原始回归入口、Gate 结论
+
+      若结果 = 🔴 且无法缩小到单点止血:
+      - 明确说明风险
+      - 让用户确认是否继续临时止血
+```
+
 ### 2. 快速修复
 ```
 AI:   0. 💿 执行前快照闸门（强制）
          - 必须输出 "💿 已保护" 或 "💿 闸门通过" 后才能继续
          - 规则见 references/principles/checkpoint-mechanism.md
+      0.5 Blast Radius 闸门（强制）
       1. 执行最小改动 (插入 log: [HOTFIX-{问题}])
       2. "⚠️ 这是临时止血，非根治"
       3. How to Test
+         - 若执行后台 smoke / API / CLI 验证，先输出 `🗄️ 后端测试开始 - [BE-HOTFIX-{问题}-{场景}-{方式}] {scope=止血验证 | layer=API/CLI/smoke | level=L1}`
          
          过滤 `[HOTFIX-{问题}]` 应看到:
          → [HOTFIX-{问题}] 修复点: xxx
@@ -50,6 +64,7 @@ AI:   0. 💿 执行前快照闸门（强制）
 
 ```text
 GUI 止血验证:
+- 真正拉起 GUI executor 前，先输出 `🖥️ 前端GUI测试开始 - [GUI-HOTFIX-{问题}-{caseID}-{executor}-r{轮次}] {scope=主验证 | visual=headed/headless | gate=GUI}`
 - 默认执行 GUI executor 复现原故障路径
 - 证据至少保留 screenshot / console / network / 关键操作时间线
 - 止血后必须重跑原 GUI case，确认症状消失

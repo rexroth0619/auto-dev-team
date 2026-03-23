@@ -3,9 +3,22 @@
 > 何时进入: Architect / Refactor / Optimize 生成计划后用户说“开始” | 必读: `current-steps.md`；大测试时同步读取 `current-test.md`
 
 ⚠️ 执行本模式时，必须读取 `references/principles/incremental-testable.md`。
+⚠️ 执行本模式时，第一行代码前必须读取 `references/principles/impact-analysis.md` 并优先运行 `scripts/blast-radius-step.sh`。
 ⚠️ 执行本模式时，必须读取 `references/principles/test-verification.md`。
 ⚠️ 若本步有行为改动，执行验证前必须读取 `references/principles/observation-driven-verification.md`。
 ⚠️ 若本步命中 GUI-capable task，执行验证前必须读取 `references/principles/gui-autonomous-loop.md`。
+
+## 目录
+
+- 最高指令
+- 菜单输出约定
+- 每步流程
+- 信任模式
+- 最后一步特殊流程
+- 任务完成收尾
+- 任务完成后选项
+- 失败处理
+- 途中微任务
 
 ## 最高指令
 
@@ -68,12 +81,27 @@
   - GUI 自治验收状态
 - 如发现计划与当前上下文不符 → 停下来问用户
 
+### 2.5 Blast Radius 闸门（强制）
+
+- 默认执行 `scripts/blast-radius-step.sh --step {N}`
+- 该脚本会自动解析 `current-steps.md` 中本步的 `[Blast Radius: ... → ≤风险]`
+- 只有当 `current-steps.md` 缺失或标记不合法时，才允许手工降级为 `scripts/blast-radius.py`
+- 必须把最新报告写入 `.autodev/current-blast-radius.md`
+- 必须在回执中说明：
+  - 本步 Blast Radius 目标
+  - 风险等级
+  - 直接调用方 / 关键消费方
+  - Gate 结论
+- 若脚本结果高于计划阈值，或目标无法定位 → 停止本步，先回到计划层
+- 若本步实际改动范围扩大，必须重跑后再继续写代码
+
 ### 3. 改动声明
 
 ```text
 📋 改动范围:
 - 文件: [列出]
 - 函数 / 模块: [列出]
+- Blast Radius: [.autodev/current-blast-radius.md / 风险等级 / Gate]
 - 覆盖场景: [列出]
 ```
 
@@ -82,11 +110,15 @@
 - 遵守模块策略：代码写入 `current-steps.md` 指定的目标文件，不随意换文件
 - 复用检查：写新代码前，先确认 `module-registry` 里有没有能用的
 - 增量可测：本步必须产出可独立验证的模块 / 函数 / 组件
+- 若真实触碰的文件 / 符号超出本步 Blast Radius 目标，必须先刷新报告再继续
 - 同步测试资产：
   - 更新本步覆盖的行为场景
   - 若项目有 BDD 框架且该场景适合 `.feature`，同步更新 `.feature` / step definitions
   - 若为大测试，同步更新 `current-test.md`
 - 若本步命中 GUI-capable task，必须写明 GUI executor 与 `visual_mode`
+- 若本步命中 GUI-capable task，必须先创建或更新 `.autodev/current-gui-test.js`，并显式写出“当前改动文件/模块 -> GUI case”对应关系
+- 若复用现有 GUI 脚本，必须先确认它与本步覆盖场景直接对应；不直接对应时，必须重写 `.autodev/current-gui-test.js`
+- Web GUI 默认 headed；除非用户明确允许 headless，或当前环境无法展示浏览器
 - 若当前步骤还不具备 GUI 联调条件，必须明确标记“GUI 暂不可执行”
 - Log 使用统一 fingerprint: `[DEV-{主题}-Step{N}]`
 - 只要本步影响运行行为，默认至少执行一轮 `L1 观测驱动验证`
@@ -117,6 +149,9 @@ AI 必须先说明：
 - 当前层级: [后端规则 / API / 前端页面 / 联调]
 - GUI 状态: [未触发 / 暂不可执行 / 可执行]
 - GUI executor: [无 / Playwright / ...]
+- GUI 主脚本: [.autodev/current-gui-test.js / 无]
+- Blast Radius 报告: [.autodev/current-blast-radius.md]
+- Blast Radius 入口: [scripts/blast-radius-step.sh / 手工降级]
 - 可视化执行: [required / preferred / unavailable]
 ```
 
@@ -125,6 +160,7 @@ AI 必须先说明：
 无论简单还是复杂，只要本步有行为改动，都必须先执行后台自动测试。
 
 ```text
+🗄️ 后端测试开始 - [BE-{任务指纹}-Step{N}-{场景ID或场景组}-{测试方式}] {scope=当前层 | layer=后端规则/API/集成 | level=L1/L2/L3}
 🧪 后台自动测试
 - 方式: [单测 / 集成 / 契约 / API smoke / CLI]
 - 命令: [实际执行的命令]
@@ -166,7 +202,11 @@ GUI 自治验收:
 当状态为 `规划中` 或 `执行中` 时：
 
 - 默认直接执行 GUI executor，不再停在“建议执行”
+- 真正拉起 GUI executor 前，先输出 `🖥️ 前端GUI测试开始 - [GUI-{任务指纹}-Step{N}-{caseID}-{executor}-r{轮次}] {scope=主验证/supplemental | visual=headed/headless | gate=GUI}`
+- GUI 主验证默认执行 `.autodev/current-gui-test.js`；若该文件与当前改动不直接对应，必须先重写后再运行
+- 现有业务 E2E 脚本只能作为补充回归，不能替代 `.autodev/current-gui-test.js`
 - Web GUI 默认选择 Playwright；其他 GUI 使用当前环境可用的 executor
+- Web GUI 默认使用 headed Playwright；只有用户明确允许 headless 或环境不可见时，才允许退化为 headless
 - Web GUI 可采用 `Script-first Playwright` 或 `Suite-first Playwright`；前者更适合本地快速闭环与自修复
 - 执行时同步采集 evidence bundle：timeline / screenshot / console / network / page state / backend trace
 - 若失败，进入“采证 → 修复 → 重跑同一 case”的自修复循环，最多 3 次
@@ -190,7 +230,7 @@ Step 模式必须额外说清：
 
 - 这是 Step 级增量验证，不是最终功能级验收
 - 本步是否已接通 GUI
-- 若已接通，跑的是哪一个最小 GUI case
+- 若已接通，跑的是哪一个最小 GUI case，以及它如何直接对应当前改动
 - 功能级整体回归会在最后一步完成
 
 若 `人工验收.状态 = 需要开发者手测`，紧跟输出：
@@ -241,6 +281,7 @@ Step 模式必须额外说清：
 ⛔ 无论任何情况，Step 结束后必须停下等待用户回复
 ⛔ 禁止自己判断“应该没问题”然后继续
 ⛔ 即使代码很简单，也必须等待确认
+⛔ 禁止拿历史 GUI 脚本冒充本步的最小 GUI case
 ```
 
 ## 信任模式

@@ -33,6 +33,7 @@ EXCLUDE_FILE="$REPO_ROOT/.git/info/exclude"
 
 mkdir -p "$AUTODEV_DIR"
 mkdir -p "$AUTODEV_DIR/temp"
+mkdir -p "$AUTODEV_DIR/blast-radius"
 
 copy_if_missing() {
   local source_file="$1"
@@ -53,6 +54,7 @@ copy_if_missing "$TEMPLATE_DIR/postmortem.md" "$AUTODEV_DIR/postmortem.md"
 copy_if_missing "$TEMPLATE_DIR/path.md" "$AUTODEV_DIR/path.md"
 copy_if_missing "$TEMPLATE_DIR/forbidden-zones.md" "$AUTODEV_DIR/forbidden-zones.md"
 copy_if_missing "$TEMPLATE_DIR/autodev-config.json" "$AUTODEV_DIR/autodev-config.json"
+copy_if_missing "$TEMPLATE_DIR/current-blast-radius.md" "$AUTODEV_DIR/current-blast-radius.md"
 
 touch "$EXCLUDE_FILE"
 if ! grep -qxF ".autodev/" "$EXCLUDE_FILE"; then

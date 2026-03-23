@@ -2,9 +2,87 @@
 
 > ⚕️ 手术前必须评估波及范围——改一个器官可能影响整个系统
 
+## 目录
+
+- 触发时机
+- 脚本化 Blast Radius 闸门
+- 分析维度
+- 输出格式
+- 与即时验证的配合
+- 分析深度规则
+- 特殊场景
+- 盲区与手工补充
+- 禁止行为
+
 ## 触发时机
 
-每次代码变更后，必须执行影响范围分析，确保测试覆盖所有可能受影响的模块。
+影响范围分析不再只是“改完再想想会影响谁”，而是一个**写代码前的闸门**：
+
+1. 第一行代码写入前，必须先做一次脚本化 Blast Radius。
+2. 若实际改动文件 / 符号超出原计划，必须立刻重跑并刷新报告。
+3. 完成改动后，若验证范围因真实变更扩大，必须再补一轮刷新，确保测试范围没有漏掉。
+
+## 脚本化 Blast Radius 闸门
+
+默认入口：
+
+```bash
+scripts/blast-radius.py --file src/foo.ts --symbol updateFoo --mode step --task foo --step 2 --write
+```
+
+Step 模式优先入口：
+
+```bash
+scripts/blast-radius-step.sh --step 2
+```
+
+它会从 `.autodev/current-steps.md` 自动解析：
+
+- 本步 Blast Radius 目标
+- 风险阈值（如 `≤🟡`）
+- 当前 Step 编号
+
+多目标场景：
+
+```bash
+scripts/blast-radius.py \
+  --target src/foo.ts::updateFoo \
+  --target src/bar.ts::parseBar \
+  --mode debug \
+  --task foo-bugfix \
+  --write
+```
+
+强制要求：
+
+- 报告必须在**第一行代码写入前**生成，不能事后补票。
+- 真正开始执行时，必须先输出一行启动标识：
+
+```text
+💥 Blast-radius 开始 - [BR-{任务指纹}-{Step|Feature}-{targetSlug}-d{depth}] {symbol=... | file=... | mode=... | step=... | threshold=... | depth=...}
+```
+
+- 该启动标识遵循 `references/principles/test-verification.md` 的统一启动标识协议。
+
+- 默认产出：
+  - `.autodev/current-blast-radius.md`
+  - `.autodev/blast-radius/*.md`
+  - `.autodev/blast-radius/*.json`
+- 报告至少要覆盖：
+  - 目标文件 / 目标符号
+  - 直接调用方 / 引用方
+  - reverse import chain
+  - 被调用方 / 本地依赖
+  - 邻近测试 / 回归入口
+  - 配置 / 环境 / 动态调用信号
+  - 风险等级与 Gate 结论
+
+Fail-close 规则：
+
+- 目标文件或符号无法定位清楚 → 停止写代码，先缩小范围。
+- Blast Radius 超出计划预期 → 停止直接改动，先重写计划或让用户确认。
+- 实际改动触碰了报告之外的文件 / 符号 → 立即重跑脚本，旧报告失效。
+- Step 模式若 `current-steps.md` 的 Blast Radius 标记缺失 / 非法 → 视为闸门失败，不能直接写代码。
 
 ## 分析维度
 
@@ -13,25 +91,12 @@
 **调用方分析**：谁调用了被改的模块？
 
 ```bash
-# TypeScript/JavaScript
-rg "import.*{被改模块}" --type ts
-rg "from ['\"].*被改模块" --type ts
-
-# Python
-rg "from.*被改模块.*import" --type py
-rg "import.*被改模块" --type py
-
-# Go
-rg "import.*被改包" --type go
+scripts/blast-radius.py --target src/foo.ts::updateFoo --write
 ```
 
 **被调用方分析**：被改的模块调用了谁？
 
-```
-读取被改文件的 import/require 语句
-→ 列出所有依赖
-→ 如果依赖的行为假设改变，可能有问题
-```
+脚本会自动读取 import / require / source / from 关系，列出本地依赖与 reverse import chain。
 
 ### 2. 数据流依赖（需要理解业务）
 
@@ -73,43 +138,36 @@ rg "import.*被改包" --type go
 ## 输出格式
 
 ```
-🎯 影响范围分析
-
-本次变更:
-├── src/utils/price.ts (核心改动)
-└── src/types/price.d.ts (类型更新)
+Blast Radius Report
 
 ━━━━━━━━━━━━━━━━━━━━
 
-📌 直接影响（调用方）:
-├── src/components/ProductCard.tsx
-├── src/components/CartItem.tsx
-└── src/pages/Checkout.tsx
+- 风险等级: 🟡 中
+- Gate 结论: 可以继续，但必须把直接调用方和关键消费方纳入验证
+- 最新报告: .autodev/blast-radius/20260323-120000-price-updatefoo.md
 
-📌 直接影响（被调用方）:
-└── src/utils/currency.ts
+## 目标
+- 文件: src/utils/price.ts
+- 符号: formatPrice
 
-━━━━━━━━━━━━━━━━━━━━
+## 直接影响（调用方 / 引用方）
+| 文件 | 行号 | 类型 | 命中内容 |
+| --- | --- | --- | --- |
+| src/components/ProductCard.tsx | 12 | symbol_ref | import { formatPrice } ... |
+| src/components/CartItem.tsx | 9 | direct_importer | reverse-import |
 
-📌 数据流影响:
-├── PDF 导出模块（可能解析价格字符串）
-└── 结算 API（传递价格给第三方）
+## 传递调用链（reverse import chain）
+- Depth 1: src/pages/Checkout.tsx
 
-📌 配置影响:
-└── 无
+## 测试资产 / 邻近测试
+- src/utils/price.test.ts
 
-━━━━━━━━━━━━━━━━━━━━
-
-🧪 测试范围建议:
-
+## 验证范围建议
 | 优先级 | 模块 | 原因 |
-|-------|------|------|
-| 🔴 必测 | price.ts | 本次改动核心 |
-| 🔴 必测 | ProductCard.tsx | 直接调用方 |
-| 🔴 必测 | CartItem.tsx | 直接调用方 |
-| 🟡 建议 | Checkout.tsx | 直接调用方 |
-| 🟡 建议 | PDF 导出 | 数据流消费方 |
-| ⚪ 可选 | currency.ts | 被调用方，影响小 |
+| --- | --- | --- |
+| 🔴 必测 | src/utils/price.ts | 本次改动核心 |
+| 🔴 必测 | src/components/ProductCard.tsx | 直接调用方 |
+| 🟡 建议 | src/pages/Checkout.tsx | 二层上传递调用链 |
 ```
 
 ## 与即时验证的配合
@@ -117,13 +175,18 @@ rg "import.*被改包" --type go
 影响范围分析结果必须用于**验证范围**：
 
 ```
-主 Agent 完成代码
+第一行代码前执行 Blast Radius
     ↓
-执行影响范围分析
+补数据流 / 隐式依赖 / 业务规则
+    ↓
+执行改动
+    ↓
+若实际改动超出原目标 → 刷新 Blast Radius
     ↓
 即时验证覆盖：
   - 改动点
   - 直接调用方
+  - 关键消费方 / 邻近测试
 ```
 
 ## 分析深度规则
@@ -145,7 +208,7 @@ rg "import.*被改包" --type go
 - 公共函数参数
 
 必须：
-1. 列出所有调用方
+1. 先用脚本列出所有调用方
 2. 检查是否向后兼容
 3. 如不兼容，所有调用方都是必测范围
 ```
@@ -159,7 +222,7 @@ rg "import.*被改包" --type go
 - 约束变更
 
 必须：
-1. 列出所有查询该表的代码
+1. 先列出所有查询该表 / 使用该模型的代码
 2. 检查 ORM 模型是否同步
 3. 检查迁移脚本是否正确
 ```
@@ -223,9 +286,29 @@ rg "import.*被改包" --type go
 ⛔ 任何"有"的项目必须检查是否需要同步修改
 ```
 
+## 盲区与手工补充
+
+脚本化 Blast Radius 负责把**机械可扫的影响面**固化下来，但不能替代人工判断：
+
+- 仍需手工补的内容：
+  - 数据流消费方
+  - 业务隐式契约
+  - 动态注册 / 反射 / 字符串拼装调用
+  - 对称操作是否真的需要同步改
+- 正确用法：
+  - 先跑脚本拿候选影响面
+  - 再补业务语义
+  - 最后用它驱动验证范围
+- 错误用法：
+  - 只 grep 同名函数就宣布“分析完成”
+  - 把脚本输出当成完整真相源，不补数据流判断
+  - 改到一半范围扩大，却继续沿用旧报告
+
 ## 禁止行为
 
+- ❌ 跳过脚本化 Blast Radius 闸门直接写代码
 - ❌ 跳过影响范围分析直接写测试
+- ❌ 只 grep 同名函数，不检查调用链 / 邻近测试 / 配置信号
 - ❌ 只分析直接调用方，忽略数据流
 - ❌ 不输出测试范围建议
 - ❌ 大改动只做浅层分析

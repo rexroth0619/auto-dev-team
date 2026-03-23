@@ -48,15 +48,20 @@ AI:   扫描:
 2. 用户确认范围
 3. 💿 执行前快照闸门（强制）
    - 必须输出 "💿 已保护" 或 "💿 闸门通过" 后才能继续
-4. 逐项清理
-5. 验证
-6. 建立存档（详见 references/principles/checkpoint-mechanism.md）
-7. 自动更新 module-registry.md (如删除了已注册组件)
+4. 🧭 Blast Radius 删除证明（强制）
+   - 对候选删除文件 / 符号执行 `scripts/blast-radius.py ... --mode cleanup --write`
+   - 重点确认：直接调用方、reverse import chain、邻近测试
+   - 若仍有活跃调用方，禁止继续删除
+5. 逐项清理
+6. 验证
+7. 建立存档（详见 references/principles/checkpoint-mechanism.md）
+8. 自动更新 module-registry.md (如删除了已注册组件)
 ```
 
 ## 安全规则
 
 - 删除前必须确认无调用
+- 删除前必须保留 Blast Radius 报告
 - 批量删除需用户二次确认
 - 版本保护机制确保可回退（详见 `references/principles/checkpoint-mechanism.md`）
 

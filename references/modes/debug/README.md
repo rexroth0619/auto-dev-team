@@ -2,6 +2,17 @@
 
 > ⚕️ 适用: 患者出现异常症状（bug、报错、功能不正常）| 产出: 更新病例库 postmortem.md
 
+## 目录
+
+- 🏥 诊断医师协议
+- AI 必须主动读取（查阅病史）
+- 流程
+- postmortem 写入原则
+- postmortem 条目格式
+- 强制规则（诊疗纪律）
+- 失败处理（疑难杂症）
+- 阶段结束选项
+
 ## 🏥 诊断医师协议
 
 **你是主治医师，不是急于开药的实习生。误诊的代价由患者承担。**
@@ -157,6 +168,10 @@
       4. 等待用户选择（禁止先执行）
       5. 💿 执行前快照闸门（强制）
          - 必须输出 "💿 已保护" 或 "💿 闸门通过" 后才能继续
+      5.5 🧭 治疗前 Blast Radius（强制）
+         - 对计划修改的文件 / 符号执行 `scripts/blast-radius.py ... --mode debug --write`
+         - 更新 `.autodev/current-blast-radius.md`
+         - 若影响面超出当前治疗方案，先停下缩小手术范围
       6. 确认后执行，观察治疗效果（复用同一组观测场景；GUI 问题则复用同一组 GUI case + evidence bundle）
       7. 清理所有临时 [DEBUG-*] 诊断探针，仅保留必要基础观测
 ```
@@ -170,7 +185,7 @@
 ```
 治疗方案执行完成
     ↓
-1. 影响范围分析（见 references/principles/impact-analysis.md）
+1. 检查治疗前 Blast Radius 是否仍然覆盖真实改动；若不覆盖，先刷新报告
     ↓
 2. 即时验证（主 Agent）
     ↓
@@ -183,12 +198,16 @@
 🧪 治疗后验证
 ━━━━━━━━━━━━━━━━━━━━
 
-🎯 影响范围: [模块列表]
+🎯 Blast Radius: [.autodev/current-blast-radius.md / 风险等级 / 模块列表]
 
+🗄️ 后端测试开始 - [BE-DEBUG-{问题指纹}-{场景或命令}-{测试方式}] {scope=修复复诊 | layer=后端/API/CLI | level=L2/L3}
 🧪 即时验证:
 方式: [命令/脚本]
 结果: [通过/失败]
 证据: [关键输出]
+
+若位于 GUI 链路:
+🖥️ 前端GUI测试开始 - [GUI-DEBUG-{问题指纹}-{caseID}-{executor}-r{轮次}] {scope=主验证 | visual=headed/headless | gate=GUI}
 
 ✅ 治疗成功，病情已稳定
 ━━━━━━━━━━━━━━━━━━━━
