@@ -80,6 +80,7 @@ auto-dev-team/
 │   ├── checkpoint.sh
 │   ├── checkpoint-selftest.sh
 │   ├── release-pack.py
+│   ├── release-pack-selftest.sh
 │   └── init-autodev.sh
 └── references/
     ├── gotchas.md
@@ -157,6 +158,7 @@ auto-dev-team/
 - 版本保护原语：`scripts/checkpoint.sh`
 - checkpoint 自检：`scripts/checkpoint-selftest.sh`
 - 预发验收包草稿生成：`scripts/release-pack.py`
+- 预发验收包自检：`scripts/release-pack-selftest.sh`
 - 高频坑位沉淀：`references/gotchas.md`
 
 ## PM 资源

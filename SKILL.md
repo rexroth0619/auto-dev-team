@@ -176,6 +176,8 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
   - Step 包装脚本自检，验证解析、转发与超阈值 fail-close
 - `scripts/release-pack.py`
   - 根据最近提交生成预发验收包草稿，输出查数 SQL 模板、测试数据单和手测步骤骨架
+- `scripts/release-pack-selftest.sh`
+  - `release-pack.py` 自检脚本；验证 markdown 和 JSON 产物以及关键阶段标题存在
 - `references/gotchas.md`
   - 高信号坑位；优先放真实踩坑经验，而不是通用编程常识
 - `assets/templates/playwright-script-loop.js`
