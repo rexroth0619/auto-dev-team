@@ -79,6 +79,7 @@ auto-dev-team/
 │   ├── blast-radius-step-selftest.sh
 │   ├── checkpoint.sh
 │   ├── checkpoint-selftest.sh
+│   ├── release-pack.py
 │   └── init-autodev.sh
 └── references/
     ├── gotchas.md
@@ -155,6 +156,7 @@ auto-dev-team/
 - Step 包装自检：`scripts/blast-radius-step-selftest.sh`
 - 版本保护原语：`scripts/checkpoint.sh`
 - checkpoint 自检：`scripts/checkpoint-selftest.sh`
+- 预发验收包草稿生成：`scripts/release-pack.py`
 - 高频坑位沉淀：`references/gotchas.md`
 
 ## PM 资源
