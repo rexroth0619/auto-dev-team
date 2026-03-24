@@ -1,18 +1,31 @@
 /**
- * Script-first Playwright GUI loop template.
+ * Current task GUI validation entry.
  *
- * Preferred current-task entry:
- *   node .autodev/current-gui-test.js
+ * Path contract:
+ *   .autodev/current-gui-test.js
  *
- * Goal:
- * - fast local GUI loop
- * - headed execution by default
- * - easy failure classification and rerun
+ * Hard rules:
+ * - Update this file for the current task before running GUI validation.
+ * - Do not use this file as-is with TODO markers.
+ * - Default to headed Playwright. Only set PLAYWRIGHT_HEADLESS=true when the
+ *   user explicitly allows headless, or the environment cannot show a browser.
  */
 
 const fs = require("node:fs");
 const path = require("node:path");
 const { spawn } = require("node:child_process");
+
+const taskMeta = {
+  fingerprint: "TODO-current-task",
+  step: "TODO-step",
+  changedFiles: ["TODO-file"],
+  changedModules: ["TODO-module"],
+  coveredCases: ["G1 TODO-happy", "G2 TODO-boundary"],
+  directMapping: [
+    "TODO explain how G1 maps to the changed files/modules",
+    "TODO explain how G2 maps to the changed files/modules",
+  ],
+};
 
 const runId = Date.now();
 const evidenceRoot = path.join(process.cwd(), ".autodev", "temp", "gui", `run-${runId}`);
@@ -27,6 +40,24 @@ const results = {
   failed: 0,
   timeline: [],
 };
+
+function assertPreparedMetadata() {
+  const flat = [
+    taskMeta.fingerprint,
+    taskMeta.step,
+    ...taskMeta.changedFiles,
+    ...taskMeta.changedModules,
+    ...taskMeta.coveredCases,
+    ...taskMeta.directMapping,
+  ];
+
+  const hasTodo = flat.some((item) => String(item).includes("TODO"));
+  if (hasTodo) {
+    throw new Error(
+      "Update .autodev/current-gui-test.js for the current task before running GUI validation."
+    );
+  }
+}
 
 function step(message) {
   results.timeline.push(message);
@@ -52,7 +83,6 @@ function check(condition, message, detail = "") {
 }
 
 function startServer() {
-  // Replace with your real app command when the GUI loop owns bootstrapping.
   const child = spawn(process.execPath, ["src/app.js"], {
     cwd: process.cwd(),
     stdio: ["ignore", "pipe", "pipe"],
@@ -75,7 +105,7 @@ function startServer() {
   };
 }
 
-async function waitForHealth(url, timeoutMs = 30000) {
+async function waitForHealth(url = `${baseUrl}/api/health`, timeoutMs = 30000) {
   const start = Date.now();
   while (Date.now() - start < timeoutMs) {
     try {
@@ -90,12 +120,7 @@ async function waitForHealth(url, timeoutMs = 30000) {
 }
 
 async function seedData() {
-  // Create the minimum data required for your GUI journey.
-}
-
-async function login(page) {
-  // Replace with your real login flow.
-  await page.goto(`${baseUrl}/login`, { waitUntil: "networkidle" });
+  // Prepare only the minimum seed data required for the current task.
 }
 
 async function attachEvidence(page, label) {
@@ -105,27 +130,44 @@ async function attachEvidence(page, label) {
 
 async function runHappyCase(page) {
   step("happy case start");
-  await login(page);
-  await attachEvidence(page, "happy-after-login");
+  // Replace with the current task's direct GUI case.
+  await page.goto(baseUrl, { waitUntil: "networkidle" });
+  await attachEvidence(page, "happy");
   check(await page.locator("body").count() === 1, "page loaded");
 }
 
-async function runNegativeCase(page) {
-  step("negative case start");
-  await page.goto(`${baseUrl}/login`, { waitUntil: "networkidle" });
-  await page.getByRole("button", { name: /login/i }).click();
-  await attachEvidence(page, "negative-login");
-  check(await page.locator("text=error").count() >= 0, "negative case observed");
+async function runBoundaryCase(page) {
+  step("boundary case start");
+  // Replace with a boundary or negative case that still maps directly
+  // to the current change.
+  await page.goto(baseUrl, { waitUntil: "networkidle" });
+  await attachEvidence(page, "boundary");
+  check(await page.locator("body").count() === 1, "boundary case observed");
 }
 
 async function run() {
   const { chromium } = require("playwright");
+
+  assertPreparedMetadata();
+  console.log(
+    JSON.stringify(
+      {
+        taskMeta,
+        baseUrl,
+        headless,
+        evidenceRoot,
+      },
+      null,
+      2
+    )
+  );
+
   const server = process.env.GUI_BASE_URL ? null : startServer();
   let browser = null;
 
   try {
     if (!process.env.GUI_BASE_URL) {
-      await waitForHealth(`${baseUrl}/api/health`);
+      await waitForHealth();
     }
 
     await seedData();
@@ -138,11 +180,12 @@ async function run() {
     const context = await browser.newContext({
       viewport: { width: 1440, height: 960 },
       locale: "en-US",
+      acceptDownloads: true,
     });
     const page = await context.newPage();
 
     await runHappyCase(page);
-    await runNegativeCase(page);
+    await runBoundaryCase(page);
   } finally {
     if (browser) {
       await browser.close();
