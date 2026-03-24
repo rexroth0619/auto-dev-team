@@ -251,7 +251,49 @@ def infer_need_queries(domains: Iterable[str]) -> bool:
     return bool(domain_set & {"data", "service", "api"})
 
 
-def make_query_templates(entities: List[str], domains: Iterable[str]) -> List[Dict[str, str]]:
+def read_optional_text(path: Path) -> str:
+    try:
+        return path.read_text(encoding="utf-8", errors="ignore")
+    except Exception:
+        return ""
+
+
+def detect_sql_dialect(repo_root: Path) -> Tuple[str, str]:
+    candidates = [
+        repo_root / ".autodev" / "path.md",
+        repo_root / "docker-compose.yml",
+        repo_root / "compose.yml",
+        repo_root / "package.json",
+        repo_root / "pyproject.toml",
+        repo_root / "requirements.txt",
+        repo_root / "go.mod",
+        repo_root / ".env",
+        repo_root / ".env.example",
+        repo_root / "application.yml",
+        repo_root / "application.yaml",
+        repo_root / "application.properties",
+    ]
+    combined = "\n".join(read_optional_text(path).lower() for path in candidates if path.exists())
+    if any(token in combined for token in ("postgresql", "postgres", "psycopg", "pgx", "asyncpg")):
+        return "PostgreSQL", "从 path.md / 配置文件中识别到 postgres 相关信号"
+    if any(token in combined for token in ("mysql", "mariadb", "pymysql")):
+        return "MySQL", "从 path.md / 配置文件中识别到 mysql 相关信号"
+    if any(token in combined for token in ("sqlite", ".db", "better-sqlite3")):
+        return "SQLite", "从 path.md / 配置文件中识别到 sqlite 相关信号"
+    return "待确认", "未从 path.md 或常见配置文件中识别出明确数据库方言"
+
+
+def seven_day_filter(dialect: str) -> str:
+    if dialect == "PostgreSQL":
+        return "updated_at >= NOW() - INTERVAL '7 days'"
+    if dialect == "MySQL":
+        return "updated_at >= NOW() - INTERVAL 7 DAY"
+    if dialect == "SQLite":
+        return "updated_at >= DATETIME('now', '-7 days')"
+    return "updated_at >= <请按实际数据库方言替换最近7天条件>"
+
+
+def make_query_templates(entities: List[str], domains: Iterable[str], dialect: str) -> List[Dict[str, str]]:
     domain_set = set(domains)
     if not infer_need_queries(domain_set):
         return []
@@ -277,7 +319,7 @@ def make_query_templates(entities: List[str], domains: Iterable[str]) -> List[Di
             "purpose": f"回看最近一周 {entity} 的变化，筛出更贴近真实链路的记录",
             "sql": (
                 f"SELECT {base_fields}\nFROM {table_placeholder}\n"
-                "WHERE updated_at >= NOW() - INTERVAL '7 days'\n"
+                f"WHERE {seven_day_filter(dialect)}\n"
                 "ORDER BY updated_at DESC\nLIMIT 50;"
             ),
             "usage": "优先挑近期仍在流转的数据，减少测到过期脏数据的概率。",
@@ -384,6 +426,8 @@ def render_markdown(
     changed_files: List[Tuple[str, str]],
     domains: List[str],
     entities: List[str],
+    dialect: str,
+    dialect_reason: str,
     queries: List[Dict[str, str]],
     test_data_rows: List[Dict[str, str]],
     use_cases: List[Dict[str, str]],
@@ -444,20 +488,36 @@ def render_markdown(
     ]
 
     if queries:
+        lines.extend(
+            [
+                f"- 当前推断数据库方言: {dialect}",
+                f"- 当前推断依据: {dialect_reason}",
+                "",
+                "```sql",
+            ]
+        )
         for query in queries:
             lines.extend(
                 [
-                    f"### {query['id']}. {query['purpose']}",
-                    "",
-                    "```sql",
+                    f"-- {query['id']}: {query['purpose']}",
                     query["sql"],
-                    "```",
-                    "",
-                    f"- 结果回来后如何使用: {query['usage']}",
-                    "- 备注: 如果预发库不是 PostgreSQL，请按实际方言替换时间函数或占位字段。",
                     "",
                 ]
             )
+        lines.extend(["```", ""])
+        for query in queries:
+            lines.extend(
+                [
+                    f"- `{query['id']}` {query['purpose']}",
+                    f"  结果回来后如何使用: {query['usage']}",
+                ]
+            )
+        lines.extend(
+            [
+                f"- 备注: 当前按 {dialect} 语法生成；若与项目实际数据库不符，先按当前项目方言整体替换后再执行。",
+                "",
+            ]
+        )
     else:
         lines.extend(
             [
@@ -470,7 +530,7 @@ def render_markdown(
         [
             "## ⏸️ 等待预发查询结果",
             "",
-            "- 请用户把查询结果贴回来。",
+            "- 请用户把整段查询结果贴回来。",
             "- 收到结果前，不继续生成最终测试数据单、use cases 和手测步骤。",
             "",
         ]
@@ -605,7 +665,8 @@ def main() -> int:
     file_paths = [path for _, path in changed_files]
     all_domains = [domain for path in file_paths for domain in detect_domains(path)]
     entities = normalize_entities(extract_entities(file_paths), all_domains)
-    queries = make_query_templates(entities, all_domains)
+    dialect, dialect_reason = detect_sql_dialect(repo_root)
+    queries = make_query_templates(entities, all_domains, dialect)
     test_data_rows = make_test_data_rows(entities, all_domains)
     use_cases = make_use_cases(entities, all_domains)
     markdown = render_markdown(
@@ -616,6 +677,8 @@ def main() -> int:
         changed_files=changed_files,
         domains=all_domains,
         entities=entities,
+        dialect=dialect,
+        dialect_reason=dialect_reason,
         queries=queries,
         test_data_rows=test_data_rows,
         use_cases=use_cases,

@@ -14,7 +14,7 @@ fail() {
 assert_file_contains() {
   local file_path="$1"
   local needle="$2"
-  if ! grep -q "$needle" "$file_path"; then
+  if ! grep -q -- "$needle" "$file_path"; then
     fail "expected $file_path to contain: $needle"
   fi
 }
@@ -69,7 +69,9 @@ assert_file_contains "$OUTPUT_PATH" "## 🛠️ 预发测试开始"
 assert_file_contains "$OUTPUT_PATH" "## 🛠️ 先导数据库查询"
 assert_file_contains "$OUTPUT_PATH" "## ⏸️ 等待预发查询结果"
 assert_file_contains "$OUTPUT_PATH" "## ✅ 当前轮输出已准备"
+assert_file_contains "$OUTPUT_PATH" '```sql'
 assert_file_contains "$OUTPUT_PATH" "SELECT id, status, updated_at"
+assert_file_contains "$OUTPUT_PATH" "-- Q1:"
 assert_file_contains "$OUTPUT_PATH" "order"
 
 assert_file_contains "$JSON_PATH" '"query_count"'
