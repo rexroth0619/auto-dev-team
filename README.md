@@ -161,6 +161,16 @@ auto-dev-team/
 - 预发验收包自检：`scripts/release-pack-selftest.sh`
 - 高频坑位沉淀：`references/gotchas.md`
 
+### 预发验收包脚本示例
+
+给后续 agent 的标准调用示例：
+
+```bash
+python3 scripts/release-pack.py --commits 3 --task "最近三次提交的预发验收"
+python3 scripts/release-pack.py --range abc123..def456 --task "审批流改造预发验收"
+bash scripts/release-pack-selftest.sh
+```
+
 ## PM 资源
 
 - `references/pm-guide/task-templates.md`
