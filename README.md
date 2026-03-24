@@ -70,6 +70,7 @@ auto-dev-team/
 │       ├── playwright-script-loop.js
 │       ├── postmortem.md
 │       ├── project-map.md
+│       ├── release-test-pack.md
 │       └── verification-checklist.md
 ├── scripts/
 │   ├── blast-radius.py
@@ -113,7 +114,7 @@ auto-dev-team/
 | Refactor | 重构、拆分、提取 | 控制风险地下刀 |
 | Optimize | 性能问题 | 先诊断再优化 |
 | Cleanup | 删除冗余、死代码 | 安全清理 |
-| Tester | 新增测试、补覆盖、验证 use case | 测试资产维护 |
+| Tester | 新增测试、补覆盖、验证 use case、预发验收、发版手测 | 测试资产与验证流程 |
 | Survey | 了解项目结构 | 项目测绘 |
 | Explain | 解释代码 | 帮助理解 |
 | Step | Architect / Refactor / Optimize 的执行阶段 | 逐步落地 |
@@ -127,6 +128,7 @@ auto-dev-team/
 - `GUI 自治验收层`：命中页面流程、窗口、表单、会话、权限、可交互界面等风险时，AI 默认执行 GUI executor；Web 默认 Playwright。
 - `Web GUI executor`：既接受 `npx playwright test`，也接受 `node xxx.ui.test.js` 的脚本式 Playwright 闭环。
 - `人工验收层`：视觉、体感、外部系统等难以稳定自动化的部分。
+- `预发验收包层`：根据最近提交先提炼行为变化；若无法准确造单，则先生成查数 SQL，再整理测试数据单、可测 use cases 与手测步骤。
 - `小测试`：输出 `🧾 测试回执`。
 - `大测试`：创建 `.autodev/current-test.md`，持续记录场景矩阵、执行状态和剩余风险。
 
@@ -140,6 +142,7 @@ auto-dev-team/
 - “这个接口突然报 500”
 - “把按钮颜色改成蓝色”
 - “这段代码太乱了，帮我重构”
+- “根据最近提交给我一份预发验收包”
 
 ## 配置与脚本
 

@@ -19,7 +19,7 @@
 | 4 | Refactor | 重构、拆分、整理、抽取 | `references/modes/refactor/README.md` | 是 |
 | 5 | Optimize | 慢、卡、性能、加速 | `references/modes/optimize/README.md` | 是 |
 | 6 | Cleanup | 删除无用代码、清理冗余 | `references/modes/cleanup/README.md` | 是 |
-| 7 | Tester | 写测试、补测试、增加覆盖 | `references/modes/tester/README.md` | 是 |
+| 7 | Tester | 写测试、补测试、增加覆盖、验证 use case、预发验收、根据最近提交生成测试数据和手测步骤 | `references/modes/tester/README.md` | 是 |
 | 8 | Survey | 了解项目、摸底结构、刚接手 | `references/modes/survey/README.md` | 否 |
 | 9 | Explain | 解释代码、说明流程、帮助理解 | `references/modes/explain/README.md` | 否 |
 | 10 | Architect | 新功能、实现需求、开发能力 | `references/modes/architect/README.md` | 是 |
@@ -36,4 +36,3 @@
 - 禁止同时读取多个模式的 `README.md`。
 - 禁止跳过模式判断直接读模式文件。
 - 禁止把共享写前置复制到每个模式里重复维护。
-

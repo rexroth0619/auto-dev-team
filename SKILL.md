@@ -1,6 +1,6 @@
 ---
 name: auto-dev-team
-description: 当用户要求进行代码变更（新功能开发、bug 修复、代码重构、性能优化、写测试、清理代码）、调查项目结构、解释代码逻辑、或执行需要安全护栏的开发流程时激活。写入任务会自动选择模式、恢复 .autodev 上下文、执行验证与版本保护。
+description: 当用户要求进行代码变更（新功能开发、bug 修复、代码重构、性能优化、写测试、清理代码）、调查项目结构、解释代码逻辑、预发验收、或执行需要安全护栏的开发流程时激活。写入任务会自动选择模式、恢复 .autodev 上下文、执行验证与版本保护。
 ---
 
 # auto-dev-team
@@ -32,6 +32,7 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 - 排查 bug、线上止血、做最小修复
 - 小改动、调样式、改文案、补日志
 - 重构、优化、清理、补测试
+- 预发验收、根据最近提交生成测试数据单和手测步骤
 - Survey 项目结构、Explain 代码逻辑
 - 任何需要“先验证、可回退、别误删”的开发任务
 
@@ -185,6 +186,8 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
   - GUI 用例矩阵模板，统一记录前置条件、页面变化、网络与副作用预期
 - `assets/templates/gui-evidence-bundle.md`
   - GUI 证据包模板，统一 timeline / screenshot / console / network / page state
+- `assets/templates/release-test-pack.md`
+  - 预发验收包模板；用于根据最近提交整理查数 SQL、测试数据单、可测 use cases 与手测步骤
 - `references/shared/menu-contract.md`
   - 菜单型 UI 的统一协议；用于阶段确认、计划选择、任务收尾等编号菜单
 - `references/shared/flow-snippets.md`
