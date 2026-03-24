@@ -175,7 +175,7 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 - `scripts/blast-radius-step-selftest.sh`
   - Step 包装脚本自检，验证解析、转发与超阈值 fail-close
 - `scripts/release-pack.py`
-  - 根据最近提交生成预发验收包草稿，输出查数 SQL 模板、测试数据单和手测步骤骨架
+  - 根据最近提交生成交互式预发测试会话草稿，优先组织“先查数、再等待用户结果、再造单和细化手测步骤”的链路
 - `scripts/release-pack-selftest.sh`
   - `release-pack.py` 自检脚本；验证 markdown 和 JSON 产物以及关键阶段标题存在
 - `references/gotchas.md`
@@ -191,7 +191,7 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 - `assets/templates/gui-evidence-bundle.md`
   - GUI 证据包模板，统一 timeline / screenshot / console / network / page state
 - `assets/templates/release-test-pack.md`
-  - 预发验收包模板；用于根据最近提交整理查数 SQL、测试数据单、可测 use cases 与手测步骤
+  - 交互式预发测试会话草稿模板；用于在 `.autodev/temp/` 记录查数 SQL、等待点、测试数据单与手测步骤草稿
 - `references/shared/menu-contract.md`
   - 菜单型 UI 的统一协议；用于阶段确认、计划选择、任务收尾等编号菜单
 - `references/shared/flow-snippets.md`

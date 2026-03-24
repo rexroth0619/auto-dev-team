@@ -67,10 +67,8 @@ python3 "$RELEASE_PACK_SCRIPT" \
 
 assert_file_contains "$OUTPUT_PATH" "## 🛠️ 预发测试开始"
 assert_file_contains "$OUTPUT_PATH" "## 🛠️ 先导数据库查询"
-assert_file_contains "$OUTPUT_PATH" "## 🛠️ 开始生成测试数据单"
-assert_file_contains "$OUTPUT_PATH" "## 🛠️ 可测 Use Cases"
-assert_file_contains "$OUTPUT_PATH" "## 🛠️ 预发手测步骤"
-assert_file_contains "$OUTPUT_PATH" "## ✅ 预发验收包已生成"
+assert_file_contains "$OUTPUT_PATH" "## ⏸️ 等待预发查询结果"
+assert_file_contains "$OUTPUT_PATH" "## ✅ 当前轮输出已准备"
 assert_file_contains "$OUTPUT_PATH" "SELECT id, status, updated_at"
 assert_file_contains "$OUTPUT_PATH" "order"
 

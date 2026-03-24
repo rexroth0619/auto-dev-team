@@ -127,7 +127,7 @@ ENTITY_STOPWORDS = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate a pre-release validation pack draft from recent git commits."
+        description="Generate an interactive pre-release testing session draft from recent git commits."
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--range", default="", help="Explicit git commit range, e.g. abc123..def456.")
@@ -397,15 +397,17 @@ def render_markdown(
     ] or ["- 未识别，建议人工补充"]
     entity_text = ", ".join(entities) if entities else "最近提交涉及的核心对象"
     need_queries = "需先查数" if queries else "可直接造单"
-    task_text = task or "根据最近提交生成预发验收包"
+    task_text = task or "根据最近提交组织交互式预发测试"
 
     lines: List[str] = [
-        "# 预发验收包",
+        "# 预发测试会话草稿",
         "",
         f"创建时间: {created_at}",
         f"任务: {task_text}",
         f"提交范围: `{target}`",
         f"环境: {env_label}",
+        "",
+        "> 仅供 agent 组织当前轮互动时使用，不是默认直接发给用户的最终静态交付物。",
         "",
         f"## 🛠️ 预发测试开始 {{{commit_summary}}}",
         "",
@@ -466,63 +468,74 @@ def render_markdown(
 
     lines.extend(
         [
-            "## 🛠️ 开始生成测试数据单",
+            "## ⏸️ 等待预发查询结果",
+            "",
+            "- 请用户把查询结果贴回来。",
+            "- 收到结果前，不继续生成最终测试数据单、use cases 和手测步骤。",
             "",
         ]
     )
-    for row in test_data_rows:
-        lines.extend(
-            [
-                f"### {row['id']}",
-                "",
-                f"- 关联变更点: {row['change']}",
-                f"- 用途: {row['purpose']}",
-                f"- 造单方式: {row['method']}",
-                f"- 关键字段: {row['fields']}",
-                f"- 预期拿到的数据: {row['expected']}",
-                "",
-            ]
-        )
 
-    lines.extend(
-        [
-            "## 🛠️ 可测 Use Cases",
-            "",
-        ]
-    )
-    for case in use_cases:
+    if not queries:
         lines.extend(
             [
-                f"### {case['id']} {case['title']}",
-                "",
-                f"- 关联变更: {case['change']}",
-                f"- 前置条件: {case['preconditions']}",
-                f"- 为什么要测: {case['why']}",
+                "## 🛠️ 开始生成测试数据单",
                 "",
             ]
         )
+        for row in test_data_rows:
+            lines.extend(
+                [
+                    f"### {row['id']}",
+                    "",
+                    f"- 关联变更点: {row['change']}",
+                    f"- 用途: {row['purpose']}",
+                    f"- 造单方式: {row['method']}",
+                    f"- 关键字段: {row['fields']}",
+                    f"- 预期拿到的数据: {row['expected']}",
+                    "",
+                ]
+            )
 
-    lines.extend(
-        [
-            "## 🛠️ 预发手测步骤",
-            "",
-        ]
-    )
-    for case in use_cases:
         lines.extend(
             [
-                f"### {case['id']} {case['title']}",
-                "",
-                f"- 输入内容: {case['input']}",
-                f"- 打开页面: {case['page']}",
-                "- 操作步骤:",
-                *[f"  {index}. {step}" for index, step in enumerate(case["steps"], start=1)],
-                f"- 预期结果: {case['expected']}",
-                f"- 成功判定: {case['success']}",
-                f"- 失败表现: {case['failure']}",
+                "## 🛠️ 可测 Use Cases",
                 "",
             ]
         )
+        for case in use_cases:
+            lines.extend(
+                [
+                    f"### {case['id']} {case['title']}",
+                    "",
+                    f"- 关联变更: {case['change']}",
+                    f"- 前置条件: {case['preconditions']}",
+                    f"- 为什么要测: {case['why']}",
+                    "",
+                ]
+            )
+
+        lines.extend(
+            [
+                "## 🛠️ 预发手测步骤",
+                "",
+            ]
+        )
+        for case in use_cases:
+            lines.extend(
+                [
+                    f"### {case['id']} {case['title']}",
+                    "",
+                    f"- 输入内容: {case['input']}",
+                    f"- 打开页面: {case['page']}",
+                    "- 操作步骤:",
+                    *[f"  {index}. {step}" for index, step in enumerate(case["steps"], start=1)],
+                    f"- 预期结果: {case['expected']}",
+                    f"- 成功判定: {case['success']}",
+                    f"- 失败表现: {case['failure']}",
+                    "",
+                ]
+            )
 
     lines.extend(
         [
@@ -531,16 +544,16 @@ def render_markdown(
             "- 待确认项: 请结合实际表名、状态字段、页面路径和按钮名再补齐最后一跳。",
             "- 剩余风险: 当前脚本只能根据提交与文件路径生成骨架，仍需 AI 或人工结合业务语义细化。",
             "",
-            "## ✅ 预发验收包已生成",
+            "## ✅ 当前轮输出已准备",
             "",
             f"- 查询语句数量: {len(queries)}",
-            f"- 测试数据单数量: {len(test_data_rows)}",
-            f"- Use case 数量: {len(use_cases)}",
+            f"- 测试数据单数量: {0 if queries else len(test_data_rows)}",
+            f"- Use case 数量: {0 if queries else len(use_cases)}",
             "- 下一步建议: "
             + (
                 "先执行查数 SQL，再把结果贴回来让 AI 收紧成具体单号、页面路径和点击动作。"
                 if queries
-                else "继续结合真实页面名、按钮名和业务对象，把骨架补成可直接执行的手测单。"
+                else "继续结合真实页面名、按钮名和业务对象，把骨架补成可直接执行的手测单，并等待用户按 use cases 去预发手测。"
             ),
             "",
         ]
