@@ -1,9 +1,59 @@
-# auto-dev-team
+# auto-dev-team 1.0
 
-> 一个面向软件开发任务的 Agent Skill：自动选模式、结构化执行、即时验证、可回退。
+> 一个面向软件交付工作的 Agent Skill：自动路由模式、约束写入流程、持续验证，并保持可回退。
 
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-Compatible-blue)](https://agentskills.io)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+
+## 这是什么
+
+`auto-dev-team` 是一个面向编码 Agent 的交付型 Skill。
+
+它把开发、调试、重构、测试、预发验证这些流程，拆成：
+- 明确的模式路由
+- 统一的写前护栏
+- 可脚本化的 Blast Radius
+- 可回退的 checkpoint / archive
+- 可扩展的测试与交互式预发测试链路
+
+## 获取语言版本
+
+- 中文版：分支 `zh-CN`
+- 英文版：分支 `main`
+
+获取中文版：
+
+```bash
+git clone -b zh-CN https://github.com/rexroth0619/AutoDevTeam.git
+```
+
+获取英文版：
+
+```bash
+git clone -b main https://github.com/rexroth0619/AutoDevTeam.git
+```
+
+## 当前版本
+
+- 中文版标签：`v1.0.0-zh-CN`
+- 英文版标签：`v1.0.0`
+
+## 最近更新
+
+- 版本说明见 [CHANGELOG.md](CHANGELOG.md)
+- 当前重点能力：
+  - 交互式预发测试链路
+  - release-pack 脚本与自测
+  - 防屎山快速检查
+  - 中英文双分支发布
+
+## Agent Quick Start
+
+- 先读 `SKILL.md`
+- 写入模式前，先读 `references/mode-index.md`
+- 再读 `references/write-preflight.md`
+- 改脚本后，运行对应 selftest
+- 中文工作使用 `zh-CN`，英文发布工作使用 `main`
 
 ## 目录
 
