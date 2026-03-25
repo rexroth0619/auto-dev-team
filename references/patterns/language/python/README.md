@@ -1,5 +1,5 @@
-# Python 经验
+# Python Notes
 
-GIL 规避、async patterns、装饰器技巧、类型提示等。
+Typing, async behavior, packaging, and performance-sensitive Python patterns.
 
-**使用模板**：`../_TEMPLATE.md`
+Use template: `../_TEMPLATE.md`

@@ -1,49 +1,23 @@
-# 项目上下文快照
+# Context Snapshot
 
-> ⚠️ 此文档由 AI 自动维护，用于新对话时快速恢复项目认知。保持精简，不超过 100 行。
+Created: YYYY-MM-DD HH:mm
+Task: [one-line task]
+Status: planning / in progress / blocked / done
 
-## 项目概述
-<!-- 一句话描述 -->
+## Current Understanding
 
-**技术栈**: 
-**项目阶段**: 开发中 / 维护中 / 重构中
+- [what the task is]
+- [what changed recently]
+- [what still needs confirmation]
 
-## 最近完成的功能
-<!-- 保留最近 5 个，旧的删除 -->
+## Current Decision
 
-| 时间 | 功能 | 关键文件 |
-|------|------|----------|
-| | | |
+- [current approach]
 
-## 当前进行中
-<!-- 如有未完成的任务 -->
+## Open Questions
 
-- [ ] 
+- [none / list]
 
-## 关键决策 & 约定
-<!-- 项目特有的重要约定，新对话必须知道的 -->
+## Next Move
 
-- 
-
-## 🛡️ 核心功能清单（不可删除）
-<!-- 项目的核心功能，任何修改前必须确认不会影响这些功能 -->
-
-| 功能 | 关键文件 | 说明 |
-|------|----------|------|
-| | | |
-
-⚠️ 以上功能为项目核心，修改相关文件前必须确认保留性
-
-## 已知问题 & 待办
-<!-- 已发现但未处理的问题 -->
-
-- 
-
-## 禁区提醒
-<!-- 从 forbidden-zones.md 摘要，如有 -->
-
-- 
-
----
-*最后更新: YYYY-MM-DD HH:mm*
-*更新者: [完成的任务名]*
+- [next concrete step]

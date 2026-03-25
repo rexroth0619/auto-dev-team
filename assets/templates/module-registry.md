@@ -1,36 +1,27 @@
-# 可复用组件清单
+# Module Registry
 
-> ⚠️ 保持简洁：只记录关键信息。新建功能前必须先查此表。
+> Keep it short. Record reusable modules before creating new ones.
 
-## 工具函数
+## Utilities
 
-| 函数名 | 位置 | 用途 | 示例 |
-|--------|------|------|------|
+| Name | Location | Purpose | Example |
+|------|----------|---------|---------|
 | | | | |
 
-## 通用组件
+## Shared Components
 
-| 组件名 | 位置 | 用途 | Props |
-|--------|------|------|-------|
+| Name | Location | Purpose | Inputs |
+|------|----------|---------|--------|
 | | | | |
 
-## 通用 Hooks
+## Services / Middleware
 
-| Hook名 | 位置 | 用途 | 返回值 |
-|--------|------|------|--------|
-| | | | |
-
-## 中间件/服务
-
-| 名称 | 位置 | 用途 |
-|------|------|------|
+| Name | Location | Purpose |
+|------|----------|---------|
 | | | |
 
-## 常量/配置
+## Config / Constants
 
-| 名称 | 位置 | 用途 |
-|------|------|------|
+| Name | Location | Purpose |
+|------|----------|---------|
 | | | |
-
----
-*最后更新: YYYY-MM-DD*

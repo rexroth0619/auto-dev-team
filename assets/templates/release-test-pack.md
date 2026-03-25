@@ -1,35 +1,33 @@
-# 预发测试会话草稿
+# Interactive Release-Test Draft
 
-创建时间:
-任务:
-提交范围:
-环境: 预发
+Created:
+Task:
+Commit range:
+Environment: staging
 
-> 仅供 agent 组织当前轮互动时使用，不是默认直接发给用户的最终静态交付物。
+> Use this file as a session draft for the current interaction. It is not the default final artifact sent to the user.
 
-## 🛠️ 预发测试开始 {commit-hash - 场景摘要}
+## 🛠️ Release Test Start {commit-hash - scenario summary}
 
-- 本轮关注的最近提交:
-- 一句话场景摘要:
-- 为什么优先测这个:
+- Current commit scope:
+- One-line scenario summary:
+- Why this matters first:
 
-## 最近提交的行为变化摘要
+## Behavior Changes From Recent Commits
 
-- 变更点:
-- 影响对象:
-- 对用户可见的变化:
+- change:
+- affected object:
+- user-visible effect:
 
-## 是否需要先查数
+## Need Real Data First?
 
-- 结论: 可直接造单 / 需先查数
-- 原因:
+- conclusion: direct draft possible / query real data first
+- reason:
 
-## 🛠️ 先导数据库查询
+## 🛠️ Bootstrap Database Queries
 
-> 先把下面 SQL 发给用户去预发执行，等结果贴回后再继续更准确地造单。
-
-- 当前推断数据库方言:
-- 当前推断依据:
+- guessed database dialect:
+- evidence for that guess:
 
 ```sql
 -- Q1:
@@ -37,51 +35,51 @@
 -- Q3:
 ```
 
-| QID | 查询目的 | 结果回来后如何使用 |
-|-----|----------|-------------------|
+| QID | Goal | How the result will be used |
+|-----|------|-----------------------------|
 | Q1 | | |
 
-## ⏸️ 等待预发查询结果
+## ⏸️ Waiting For Staging Query Results
 
-- 请用户把整段查询结果贴回来
-- 收到结果前，不继续生成测试数据单、use cases 和最终手测步骤
+- Ask the user to paste the full query result back
+- Do not continue to test-data drafting or use cases before results return
 
-## 🛠️ 开始生成测试数据单
+## 🛠️ Test Data Draft
 
-| TD ID | 关联变更点 | 用途 | 造单方式 | 关键字段 | 预期拿到的数据 |
-|-------|------------|------|----------|----------|----------------|
-| TD-1 | | | 直接使用查询结果 / 手工造单 / 脚本造单 | | |
+| TD ID | Related change | Purpose | Creation method | Key fields | Expected sample |
+|-------|----------------|---------|-----------------|------------|-----------------|
+| TD-1 | | | direct use / manual creation / script | | |
 
-## 🛠️ 可测 Use Cases
-
-### UC-1
-
-- 关联变更:
-- 前置条件:
-- 为什么要测:
-
-## 🛠️ 预发手测步骤
+## 🛠️ Testable Use Cases
 
 ### UC-1
 
-- 输入内容:
-- 打开页面:
-- 操作步骤:
+- Related change:
+- Preconditions:
+- Why test this:
+
+## 🛠️ Manual Steps For Staging
+
+### UC-1
+
+- Input:
+- Open page:
+- Steps:
   1.
   2.
   3.
-- 预期结果:
-- 成功判定:
-- 失败表现:
+- Expected result:
+- Success signal:
+- Failure signal:
 
-## ⚠️ 待确认项与剩余风险
+## ⚠️ Open Questions And Residual Risk
 
-- 待确认项:
-- 剩余风险:
+- Open questions:
+- Residual risk:
 
-## ✅ 当前轮输出已准备
+## ✅ Current Round Ready
 
-- 查询语句数量:
-- 测试数据单数量:
-- Use case 数量:
-- 下一步建议: 等用户回贴查询结果 / 等用户按 use cases 去预发手测
+- Query count:
+- Test-data count:
+- Use-case count:
+- Next move:

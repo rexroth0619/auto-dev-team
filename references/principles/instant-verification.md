@@ -1,14 +1,9 @@
-# 即时验证协议（兼容入口）
+# Instant Verification
 
-> 即时验证已并入 `references/principles/test-verification.md`。
+> Validate as soon as the change lands. Do not stack edits and validate later.
 
-## 现在怎么用
+## Rules
 
-1. 读取 `references/principles/test-verification.md`
-2. 按其中的复杂度评估选择验证方式
-3. 使用统一输出格式记录证据
-
-## 兼容规则
-
-- 本文件不再维护单独规则。
-- 旧引用命中本文件时，应继续转读 canonical 文档。
+- verify the current step immediately after editing
+- if the result is wrong, stop and correct it before continuing
+- archive only after validation passes

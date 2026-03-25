@@ -44,7 +44,7 @@ copy_if_missing() {
   fi
 
   cp "$source_file" "$dest_file"
-  echo "📄 已创建: ${dest_file#$REPO_ROOT/}（使用模板初始化）"
+  echo "📄 Created: ${dest_file#$REPO_ROOT/} (initialized from template)"
 }
 
 copy_if_missing "$TEMPLATE_DIR/context-snapshot.md" "$AUTODEV_DIR/context-snapshot.md"
@@ -59,5 +59,5 @@ copy_if_missing "$TEMPLATE_DIR/current-blast-radius.md" "$AUTODEV_DIR/current-bl
 touch "$EXCLUDE_FILE"
 if ! grep -qxF ".autodev/" "$EXCLUDE_FILE"; then
   printf '\n.autodev/\n' >>"$EXCLUDE_FILE"
-  echo "🛡️ 已将 .autodev/ 加入 .git/info/exclude（本地忽略，不影响项目 .gitignore）"
+  echo "🛡️ Added .autodev/ to .git/info/exclude (local ignore, does not modify project .gitignore)"
 fi

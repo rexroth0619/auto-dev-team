@@ -1,56 +1,40 @@
-# 当前调试
+# Current Debug Ledger
 
-创建时间: YYYY-MM-DD HH:mm
-任务: [一句话问题]
-默认档位: `L2 / L3`
-状态: 诊断中 / 已定位 / 已修复 / 待确认
+Created: YYYY-MM-DD HH:mm
+Issue: [one-line issue]
+Status: observing / reproducing / diagnosed / fixed / blocked
 
-## 当前症状
+## Symptoms
 
-- [用户主诉]
+- [what the user sees]
 
-## 当前假设
+## Reproduction
 
-| ID | 假设 | 检查成本 | 状态 | 备注 |
-|----|------|----------|------|------|
-| H1 | | 🟢 / 🟡 / 🔴 | 待查 / 排除 / 确诊 | |
+- [minimal reproduction]
 
-## 场景矩阵
+## Hypotheses
 
-| ID | 场景 | 来源 | 状态 | 备注 |
-|----|------|------|------|------|
-| S1 | 原始复现路径 | 用户提出 | 待跑 / 通过 / 失败 | |
-| S2 | 负例 / 边界 case | AI补充 | 待跑 / 通过 / 失败 | |
+| ID | Hypothesis | Status | Evidence |
+|----|------------|--------|----------|
+| H1 | | pending / confirmed / rejected | |
 
-## 观测计划
+## Observation Plan
 
-- 主观测面:
-- 备用观测面:
-- probe 指纹:
-- 预期观测摘要:
+- Primary surface:
+- Backup surface:
+- Expected observation:
 
-## 诊断记录
+## Rounds
 
 ### Round 1
-- 时间:
-- 场景:
-- 命令 / 方式:
-- 实际观测:
-- 差异结论:
-- 下一步:
+- Action:
+- Result:
+- Difference between expected and actual:
 
-## 修复与复诊
+## Diagnosis
 
-- 修复方案:
-- 修复前 Blast Radius 目标:
-- 修复前 Blast Radius 报告:
-- 修复前 Gate 结论:
-- 复诊场景:
-- 复诊结果:
+- [root cause or pending]
 
-## 剩余风险
+## Fix Plan
 
-- [无则写“无”]
-
----
-*最后更新: YYYY-MM-DD HH:mm*
+- [targeted fix]

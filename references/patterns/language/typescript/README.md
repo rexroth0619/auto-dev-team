@@ -1,5 +1,5 @@
-# TypeScript 经验
+# TypeScript Notes
 
-类型体操、async/await 陷阱、类型收窄、泛型技巧等。
+Type-system design, async behavior, narrowing, and practical generics.
 
-**使用模板**：`../_TEMPLATE.md`
+Use template: `../_TEMPLATE.md`

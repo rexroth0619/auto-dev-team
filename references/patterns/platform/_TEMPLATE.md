@@ -1,53 +1,21 @@
-# [平台]: [经验名称]
+# [Platform]: [Topic]
 
-> 一句话：这个平台特有的什么问题/最佳实践
+> One-line summary of the platform-specific issue or best practice.
 
-## 适用范围
+## Scope
 
-| 维度 | 范围 |
-|------|------|
-| 平台版本 | Android 10+ / iOS 14+ / Chrome 90+ / ... |
-| 相关框架 | React 18 / SwiftUI / Jetpack Compose / ... (可选) |
+- Platform version:
+- Relevant framework:
 
-## 背景
+## Context
 
-<!-- 
-为什么这个问题在这个平台上特殊？
-- 平台限制导致
-- 系统特性导致
-- 用户体验要求导致
--->
+- Why this matters on this platform:
 
-## 问题表现
+## Failure Pattern
 
-<!-- 
-用户或开发者会遇到什么症状？
-- 用户看到的现象
-- 开发者看到的错误
-- 性能指标的变化
--->
+- Symptoms:
 
-## 解决方案
+## Preferred Approach
 
-<!-- 
-最佳实践 + 代码示例
--->
-
-```language
-// 推荐做法
-[代码示例]
+```code
 ```
-
-## 避坑指南
-
-<!-- 可选：容易犯的错误 -->
-
-## 关联
-
-- 通用原理: `universal/xxx/yyy.md` (如有)
-- 语言经验: `language/xxx/zzz.md` (如有)
-
----
-*标签*: `tag1`, `tag2`
-*创建时间*: YYYY-MM-DD
-*验证状态*: 已验证 / 待验证

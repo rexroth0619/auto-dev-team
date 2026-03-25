@@ -138,14 +138,14 @@ review_staging() {
     case "$file" in
       .env|.env.*|*.pem|*.key|*.p12|credentials.*|secrets.*)
         git reset HEAD -- "$file" >/dev/null 2>&1 || true
-        echo "⛔ 已从暂存区移除敏感文件: $file" >&2
+        echo "⛔ Removed sensitive file from staging: $file" >&2
         ;;
       .autodev/*|.cursor/*)
         if [[ "$mode" == "archive" && "$branch_mode" == "pr_only" ]]; then
           git reset HEAD -- "$file" >/dev/null 2>&1 || true
-          echo "⛔ pr_only 模式下已移出暂存区: $file" >&2
+          echo "⛔ Removed from staging under pr_only mode: $file" >&2
         elif [[ "$mode" == "archive" ]]; then
-          echo "⚠️ 暂存区发现非代码文件: $file" >&2
+          echo "⚠️ Non-code file found in staging: $file" >&2
         fi
         ;;
     esac
@@ -159,7 +159,7 @@ ensure_branch() {
   local branch
   branch="$(current_branch)"
   if ! matches_branch_pattern "$branch"; then
-    echo "🌿 已在工作分支: $branch"
+    echo "🌿 Already on a working branch: $branch"
     return 0
   fi
 
@@ -177,16 +177,16 @@ ensure_branch() {
 
   cat <<EOF
 ━━━━━━━━━━━━━━━━━━━━
-🌿 已创建工作分支
-分支: $new_branch
-基于: $branch ($base_hash)
+🌿 Created working branch
+Branch: $new_branch
+Based on: $branch ($base_hash)
 ━━━━━━━━━━━━━━━━━━━━
 EOF
 }
 
 create_milestone() {
   local fingerprint="${1:?fingerprint required}"
-  local description="${2:-任务开始前基线}"
+  local description="${2:-task baseline before execution}"
   local task_slug
   task_slug="$(slugify "${3:-$fingerprint}")"
 
@@ -210,53 +210,53 @@ create_milestone() {
 
   cat <<EOF
 ━━━━━━━━━━━━━━━━━━━━
-🎯 里程碑
+🎯 Milestone
 ━━━━━━━━━━━━━━━━━━━━
-指纹: ${fingerprint}
-哈希: ${hash}
-标签: ${tag_name}
+Fingerprint: ${fingerprint}
+Hash: ${hash}
+Tag: ${tag_name}
 ━━━━━━━━━━━━━━━━━━━━
-💡 随时可说「回退到 ${fingerprint}」
+💡 You can say "rollback to ${fingerprint}" any time
 ━━━━━━━━━━━━━━━━━━━━
 EOF
 }
 
 snapshot_gate() {
-  local task="${1:-现场保护}"
+  local task="${1:-workspace protection}"
   local subject
   subject="$(last_subject)"
 
   if repo_is_dirty; then
     git add -A
     review_staging "snapshot"
-    git commit -m "「${task}#保护」chore: 自动存档" >/dev/null
-    echo "💿 已保护 → $(git rev-parse --short HEAD)（执行前闸门）"
+    git commit -m "「${task}#protect」chore: auto archive" >/dev/null
+    echo "💿 Protected -> $(git rev-parse --short HEAD) (pre-write gate)"
     return 0
   fi
 
-  if [[ "$subject" == *"「${task}"* || "$subject" == *"#保护"* || "$subject" == *"#起点"* ]]; then
-    echo "💿 闸门通过（基线 $(git rev-parse --short HEAD) 即保护点）"
+  if [[ "$subject" == *"「${task}"* || "$subject" == *"#protect"* || "$subject" == *"#start"* ]]; then
+    echo "💿 Gate passed (baseline $(git rev-parse --short HEAD) is already the protection point)"
     return 0
   fi
 
-  git commit --allow-empty -m "「${task}#保护」chore: 自动存档" >/dev/null
-  echo "💿 已保护 → $(git rev-parse --short HEAD)（执行前闸门）"
+  git commit --allow-empty -m "「${task}#protect」chore: auto archive" >/dev/null
+  echo "💿 Protected -> $(git rev-parse --short HEAD) (pre-write gate)"
 }
 
 archive_commit() {
   local fingerprint="${1:?fingerprint required}"
   local kind="${2:-chore}"
-  local description="${3:-自动存档}"
+  local description="${3:-auto archive}"
 
   if ! repo_is_dirty; then
-    echo "ℹ️ 无改动，跳过存档"
+    echo "ℹ️ No changes detected; archive skipped"
     return 0
   fi
 
   git add -A
   review_staging "archive"
   git commit -m "「${fingerprint}」${kind}: ${description}" >/dev/null
-  echo "💾【存档】${fingerprint} → $(git rev-parse --short HEAD)"
+  echo "💾 Archive ${fingerprint} -> $(git rev-parse --short HEAD)"
 }
 
 list_archives() {
@@ -268,7 +268,7 @@ list_archives() {
       milestones+=("$hash|$subject")
       continue
     fi
-    if [[ "$subject" == *"#保护"* ]]; then
+    if [[ "$subject" == *"#protect"* ]]; then
       [[ ${#snapshots[@]} -lt 1 ]] && snapshots+=("$hash|$subject")
       continue
     fi
@@ -276,7 +276,7 @@ list_archives() {
   done < <(git log --pretty='%h%x09%s' -50)
 
   echo "━━━━━━━━━━━━━━━━━━━━"
-  echo "📍 存档列表"
+  echo "📍 Archive List"
   echo "━━━━━━━━━━━━━━━━━━━━"
   local idx=1 item
   if (( ${#milestones[@]} )); then
@@ -301,7 +301,7 @@ list_archives() {
     done
   fi
   echo "━━━━━━━━━━━━━━━━━━━━"
-  echo "回退到哪个？（输入序号或指纹）"
+  echo "Rollback to which one? (enter index or fingerprint)"
   echo "━━━━━━━━━━━━━━━━━━━━"
 }
 
@@ -312,23 +312,23 @@ rollback_to() {
   if matches_branch_pattern "$branch"; then
     cat <<EOF
 ━━━━━━━━━━━━━━━━━━━━
-⚠️ 当前在受保护分支 $branch 上，无法直接回退
-请选择切换到工作分支后再回退
+⚠️ Currently on protected branch $branch; direct rollback is not allowed
+Switch to a working branch before rolling back
 ━━━━━━━━━━━━━━━━━━━━
 EOF
     exit 1
   fi
 
   if repo_is_dirty; then
-    snapshot_gate "现场保存"
+    snapshot_gate "save current workspace"
   fi
 
   git reset --hard "$target" >/dev/null
   cat <<EOF
 ━━━━━━━━━━━━━━━━━━━━
-✅ 已回退
-当前位置: $(git log -1 --pretty=%s) $(git rev-parse --short HEAD)
-分支: $branch
+✅ Rolled back
+Current position: $(git log -1 --pretty=%s) $(git rev-parse --short HEAD)
+Branch: $branch
 ━━━━━━━━━━━━━━━━━━━━
 EOF
 }

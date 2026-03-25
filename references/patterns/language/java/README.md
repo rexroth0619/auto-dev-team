@@ -1,5 +1,5 @@
-# Java 经验
+# Java Notes
 
-并发工具类、内存模型、Spring 陷阱、JVM 调优等。
+Object design, concurrency, generics, and framework integration tradeoffs.
 
-**使用模板**：`../_TEMPLATE.md`
+Use template: `../_TEMPLATE.md`

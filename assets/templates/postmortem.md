@@ -1,27 +1,25 @@
-# 经验库 (Postmortem)
+# Postmortem
 
-> ⚠️ 保持简洁：只记录关键信息。Debug 后必须记录，下次先查。
+Created: YYYY-MM-DD HH:mm
+Issue:
+Severity:
 
----
+## What Happened
 
-## Bug-YYYY-MM-DD-001
-**关键词**: `keyword1`, `keyword2` <!-- 便于搜索 -->
+- [summary]
 
-### 症状
-<!-- 用户看到什么现象 -->
+## Root Cause
 
-### 根因
-<!-- 技术上是什么问题 -->
+- [confirmed cause]
 
-### 修复
-<!-- 改了什么 -->
+## Fix
 
-### 教训
-<!-- 下次如何避免 - ⚠️ 必须是抽象的通用经验，不是具体代码行号 -->
+- [what fixed it]
 
-### 关联文件
-<!-- 相关模块/文件 -->
+## What We Learned
 
----
+- [lesson]
 
-<!-- 复制上面模板添加新条目 -->
+## Prevention
+
+- [guardrail, test, or process improvement]

@@ -9,16 +9,16 @@ STEPS_FILE="$REPO_ROOT/.autodev/temp/blast-radius-step-selftest.md"
 mkdir -p "$REPO_ROOT/.autodev/temp"
 
 cat >"$STEPS_FILE" <<'EOF'
-# 当前任务
+# Current Task
 
-## 关键决策 (防遗忘，每步执行前必读)
+## Key Decisions (read before every step)
 
-- **Log 标识**: [DEV-blast-radius-step-selftest]
+- **Log marker**: [DEV-blast-radius-step-selftest]
 
-## 计划 (每步必须增量可测)
+## Plan (every step must stay incrementally testable)
 
-- [ ] 🌀 Step 1: 自检通过路径 [可测产出: selftest] [Blast Radius: scripts/init-autodev.sh::copy_if_missing → ≤🔴]
-- [ ] 🌀 Step 2: 自检拦截路径 [可测产出: selftest] [Blast Radius: scripts/init-autodev.sh::copy_if_missing → ≤🟢]
+- [ ] 🌀 Step 1: selftest success path [testable output: selftest] [Blast Radius: scripts/init-autodev.sh::copy_if_missing -> <= 🔴]
+- [ ] 🌀 Step 2: selftest fail-close path [testable output: selftest] [Blast Radius: scripts/init-autodev.sh::copy_if_missing -> <= 🟢]
 EOF
 
 "$REPO_ROOT/scripts/blast-radius-step.sh" \
@@ -38,4 +38,4 @@ if "$REPO_ROOT/scripts/blast-radius-step.sh" \
   exit 1
 fi
 
-echo "✅ blast-radius-step 自检通过"
+echo "✅ blast-radius-step selftest passed"

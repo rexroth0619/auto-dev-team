@@ -65,10 +65,10 @@ python3 "$RELEASE_PACK_SCRIPT" \
 [[ -f "$OUTPUT_PATH" ]] || fail "expected markdown output file to exist"
 [[ -f "$JSON_PATH" ]] || fail "expected json summary file to exist"
 
-assert_file_contains "$OUTPUT_PATH" "## 🛠️ 预发测试开始"
-assert_file_contains "$OUTPUT_PATH" "## 🛠️ 先导数据库查询"
-assert_file_contains "$OUTPUT_PATH" "## ⏸️ 等待预发查询结果"
-assert_file_contains "$OUTPUT_PATH" "## ✅ 当前轮输出已准备"
+assert_file_contains "$OUTPUT_PATH" "## 🛠️ Release Test Start"
+assert_file_contains "$OUTPUT_PATH" "## 🛠️ Bootstrap Database Queries"
+assert_file_contains "$OUTPUT_PATH" "## ⏸️ Waiting For Staging Query Results"
+assert_file_contains "$OUTPUT_PATH" "## ✅ Current Round Ready"
 assert_file_contains "$OUTPUT_PATH" '```sql'
 assert_file_contains "$OUTPUT_PATH" "SELECT id, status, updated_at"
 assert_file_contains "$OUTPUT_PATH" "-- Q1:"

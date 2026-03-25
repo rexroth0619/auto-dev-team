@@ -1,50 +1,32 @@
 # GUI Evidence Bundle
 
-> Use this template to record a replayable GUI validation run.
+Created: YYYY-MM-DD HH:mm
+Task:
+Case ID:
+Executor:
 
-## Run Info
+## Timeline
 
-- Task:
-- Executor:
-- Visual mode:
-- Command:
-- URL / Entry:
-- Account / Seed:
-- Evidence root:
-
-## Action Timeline
-
-1. [Open page / login / click / wait]
-2. [Next action]
-3. [Next action]
+- [key actions]
 
 ## Screenshots
 
-- [path/to/screenshot-01.png] - [what it proves]
-- [path/to/screenshot-02.png] - [what it proves]
+- [paths]
 
-## Browser Console
+## Console
 
-- [error/warn/log summary]
+- [important logs]
 
-## Network Trace
+## Network
 
-- [request -> status -> key response summary]
+- [requests / responses]
 
 ## Page State
 
 - URL:
-- Key DOM summary:
-- Key element state:
+- Visible state:
+- Key fields:
 
 ## Backend Trace
 
-- [request id / trace id / DB diff / artifact path]
-
-## Result
-
-- Status:
-- Failed case:
-- Failure category:
-- Rerun round:
-- Conclusion:
+- [optional]

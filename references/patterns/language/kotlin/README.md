@@ -1,5 +1,5 @@
-# Kotlin 经验
+# Kotlin Notes
 
-协程、空安全、DSL 技巧、与 Java 互操作等。
+Nullability, coroutine structure, DSL use, and Android/server-side idioms.
 
-**使用模板**：`../_TEMPLATE.md`
+Use template: `../_TEMPLATE.md`

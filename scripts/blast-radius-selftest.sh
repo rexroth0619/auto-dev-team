@@ -5,6 +5,8 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
+cd "$REPO_ROOT"
+
 mkdir -p "$REPO_ROOT/.autodev/temp"
 
 REPORT_PATH=".autodev/temp/blast-radius-selftest.md"
@@ -22,7 +24,7 @@ JSON_PATH=".autodev/temp/blast-radius-selftest.json"
   --quiet >/dev/null
 
 grep -q "Blast Radius Report" "$REPO_ROOT/$REPORT_PATH"
-grep -q "风险等级" "$REPO_ROOT/$REPORT_PATH"
+grep -q "Risk level" "$REPO_ROOT/$REPORT_PATH"
 grep -q '"risk_level"' "$REPO_ROOT/$JSON_PATH"
 
-echo "✅ blast-radius 自检通过"
+echo "✅ blast-radius selftest passed"

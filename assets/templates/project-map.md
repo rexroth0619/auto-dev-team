@@ -1,50 +1,33 @@
-<!-- STATUS: TEMPLATE -->
-# 项目架构地图
+# Project Map
 
-> ⚠️ 保持简洁：只记录关键信息，不啰嗦。每次重构/新增模块后更新。
+> Keep this short. Update after major refactors or new subsystems.
 
-## 项目概述
-<!-- 一句话描述项目做什么 -->
+## Project Summary
 
-## 技术栈
-<!-- 列出主要技术 -->
+- What this project does:
+- Main delivery risk:
 
-## 目录结构
-```
+## Tech Stack
+
+- [language / framework / runtime]
+
+## Structure
+
+```text
 src/
-├── app/          # 
-├── components/   # 
-├── utils/        # 
-└── ...
+├── ...
 ```
 
-## 核心模块
+## Core Modules
 
-### 模块A
-- **职责**: 
-- **入口**: 
-- **依赖**: 
-- **被依赖**: 
+| Module | Responsibility | Depends on | Notes |
+|--------|----------------|------------|-------|
+| | | | |
 
-### 模块B
-- **职责**: 
-- **入口**: 
-- **依赖**: 
-- **被依赖**: 
+## Data Flow
 
-## 数据流
-```
-用户操作 → [模块A] → [模块B] → 输出
-```
+- [request / event / state flow]
 
-## 关键约定
-<!-- 项目特有的规则或约定 -->
+## Current Risks
 
-## 技术债清单
-| 优先级 | 位置 | 问题 | 建议 |
-|--------|------|------|------|
-| P0 | | | |
-| P1 | | | |
-
----
-*最后更新: YYYY-MM-DD*
+- [none / list]

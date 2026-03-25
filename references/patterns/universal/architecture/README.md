@@ -1,7 +1,3 @@
-# 架构模式 Pattern
+# Architecture Notes
 
-分层、模块化、依赖注入、事件驱动、插件化等通用原理。
-
-**典型场景**：代码组织、模块解耦、可扩展性设计
-
-**使用模板**：`../_TEMPLATE.md`
+Reusable architecture patterns, boundary control, and dependency direction.

@@ -1,5 +1,3 @@
-# 后端平台经验
+# Backend Notes
 
-数据库连接池、负载均衡、服务发现、容器化、日志监控等。
-
-**使用模板**：`../_TEMPLATE.md`
+Service boundaries, contracts, background work, retries, and data consistency.

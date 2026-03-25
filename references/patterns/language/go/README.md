@@ -1,5 +1,5 @@
-# Go 经验
+# Go Notes
 
-goroutine、channel、错误处理模式、context 使用等。
+Concurrency, interfaces, error returns, and package boundaries.
 
-**使用模板**：`../_TEMPLATE.md`
+Use template: `../_TEMPLATE.md`

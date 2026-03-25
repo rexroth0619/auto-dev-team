@@ -1,7 +1,3 @@
-# 错误处理 Pattern
+# Error Handling Notes
 
-重试、熔断、降级、超时、兜底策略等通用原理。
-
-**典型场景**：网络不稳定、服务不可用、异常恢复
-
-**使用模板**：`../_TEMPLATE.md`
+How to classify, propagate, observe, and recover from failures.

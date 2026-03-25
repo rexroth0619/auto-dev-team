@@ -36,21 +36,21 @@ git commit -q -m "init"
 
 "$INIT_SCRIPT" "$REPO_DIR" >/dev/null
 
-milestone_output="$("$CHECKPOINT_SCRIPT" milestone "脚本验证#起点" "checkpoint selftest" gui-checkpoint)"
-assert_contains "$milestone_output" "🎯 里程碑"
-assert_contains "$milestone_output" "指纹: 脚本验证#起点"
-assert_contains "$milestone_output" "标签: milestone/gui-checkpoint-"
+milestone_output="$("$CHECKPOINT_SCRIPT" milestone "script-check#start" "checkpoint selftest" gui-checkpoint)"
+assert_contains "$milestone_output" "🎯 Milestone"
+assert_contains "$milestone_output" "Fingerprint: script-check#start"
+assert_contains "$milestone_output" "Tag: milestone/gui-checkpoint-"
 
-gate_output="$("$CHECKPOINT_SCRIPT" snapshot-gate "脚本验证")"
+gate_output="$("$CHECKPOINT_SCRIPT" snapshot-gate "script-check")"
 assert_contains "$gate_output" "💿"
 
 printf 'delta\n' >> README.md
-archive_output="$("$CHECKPOINT_SCRIPT" archive "脚本验证#01" chore "checkpoint selftest archive")"
-assert_contains "$archive_output" "💾【存档】脚本验证#01"
+archive_output="$("$CHECKPOINT_SCRIPT" archive "script-check#01" chore "checkpoint selftest archive")"
+assert_contains "$archive_output" "💾 Archive script-check#01"
 
 list_output="$("$CHECKPOINT_SCRIPT" list)"
-assert_contains "$list_output" "📍 存档列表"
-assert_contains "$list_output" "脚本验证#起点"
-assert_contains "$list_output" "脚本验证#01"
+assert_contains "$list_output" "📍 Archive List"
+assert_contains "$list_output" "script-check#start"
+assert_contains "$list_output" "script-check#01"
 
 printf 'checkpoint selftest passed\n'

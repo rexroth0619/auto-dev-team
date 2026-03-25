@@ -1,83 +1,61 @@
-# 当前测试
+# Current Test Ledger
 
-创建时间: YYYY-MM-DD HH:mm
-任务: [一句话任务]
-测试等级: 大测试
-状态: 规划中 / 执行中 / 已完成
+Created: YYYY-MM-DD HH:mm
+Task: [one-line task]
+Test level: large
+Status: planning / running / done
 
-## 测试目标
+## Goals
 
-- [这次测试要保证什么]
+- [what must be protected]
 
-## 场景矩阵
+## Scenario Matrix
 
-| ID | 场景 | 来源 | 测试层 | 状态 | 备注 |
-|----|------|------|--------|------|------|
-| S1 | | 用户提出 / AI补充 / 待确认 | unit / integration / bdd / gui / manual | 待写 / 待跑 / 通过 / 失败 / 待业务确认 | |
+| ID | Scenario | Source | Layer | Status | Notes |
+|----|----------|--------|-------|--------|-------|
+| S1 | | user / AI / pending business | unit / integration / bdd / gui / manual | pending / running / passed / failed / pending business | |
 
-## 后台自动测试计划
+## Backend Test Plan
 
-- [会跑哪些测试，覆盖哪些模块]
+- [commands and scope]
 
-## 观测驱动验证计划
+## Observation Plan
 
-- 档位: `L1 / L2 / L3`
-- 主观测面:
-- 备用观测面:
-- 预期观测摘要:
+- Level: `L1 / L2 / L3`
+- Primary surface:
+- Backup surface:
+- Expected summary:
 
-## GUI 自治验收计划
+## GUI Plan
 
-- 状态: 未触发 / 规划中 / 执行中 / 已通过 / 失败修复中 / 用户禁用 / 暂不可执行 / Manual only
+- Status: not triggered / planning / running / passed / failed / user disabled / not executable / manual only
 - Executor:
-- 可视化执行:
-- 原因:
-- 计划场景:
-- 证据要求: [timeline / screenshot / console / network / trace]
-- 修复轮次上限: [默认 3]
+- Visual mode:
+- Evidence:
 
-## 开发者手测教程（如需）
+## Manual Validation Guide
 
-- 触发原因: [Manual only / @manual / GUI 暂不可执行 / 私有观测面]
-- 前置条件:
-- 操作步骤:
-  1. 
-  2. 
-  3. 
-- 每步预期:
-- 回传证据:
+- Preconditions:
+- Steps:
+  1.
+  2.
+  3.
+- Expected result:
+- Evidence to return:
 
-## 待业务确认问题
+## Open Business Questions
 
-- [无则写“无”]
+- none / list
 
-## 执行记录
+## Execution Log
 
 ### Round 1
-- 时间:
-- 范围:
-- 命令 / 方式:
-- 结果:
-- 证据:
-- GUI 证据:
-  - timeline:
-  - screenshot:
-  - console:
-  - network:
-  - backend trace:
-- GUI Gate 结论:
-- 观测对比:
-  - 预期:
-  - 实际:
-  - 差异结论:
+- Time:
+- Scope:
+- Method:
+- Result:
+- Evidence:
 
-## 剩余风险
+## Residual Risk
 
-- [无则写“无”；未执行的场景也要写在这里]
-
-## 给 PM 的验收建议
-
-- [建议先验哪个场景]
-
----
-*最后更新: YYYY-MM-DD HH:mm*
+- none / list

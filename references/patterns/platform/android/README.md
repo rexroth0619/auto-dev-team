@@ -1,5 +1,3 @@
-# Android 平台经验
+# Android Notes
 
-ANR 预防、生命周期、权限处理、多屏适配、后台限制等。
-
-**使用模板**：`../_TEMPLATE.md`
+Lifecycle, threading, ANR risk, storage, and UI state management.

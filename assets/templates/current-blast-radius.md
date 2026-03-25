@@ -1,40 +1,27 @@
-# 当前 Blast Radius
+# Current Blast Radius
 
-创建时间: YYYY-MM-DD HH:mm
-最近更新: YYYY-MM-DD HH:mm
-任务: [一句话任务]
-模式 / Step: [FastTrack / Debug / Step 2 / ...]
-状态: 待分析 / 已生成 / 需补充 / 已确认
+Generated: YYYY-MM-DD HH:mm
+Task: [task]
+Mode: [mode]
 
-## 本轮目标
+## Summary
 
-- 目标文件:
-- 目标符号:
-- 计划改动:
-- 预期风险阈值: 🟢 / 🟡 / 🔴
+- Risk level: low / medium / high
+- Gate: continue / revise plan / stop
+- Report path:
 
-## 最新结论
+## Targets
 
-- 风险等级:
-- Gate 结论:
-- 最新报告:
-- 直接调用方:
-- 传递影响:
-- 邻近测试:
-- 配置 / 环境:
-- 对称路径:
+- Files:
+- Symbols:
 
-## 手工补充
+## Must-Verify Scope
 
-- 数据流消费方:
-- 隐式依赖:
-- 待业务确认:
+- Direct callers:
+- Key consumers:
+- Neighbor tests:
+- Config or environment surfaces:
 
-## 验证范围
+## Notes
 
-- 🔴 必测:
-- 🟡 建议:
-- ⚪ 可选:
-
----
-*最后更新: YYYY-MM-DD HH:mm*
+- Refresh this file whenever the real edit scope changes.

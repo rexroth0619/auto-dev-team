@@ -173,15 +173,15 @@ threshold_map = {
     "🟢": 1,
     "green": 1,
     "low": 1,
-    "低": 1,
+
     "🟡": 2,
     "yellow": 2,
     "medium": 2,
-    "中": 2,
+
     "🔴": 3,
     "red": 3,
     "high": 3,
-    "高": 3,
+
 }
 normalized = threshold_text.replace("<=", "≤").replace(" ", "")
 threshold_rank = None
@@ -196,7 +196,7 @@ if threshold_rank is None:
 
 log_marker = ""
 for line in text.splitlines():
-    log_match = re.search(r"\*\*Log 标识\*\*:\s*\[([^\]]+)\]", line)
+    log_match = re.search(r"\*\*Log marker\*\*:\s*\[([^\]]+)\]", line)
     if log_match:
         log_marker = log_match.group(1).strip()
         break
@@ -315,14 +315,14 @@ actual_rank = int(summary["risk_rank"])
 threshold_rank = int(threshold_rank)
 if actual_rank > threshold_rank:
     print(
-        f"⛔ Step {step_id} Blast Radius 超阈值：实际风险 {summary['risk_level']}，计划阈值 {threshold_text}。"
+        f"⛔ Step {step_id} blast radius exceeded the threshold: actual risk {summary['risk_level']}, planned threshold {threshold_text}."
     )
-    print(f"报告: {summary.get('report_path') or '.autodev/current-blast-radius.md'}")
-    print("请先缩小改动范围或回到计划层重写 Step。")
+    print(f"Report: {summary.get('report_path') or '.autodev/current-blast-radius.md'}")
+    print("Reduce the change scope or return to planning before continuing this step.")
     raise SystemExit(4)
 
 print(
-    f"✅ Step {step_id} Blast Radius 通过：实际风险 {summary['risk_level']}，阈值 {threshold_text}。"
+    f"✅ Step {step_id} blast radius passed: actual risk {summary['risk_level']}, threshold {threshold_text}."
 )
-print(f"报告: {summary.get('report_path') or '.autodev/current-blast-radius.md'}")
+print(f"Report: {summary.get('report_path') or '.autodev/current-blast-radius.md'}")
 PY

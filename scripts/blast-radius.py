@@ -751,49 +751,49 @@ def risk_assessment(
 
     if direct_file_count >= 8:
         score += 4
-        reasons.append(f"+4 直接引用/调用文件较多（{direct_file_count} 个）")
+        reasons.append(f"+4 many directly affected caller / consumer files ({direct_file_count})")
     elif direct_file_count >= 4:
         score += 2
-        reasons.append(f"+2 已有多处直接引用（{direct_file_count} 个）")
+        reasons.append(f"+2 several direct references already exist ({direct_file_count})")
 
     if reverse_count >= 8:
         score += 3
-        reasons.append(f"+3 传递调用链较深/较广（{reverse_count} 个上游文件）")
+        reasons.append(f"+3 reverse import chain is broad / deep ({reverse_count} upstream files)")
     elif reverse_count >= 3:
         score += 1
-        reasons.append(f"+1 已发现二层及以上影响（{reverse_count} 个上游文件）")
+        reasons.append(f"+1 second-layer or deeper impact found ({reverse_count} upstream files)")
 
     if outbound_count >= 6:
         score += 2
-        reasons.append(f"+2 被改文件本身依赖较多（{outbound_count} 个本地依赖）")
+        reasons.append(f"+2 target files already depend on many local modules ({outbound_count})")
 
     if not neighbor_tests:
         score += 1
-        reasons.append("+1 邻近测试或直接测试引用较少")
+        reasons.append("+1 few nearby tests or direct test references found")
 
     if config_signals:
         score += 2
-        reasons.append("+2 命中配置/环境读取，容易放大影响面")
+        reasons.append("+2 config / environment access may amplify impact")
 
     if dynamic_signals:
         score += 2
-        reasons.append("+2 命中动态调用/注册信号，静态分析存在盲区")
+        reasons.append("+2 dynamic dispatch / registration signals reduce static confidence")
 
     if symmetry_candidates:
         score += 1
-        reasons.append("+1 发现对称/闭环候选路径，可能需要同步修改")
+        reasons.append("+1 symmetry / loopback candidates may require paired updates")
 
     if unresolved_imports:
         score += 1
-        reasons.append(f"+1 存在 {unresolved_imports} 处未解析导入，静态图不完整")
+        reasons.append(f"+1 unresolved imports ({unresolved_imports}) make the static graph incomplete")
 
     if ambiguous_symbols:
         score += 2
-        reasons.append(f"+2 目标符号存在歧义定义：{', '.join(ambiguous_symbols)}")
+        reasons.append(f"+2 target symbols have ambiguous definitions: {', '.join(ambiguous_symbols)}")
 
     if len(impacted_buckets) >= 3:
         score += 1
-        reasons.append(f"+1 影响跨越多个模块域：{', '.join(sorted(impacted_buckets))}")
+        reasons.append(f"+1 impact spans multiple module buckets: {', '.join(sorted(impacted_buckets))}")
 
     public_surface = any(
         any(token in path for token in ("/api/", "/shared/", "/common/", "/core/", "/types/", "/hooks/"))
@@ -802,20 +802,20 @@ def risk_assessment(
     ) or any(symbol[0].isupper() for symbol in target_symbols if symbol)
     if public_surface:
         score += 1
-        reasons.append("+1 目标看起来像公共接口/共享模块")
+        reasons.append("+1 target looks like a public surface or shared module")
 
     if score >= 8:
-        level = "🔴 高"
-        gate = "停止直接改动，先缩小范围或重写计划"
+        level = "🔴 High"
+        gate = "stop direct editing and shrink scope or rewrite the plan first"
     elif score >= 4:
-        level = "🟡 中"
-        gate = "可以继续，但必须把直接调用方和关键消费方纳入验证"
+        level = "🟡 Medium"
+        gate = "continue only if direct callers and key consumers are included in verification"
     else:
-        level = "🟢 低"
-        gate = "影响面相对可控，按最小切口继续"
+        level = "🟢 Low"
+        gate = "impact appears relatively controlled; continue with the smallest cut"
 
     if not reasons:
-        reasons.append("+0 当前静态信号显示影响面较集中")
+        reasons.append("+0 static signals suggest a concentrated impact area")
 
     return level, score, reasons, gate
 
@@ -834,18 +834,18 @@ def build_test_recommendations(
 ) -> List[Tuple[str, str, str]]:
     recommendations: List[Tuple[str, str, str]] = []
     for path in target_files:
-        recommendations.append(("🔴 必测", path, "本次改动核心"))
+        recommendations.append(("🔴 Must verify", path, "core target of this change"))
 
     seen_files = {path for _, path, _ in recommendations}
     for match in direct_refs:
         if match.file in seen_files or is_test_file(match.file):
             continue
-        recommendations.append(("🔴 必测", match.file, "直接引用/调用方"))
+        recommendations.append(("🔴 Must verify", match.file, "direct callers / consumers"))
         seen_files.add(match.file)
 
     for depth, files in reverse_chain.items():
-        priority = "🟡 建议" if depth == 1 else "⚪ 可选"
-        reason = "直接导入链" if depth == 1 else f"{depth} 层上传递调用链"
+        priority = "🟡 Recommended" if depth == 1 else "⚪ Optional"
+        reason = "direct import chain" if depth == 1 else f"{depth} layer-up reverse import chain"
         for path in files:
             if path in seen_files:
                 continue
@@ -855,21 +855,21 @@ def build_test_recommendations(
     for match in neighbor_tests:
         if match.file in seen_files:
             continue
-        recommendations.append(("🟡 建议", match.file, "邻近测试/回归入口"))
+        recommendations.append(("🟡 Recommended", match.file, "neighbor test / regression entrypoint"))
         seen_files.add(match.file)
 
     if config_signals:
         for match in config_signals:
             if match.file in seen_files:
                 continue
-            recommendations.append(("🟡 建议", match.file, "命中配置/环境读取"))
+            recommendations.append(("🟡 Recommended", match.file, "config / environment access detected"))
             seen_files.add(match.file)
 
     for candidate, hits in symmetry_candidates.items():
         for hit in hits:
             if hit.file in seen_files:
                 continue
-            recommendations.append(("🟡 建议", hit.file, f"对称路径候选：{candidate}"))
+            recommendations.append(("🟡 Recommended", hit.file, f"symmetry candidate: {candidate}"))
             seen_files.add(hit.file)
             break
 
@@ -894,39 +894,39 @@ def render_markdown(report: dict) -> str:
     lines: List[str] = []
     lines.append("# Blast Radius Report")
     lines.append("")
-    lines.append(f"- 生成时间: `{report['generated_at']}`")
-    lines.append(f"- 仓库: `{report['repo_root']}`")
-    lines.append(f"- 模式: `{report['mode']}`")
+    lines.append(f"- Generated: `{report['generated_at']}`")
+    lines.append(f"- Repository: `{report['repo_root']}`")
+    lines.append(f"- Mode: `{report['mode']}`")
     if report["task"]:
-        lines.append(f"- 任务: `{report['task']}`")
+        lines.append(f"- Task: `{report['task']}`")
     if report["step"]:
         lines.append(f"- Step: `{report['step']}`")
-    lines.append(f"- 风险等级: **{report['risk_level']}**（score={report['risk_score']}）")
-    lines.append(f"- Gate 结论: **{report['gate']}**")
+    lines.append(f"- Risk level: **{report['risk_level']}**（score={report['risk_score']}）")
+    lines.append(f"- Gate: **{report['gate']}**")
     lines.append("")
-    lines.append("## 目标")
+    lines.append("## Targets")
     if report["target_files"]:
         for path in report["target_files"]:
-            lines.append(f"- 文件: `{path}`")
+            lines.append(f"- File: `{path}`")
     if report["target_symbols"]:
         for symbol in report["target_symbols"]:
-            lines.append(f"- 符号: `{symbol}`")
+            lines.append(f"- Symbol: `{symbol}`")
     lines.append(f"- Reverse depth: `{report['depth']}`")
     lines.append("")
     if report["definitions"]:
-        lines.append("## 定义位置")
+        lines.append("## Definitions")
         lines.extend(
             markdown_table(
                 [
                     [item["symbol"], item["file"], str(item["line"]), truncate_text(item["text"])]
                     for item in report["definitions"]
                 ],
-                ["符号", "文件", "行号", "命中内容"],
+                ["Symbol", "File", "Line", "Matched text"],
             )
         )
         lines.append("")
 
-    lines.append("## 直接影响（调用方 / 引用方）")
+    lines.append("## Direct impact (callers / references)")
     if report["direct_references"]:
         lines.extend(
             markdown_table(
@@ -934,37 +934,37 @@ def render_markdown(report: dict) -> str:
                     [item["file"], str(item["line"]), item["kind"], truncate_text(item["text"])]
                     for item in report["direct_references"]
                 ],
-                ["文件", "行号", "类型", "命中内容"],
+                ["File", "Line", "Type", "Matched text"],
             )
         )
     else:
-        lines.append("- 无明显直接调用方，或当前静态搜索未命中。")
+        lines.append("- No obvious direct callers were found, or static search found nothing.")
     lines.append("")
 
-    lines.append("## 传递调用链（reverse import chain）")
+    lines.append("## Reverse import chain")
     if report["reverse_chain"]:
         for depth, files in report["reverse_chain"].items():
             lines.append(f"### Depth {depth}")
             for path in files:
                 lines.append(f"- `{path}`")
     else:
-        lines.append("- 未发现额外的传递导入链。")
+        lines.append("- No additional reverse import chain was found.")
     lines.append("")
 
-    lines.append("## 被调用方 / 本地依赖")
+    lines.append("## Outbound / local dependencies")
     local_deps = report["outbound_local_dependencies"]
     external_deps = report["outbound_external_dependencies"]
     if local_deps:
         for path in local_deps:
-            lines.append(f"- 本地依赖: `{path}`")
+            lines.append(f"- Local dependency: `{path}`")
     if external_deps:
         for spec in external_deps:
-            lines.append(f"- 外部依赖: `{spec}`")
+            lines.append(f"- External dependency: `{spec}`")
     if not local_deps and not external_deps:
-        lines.append("- 无可解析依赖，或当前文件类型不适用。")
+        lines.append("- No parseable dependency was found, or this file type is not supported.")
     lines.append("")
 
-    lines.append("## 测试资产 / 邻近测试")
+    lines.append("## Test assets / nearby tests")
     if report["neighbor_tests"]:
         lines.extend(
             markdown_table(
@@ -972,79 +972,79 @@ def render_markdown(report: dict) -> str:
                     [item["file"], str(item["line"]), item["kind"], truncate_text(item["text"])]
                     for item in report["neighbor_tests"]
                 ],
-                ["文件", "行号", "类型", "命中内容"],
+                ["File", "Line", "Type", "Matched text"],
             )
         )
     else:
-        lines.append("- 未发现邻近测试，请手工补回归范围。")
+        lines.append("- No nearby tests were found; add regression coverage manually.")
     lines.append("")
 
-    lines.append("## 配置 / 动态信号")
+    lines.append("## Config / dynamic signals")
     if report["config_signals"]:
-        lines.append("### 配置 / 环境")
+        lines.append("### Config / environment")
         lines.extend(
             markdown_table(
                 [
                     [item["file"], str(item["line"]), truncate_text(item["text"])]
                     for item in report["config_signals"]
                 ],
-                ["文件", "行号", "命中内容"],
+                ["File", "Line", "Matched text"],
             )
         )
     if report["dynamic_signals"]:
-        lines.append("### 动态调用 / 注册")
+        lines.append("### Dynamic dispatch / registration")
         lines.extend(
             markdown_table(
                 [
                     [item["file"], str(item["line"]), truncate_text(item["text"])]
                     for item in report["dynamic_signals"]
                 ],
-                ["文件", "行号", "命中内容"],
+                ["File", "Line", "Matched text"],
             )
         )
     if not report["config_signals"] and not report["dynamic_signals"]:
-        lines.append("- 未命中明显配置或动态调用信号。")
+        lines.append("- No strong config or dynamic-dispatch signal was found.")
     lines.append("")
 
-    lines.append("## 对称路径候选")
+    lines.append("## Symmetry candidates")
     if report["symmetry_candidates"]:
         for candidate, hits in report["symmetry_candidates"].items():
             lines.append(f"### `{candidate}`")
             for item in hits:
                 lines.append(f"- `{item['file']}:{item['line']}` {truncate_text(item['text'])}")
     else:
-        lines.append("- 未发现明显的对称/闭环候选。")
+        lines.append("- No obvious symmetry or loopback candidates were found.")
     lines.append("")
 
-    lines.append("## 风险评分")
+    lines.append("## Risk score")
     for reason in report["risk_reasons"]:
         lines.append(f"- {reason}")
     lines.append("")
 
-    lines.append("## 验证范围建议")
+    lines.append("## Suggested verification scope")
     if report["test_recommendations"]:
         lines.extend(
             markdown_table(
                 [[priority, path, reason] for priority, path, reason in report["test_recommendations"]],
-                ["优先级", "模块", "原因"],
+                ["Priority", "Module", "Reason"],
             )
         )
     else:
-        lines.append("- 暂无自动建议，请至少验证改动点和原始复现路径。")
+        lines.append("- No automatic recommendation available; at least verify the changed path and original reproduction path.")
     lines.append("")
 
-    lines.append("## 盲区 / 需要手工补充")
+    lines.append("## Blind spots / manual follow-up needed")
     if report["blind_spots"]:
         for item in report["blind_spots"]:
             lines.append(f"- {item}")
     else:
-        lines.append("- 当前未发现额外盲区，但仍需补数据流和业务规则判断。")
+        lines.append("- No extra blind spots were detected, but data flow and business-rule review is still required.")
     lines.append("")
 
-    lines.append("## 操作建议")
-    lines.append(f"- 本轮建议: **{report['gate']}**")
-    lines.append("- 先补数据流 / 业务消费方，再开始改代码。")
-    lines.append("- 若实际改动文件或符号超出本报告目标，必须重新运行脚本刷新报告。")
+    lines.append("## Recommended action")
+    lines.append(f"- Recommendation: **{report['gate']}**")
+    lines.append("- Review data flow and business consumers before editing code.")
+    lines.append("- Rerun the script if the real changed files or symbols exceed this report's targets.")
     return "\n".join(lines).strip() + "\n"
 
 
@@ -1132,7 +1132,7 @@ def build_start_label(
     if threshold_label:
         focus_parts.append(f"threshold={threshold_label}")
     focus_parts.append(f"depth={depth}")
-    return f"💥 Blast-radius 开始 - [{marker_id}] " + "{" + " | ".join(focus_parts) + "}"
+    return f"💥 Blast-radius start - [{marker_id}] " + "{" + " | ".join(focus_parts) + "}"
 
 
 def risk_rank(level: str) -> int:
@@ -1316,15 +1316,15 @@ def main() -> int:
 
     blind_spots: List[str] = []
     if not target_files:
-        blind_spots.append("未定位到明确目标文件，请补 `--file` 或确认符号定义。")
+        blind_spots.append("No concrete target file was identified; add `--file` or confirm the symbol definition.")
     if ambiguous_symbols:
-        blind_spots.append(f"符号有多个定义：{', '.join(ambiguous_symbols)}；改动前先缩小目标。")
+        blind_spots.append(f"The symbol has multiple definitions: {', '.join(ambiguous_symbols)}; narrow the targets before editing.")
     if unresolved_imports:
-        blind_spots.append(f"存在 {unresolved_imports} 处未解析导入，reverse import chain 可能不完整。")
+        blind_spots.append(f"There are {unresolved_imports} unresolved imports; the reverse import chain may be incomplete.")
     if dynamic_signals:
-        blind_spots.append("命中动态调用/注册信号，需要手工补数据流和运行时路径。")
+        blind_spots.append("Dynamic dispatch or registration was detected; add manual runtime and data-flow review.")
     if not neighbor_tests:
-        blind_spots.append("未找到邻近测试，请手工补至少 1 个保护性回归入口。")
+        blind_spots.append("No nearby tests were found; add at least one protective regression path manually.")
 
     report = {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
@@ -1391,10 +1391,10 @@ def main() -> int:
             current_content = markdown
             if report_path:
                 current_content = (
-                    f"# 当前 Blast Radius\n\n"
-                    f"- 最新报告: `{repo_rel(report_path, repo_root)}`\n"
-                    f"- 风险等级: **{risk_level}**\n"
-                    f"- Gate 结论: **{gate}**\n\n"
+                    f"# Current Blast Radius\n\n"
+                    f"- Latest report: `{repo_rel(report_path, repo_root)}`\n"
+                    f"- Risk level: **{risk_level}**\n"
+                    f"- Gate: **{gate}**\n\n"
                     "━━━━━━━━━━━━━━━━━━━━\n\n"
                     + markdown
                 )
@@ -1416,8 +1416,8 @@ def main() -> int:
         print(markdown.rstrip())
         if report.get("report_path"):
             print("")
-            print(f"报告已写入: {report['report_path']}")
-            print(f"JSON 已写入: {report['json_path']}")
+            print(f"Report written to: {report['report_path']}")
+            print(f"JSON written to: {report['json_path']}")
     return 0
 
 

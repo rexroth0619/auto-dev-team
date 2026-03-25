@@ -139,7 +139,7 @@ def parse_args() -> argparse.Namespace:
         help="Use the latest N commits when --range/--commit is not provided. Default: 1.",
     )
     parser.add_argument("--task", default="", help="Short task description for the output header.")
-    parser.add_argument("--env", default="预发", help="Environment label. Default: 预发.")
+    parser.add_argument("--env", default="staging", help="Environment label. Default: staging.")
     parser.add_argument(
         "--output",
         default=".autodev/temp/release-test-pack.md",
@@ -275,12 +275,12 @@ def detect_sql_dialect(repo_root: Path) -> Tuple[str, str]:
     ]
     combined = "\n".join(read_optional_text(path).lower() for path in candidates if path.exists())
     if any(token in combined for token in ("postgresql", "postgres", "psycopg", "pgx", "asyncpg")):
-        return "PostgreSQL", "从 path.md / 配置文件中识别到 postgres 相关信号"
+        return "PostgreSQL", "Detected postgres-related signals from path.md or project config"
     if any(token in combined for token in ("mysql", "mariadb", "pymysql")):
-        return "MySQL", "从 path.md / 配置文件中识别到 mysql 相关信号"
+        return "MySQL", "Detected mysql-related signals from path.md or project config"
     if any(token in combined for token in ("sqlite", ".db", "better-sqlite3")):
-        return "SQLite", "从 path.md / 配置文件中识别到 sqlite 相关信号"
-    return "待确认", "未从 path.md 或常见配置文件中识别出明确数据库方言"
+        return "SQLite", "Detected sqlite-related signals from path.md or project config"
+    return "unconfirmed", "No clear database dialect was detected from path.md or common project config files"
 
 
 def seven_day_filter(dialect: str) -> str:
@@ -290,7 +290,7 @@ def seven_day_filter(dialect: str) -> str:
         return "updated_at >= NOW() - INTERVAL 7 DAY"
     if dialect == "SQLite":
         return "updated_at >= DATETIME('now', '-7 days')"
-    return "updated_at >= <请按实际数据库方言替换最近7天条件>"
+    return "updated_at >= <replace with the correct last-7-days condition for your actual database dialect>"
 
 
 def make_query_templates(entities: List[str], domains: Iterable[str], dialect: str) -> List[Dict[str, str]]:
@@ -304,34 +304,34 @@ def make_query_templates(entities: List[str], domains: Iterable[str], dialect: s
     queries = [
         {
             "id": "Q1",
-            "purpose": f"找最近可用于验证 {entity} 相关变更的候选记录",
+            "purpose": f"find recent candidate records for validating the {entity}-related change",
             "sql": f"SELECT {base_fields}\nFROM {table_placeholder}\nORDER BY updated_at DESC\nLIMIT 20;",
-            "usage": "先确认预发里有没有最近可直接拿来手测的样本数据。",
+            "usage": "confirm that staging already has recent sample records that can be used directly for manual validation.",
         },
         {
             "id": "Q2",
-            "purpose": f"看 {entity} 在不同状态下的分布，便于挑选边界 case",
+            "purpose": f"check the state distribution of {entity} records so boundary cases can be chosen deliberately",
             "sql": f"SELECT status, COUNT(*) AS cnt\nFROM {table_placeholder}\nGROUP BY status\nORDER BY cnt DESC;",
-            "usage": "判断应该优先选哪种状态做 happy path、negative path 和 boundary path。",
+            "usage": "decide which states should drive happy-path, negative, and boundary coverage first.",
         },
         {
             "id": "Q3",
-            "purpose": f"回看最近一周 {entity} 的变化，筛出更贴近真实链路的记录",
+            "purpose": f"review one week of {entity} changes and select records closer to the real production path",
             "sql": (
                 f"SELECT {base_fields}\nFROM {table_placeholder}\n"
                 f"WHERE {seven_day_filter(dialect)}\n"
                 "ORDER BY updated_at DESC\nLIMIT 50;"
             ),
-            "usage": "优先挑近期仍在流转的数据，减少测到过期脏数据的概率。",
+            "usage": "prefer recently active records so the test does not rely on stale or dirty data.",
         },
     ]
     if {"ui", "api"} & domain_set:
         queries.append(
             {
                 "id": "Q4",
-                "purpose": f"补一条可用于详情页或列表页直达验证的 {entity} 记录",
-                "sql": f"SELECT {base_fields}\nFROM {table_placeholder}\nWHERE id = <待替换ID>;",
-                "usage": "当 UI 需要直接粘贴单号或 ID 时，用它拿到一条可稳定复验的精确记录。",
+                "purpose": f"fetch one precise {entity} record that can drive direct detail-page or list-page verification",
+                "sql": f"SELECT {base_fields}\nFROM {table_placeholder}\nWHERE id = <REPLACE_WITH_ID>;",
+                "usage": "use this when the UI flow requires a specific ID or document number to be pasted directly.",
             }
         )
     return queries
@@ -340,80 +340,80 @@ def make_query_templates(entities: List[str], domains: Iterable[str], dialect: s
 def make_test_data_rows(entities: List[str], domains: Iterable[str]) -> List[Dict[str, str]]:
     domain_labels = ", ".join(DOMAIN_RULES[key]["label"] for key in sorted(set(domains)) if key in DOMAIN_RULES)
     rows: List[Dict[str, str]] = []
-    seeds = entities or ["核心对象"]
+    seeds = entities or ["core object"]
     for index, entity in enumerate(seeds[:3], start=1):
         rows.append(
             {
                 "id": f"TD-{index}",
-                "change": f"{entity} 相关最近提交",
-                "purpose": f"覆盖 {entity} 相关的主验证链路",
-                "method": "直接使用查询结果 / 手工造单 / 脚本造单",
-                "fields": f"建议至少确认 `{entity}_id / status / updated_at`，并结合 {domain_labels or '核心业务字段'} 细化。",
-                "expected": f"拿到一条可用于列表、详情或状态流转验证的 {entity} 样本数据。",
+                "change": f"recent commits related to {entity}",
+                "purpose": f"cover the primary validation path for {entity}",
+                "method": "reuse query results / create manually / generate by script",
+                "fields": f"at minimum confirm `{entity}_id / status / updated_at`, then refine with {domain_labels or 'core business fields'}.",
+                "expected": f"obtain a {entity} sample that can drive list, detail, or state-transition checks.",
             }
         )
     return rows
 
 
 def make_use_cases(entities: List[str], domains: Iterable[str]) -> List[Dict[str, str]]:
-    seeds = entities or ["核心对象"]
+    seeds = entities or ["core object"]
     primary = seeds[0]
     use_cases = [
         {
             "id": "UC-1",
-            "title": f"{primary} 主链路验证",
-            "change": f"{primary} 相关最近提交",
-            "preconditions": f"已拿到一条可直接搜索或粘贴的 {primary} 单号 / ID。",
-            "why": "先确认最近提交对应的 happy path 在预发环境确实可走通。",
-            "input": f"粘贴 `{primary}` 的单号 / ID。",
-            "page": f"`{primary}` 列表页或首个可搜索入口。",
+            "title": f"{primary} primary-path validation",
+            "change": f"recent commits related to {primary}",
+            "preconditions": f"one searchable or directly pasteable {primary} ID / document number is available.",
+            "why": "confirm that the happy path affected by the recent commits still works in staging.",
+            "input": f"paste the `{primary}` ID / document number.",
+            "page": f"the `{primary}` list page or the first searchable entrypoint.",
             "steps": [
-                "在列表页或搜索框粘贴测试数据中的单号 / ID。",
-                "点击“查询 / 搜索 / 筛选”。",
-                "进入详情页或执行最近提交直接影响的按钮操作。",
+                "paste the prepared ID / document number into the list page or search box.",
+                "click query, search, or filter.",
+                "open the detail page or trigger the button flow directly affected by the recent commits.",
             ],
-            "expected": "页面状态、按钮显隐、字段展示或提交结果与最近提交描述一致。",
-            "success": "说明本次改动影响到的主链路在预发环境可正常工作。",
-            "failure": "查无数据、状态不符、按钮缺失、接口报错、页面提示异常。",
+            "expected": "page state, button visibility, field rendering, or submission result match the intended recent behavior change.",
+            "success": "the main path touched by the recent commits still works in staging.",
+            "failure": "no data found, wrong state, missing button, API error, or incorrect UI prompt.",
         },
         {
             "id": "UC-2",
-            "title": f"{primary} 边界或负例验证",
-            "change": f"{primary} 相关最近提交",
-            "preconditions": f"已准备另一条状态不同或字段不完整的 {primary} 样本。",
-            "why": "补一条最贴近本次改动的 boundary / negative case，避免只测 happy path。",
-            "input": f"粘贴边界态 `{primary}` 的单号 / ID。",
-            "page": f"`{primary}` 列表页、详情页或与本次改动最相关的操作弹窗。",
+            "title": f"{primary} boundary or negative validation",
+            "change": f"recent commits related to {primary}",
+            "preconditions": f"a second {primary} sample exists with a different state or incomplete field set.",
+            "why": "cover the boundary or negative path closest to the recent change instead of testing only the happy path.",
+            "input": f"paste the boundary-state `{primary}` ID / document number.",
+            "page": f"the `{primary}` list page, detail page, or the dialog most closely tied to this change.",
             "steps": [
-                "打开与最近提交直接相关的页面或弹窗。",
-                "输入边界态样本数据并触发查询或操作。",
-                "观察页面提示、按钮状态和最终结果。",
+                "open the page or dialog directly affected by the recent commits.",
+                "enter the boundary-state sample and trigger the query or action.",
+                "observe prompts, button state, and the final result.",
             ],
-            "expected": "错误提示、禁用状态或兜底逻辑符合预期，不出现误放行。",
-            "success": "说明最近提交没有破坏异常链路或边界行为。",
-            "failure": "错误提示缺失、误提交成功、页面状态错乱、数据回显不一致。",
+            "expected": "error prompts, disabled states, or fallback logic behave correctly and do not allow unintended success.",
+            "success": "the recent commits did not break edge or failure behavior.",
+            "failure": "missing error prompts, unintended success, broken UI state, or inconsistent data rendering.",
         },
         {
             "id": "UC-3",
-            "title": "回归观察",
-            "change": "最近提交的关联旧链路",
-            "preconditions": "准备一条旧路径仍应可用的历史样本数据。",
-            "why": "验证最近提交没有误伤原有老链路或旧状态数据。",
-            "input": "粘贴历史样本单号 / ID。",
-            "page": "与主链路相同的入口页。",
+            "title": "regression observation",
+            "change": "older paths adjacent to the recent commits",
+            "preconditions": "a historical sample is ready for a path that should still work.",
+            "why": "verify that the recent commits did not accidentally damage the previous path or legacy-state data.",
+            "input": "paste the historical sample ID / document number.",
+            "page": "the same entry page used by the main path.",
             "steps": [
-                "搜索历史样本数据。",
-                "重复旧版本就应该可以走通的操作。",
-                "对比页面展示与旧链路预期是否一致。",
+                "search for the historical sample.",
+                "repeat the action that should still work from the previous version.",
+                "compare the page state with the expected legacy-path behavior.",
             ],
-            "expected": "旧路径仍能按原预期运行，且不会误触发本次新逻辑。",
-            "success": "说明本次提交的影响范围相对收敛，没有明显回归。",
-            "failure": "旧数据被新逻辑错误拦截、页面文案异常、状态映射被改坏。",
+            "expected": "the legacy path still works as before and does not trigger the new logic incorrectly.",
+            "success": "the recent commits stayed relatively contained and did not create an obvious regression.",
+            "failure": "legacy data is blocked by new logic, page copy is wrong, or state mapping is broken.",
         },
     ]
     if "ui" not in set(domains):
         for case in use_cases:
-            case["page"] = "调用该链路的业务页面或控制台入口。"
+            case["page"] = "the business page or console entrypoint that triggers this path."
     return use_cases
 
 
@@ -434,64 +434,64 @@ def render_markdown(
 ) -> str:
     created_at = datetime.now().strftime("%Y-%m-%d %H:%M")
     commit_summary = f"{commits[0][0][:7]} - {commits[0][1]}" if commits else "N/A"
-    behavior_lines = [f"- `{commit_hash[:7]}` {subject}" for commit_hash, subject in commits] or ["- 无"]
-    changed_file_lines = [f"- `{status}` `{path}`" for status, path in changed_files] or ["- 无"]
+    behavior_lines = [f"- `{commit_hash[:7]}` {subject}" for commit_hash, subject in commits] or ["- none"]
+    changed_file_lines = [f"- `{status}` `{path}`" for status, path in changed_files] or ["- none"]
     domain_lines = [
         f"- {DOMAIN_RULES[key]['label']}" for key in sorted(set(domains)) if key in DOMAIN_RULES
-    ] or ["- 未识别，建议人工补充"]
-    entity_text = ", ".join(entities) if entities else "最近提交涉及的核心对象"
-    need_queries = "需先查数" if queries else "可直接造单"
-    task_text = task or "根据最近提交组织交互式预发测试"
+    ] or ["- not identified; fill manually if needed"]
+    entity_text = ", ".join(entities) if entities else "the core object touched by the recent commits"
+    need_queries = "real data required first" if queries else "can draft without querying first"
+    task_text = task or "organize an interactive staging validation flow from recent commits"
 
     lines: List[str] = [
-        "# 预发测试会话草稿",
+        "# Interactive Release-Test Draft",
         "",
-        f"创建时间: {created_at}",
-        f"任务: {task_text}",
-        f"提交范围: `{target}`",
-        f"环境: {env_label}",
+        f"Created: {created_at}",
+        f"Task: {task_text}",
+        f"Commit range: `{target}`",
+        f"Environment: {env_label}",
         "",
-        "> 仅供 agent 组织当前轮互动时使用，不是默认直接发给用户的最终静态交付物。",
+        "> Use this only as the current-round agent draft. It is not the default final artifact sent directly to the user.",
         "",
-        f"## 🛠️ 预发测试开始 {{{commit_summary}}}",
+        f"## 🛠️ Release Test Start {{{commit_summary}}}",
         "",
-        f"- 本轮关注的最近提交: `{target}`",
-        f"- 一句话场景摘要: 优先围绕 `{entity_text}` 相关变更做预发验收。",
-        "- 为什么优先测这个: 这些文件和提交最接近最近行为变化，最容易在预发环境暴露真实回归。",
+        f"- Current commit scope: `{target}`",
+        f"- One-line summary: prioritize staging validation around `{entity_text}`.",
+        "- Why this first: these files are closest to the recent behavior change and most likely to expose regressions in staging.",
         "",
-        "## 最近提交的行为变化摘要",
+        "## Behavior Changes From Recent Commits",
         "",
         *behavior_lines,
         "",
-        "### 变更文件",
+        "### Changed Files",
         "",
         *changed_file_lines,
         "",
-        "### 推断影响域",
+        "### Inferred Impact Areas",
         "",
         *domain_lines,
         "",
-        "## 是否需要先查数",
+        "## Need Real Data First?",
         "",
-        f"- 结论: {need_queries}",
-        "- 原因: "
+        f"- Conclusion: {need_queries}",
+        "- Reason: "
         + (
-            "最近提交涉及 API / Service / Data 路径，建议先从预发环境挑选真实样本数据。"
+            "The recent commits touch API / service / data paths, so real staging samples should be selected first."
             if queries
-            else "最近提交更偏 UI 或文档层，可先直接准备手测样本，再按实际页面补细节。"
+            else "The recent commits are mostly UI or docs-oriented, so a manual test draft can start without querying first."
         ),
         "",
-        "## 🛠️ 先导数据库查询",
+        "## 🛠️ Bootstrap Database Queries",
         "",
-        "> 先把下面 SQL 发给用户去预发执行，等结果贴回后再继续更准确地造单。",
+        "> Send the SQL below to the user for execution in staging, then continue after they paste the results back.",
         "",
     ]
 
     if queries:
         lines.extend(
             [
-                f"- 当前推断数据库方言: {dialect}",
-                f"- 当前推断依据: {dialect_reason}",
+                f"- Inferred database dialect: {dialect}",
+                f"- Reason for that guess: {dialect_reason}",
                 "",
                 "```sql",
             ]
@@ -509,29 +509,29 @@ def render_markdown(
             lines.extend(
                 [
                     f"- `{query['id']}` {query['purpose']}",
-                    f"  结果回来后如何使用: {query['usage']}",
+                    f"  How the result will be used: {query['usage']}",
                 ]
             )
         lines.extend(
             [
-                f"- 备注: 当前按 {dialect} 语法生成；若与项目实际数据库不符，先按当前项目方言整体替换后再执行。",
+                f"- Note: generated in {dialect} syntax. If that is not the real project dialect, rewrite the full block before execution.",
                 "",
             ]
         )
     else:
         lines.extend(
             [
-                "- 本轮暂不强制查数；若后续发现页面路径或状态流仍不明确，再补一轮定向查询。",
+                "- Querying is not forced in this round. Add a focused query later if page paths or state transitions remain unclear.",
                 "",
             ]
         )
 
     lines.extend(
         [
-            "## ⏸️ 等待预发查询结果",
+            "## ⏸️ Waiting For Staging Query Results",
             "",
-            "- 请用户把整段查询结果贴回来。",
-            "- 收到结果前，不继续生成最终测试数据单、use cases 和手测步骤。",
+            "- Ask the user to paste the full query result back.",
+            "- Do not continue to final test data, use cases, or manual steps before results return.",
             "",
         ]
     )
@@ -539,7 +539,7 @@ def render_markdown(
     if not queries:
         lines.extend(
             [
-                "## 🛠️ 开始生成测试数据单",
+                "## 🛠️ Draft Test Data",
                 "",
             ]
         )
@@ -548,18 +548,18 @@ def render_markdown(
                 [
                     f"### {row['id']}",
                     "",
-                    f"- 关联变更点: {row['change']}",
-                    f"- 用途: {row['purpose']}",
-                    f"- 造单方式: {row['method']}",
-                    f"- 关键字段: {row['fields']}",
-                    f"- 预期拿到的数据: {row['expected']}",
+                    f"- Related change: {row['change']}",
+                    f"- Purpose: {row['purpose']}",
+                    f"- Creation method: {row['method']}",
+                    f"- Key fields: {row['fields']}",
+                    f"- Expected sample: {row['expected']}",
                     "",
                 ]
             )
 
         lines.extend(
             [
-                "## 🛠️ 可测 Use Cases",
+                "## 🛠️ Testable Use Cases",
                 "",
             ]
         )
@@ -568,16 +568,16 @@ def render_markdown(
                 [
                     f"### {case['id']} {case['title']}",
                     "",
-                    f"- 关联变更: {case['change']}",
-                    f"- 前置条件: {case['preconditions']}",
-                    f"- 为什么要测: {case['why']}",
+                    f"- Related change: {case['change']}",
+                    f"- Preconditions: {case['preconditions']}",
+                    f"- Why test this: {case['why']}",
                     "",
                 ]
             )
 
         lines.extend(
             [
-                "## 🛠️ 预发手测步骤",
+                "## 🛠️ Manual Steps For Staging",
                 "",
             ]
         )
@@ -586,34 +586,34 @@ def render_markdown(
                 [
                     f"### {case['id']} {case['title']}",
                     "",
-                    f"- 输入内容: {case['input']}",
-                    f"- 打开页面: {case['page']}",
-                    "- 操作步骤:",
+                    f"- Input: {case['input']}",
+                    f"- Open page: {case['page']}",
+                    "- Steps:",
                     *[f"  {index}. {step}" for index, step in enumerate(case["steps"], start=1)],
-                    f"- 预期结果: {case['expected']}",
-                    f"- 成功判定: {case['success']}",
-                    f"- 失败表现: {case['failure']}",
+                    f"- Expected result: {case['expected']}",
+                    f"- Success signal: {case['success']}",
+                    f"- Failure signal: {case['failure']}",
                     "",
                 ]
             )
 
     lines.extend(
         [
-            "## ⚠️ 待确认项与剩余风险",
+            "## ⚠️ Open Questions And Residual Risk",
             "",
-            "- 待确认项: 请结合实际表名、状态字段、页面路径和按钮名再补齐最后一跳。",
-            "- 剩余风险: 当前脚本只能根据提交与文件路径生成骨架，仍需 AI 或人工结合业务语义细化。",
+            "- Open questions: fill in the real table names, status fields, page paths, and button names before final execution.",
+            "- Residual risk: this script drafts from commits and paths only; final business-specific refinement is still required.",
             "",
-            "## ✅ 当前轮输出已准备",
+            "## ✅ Current Round Ready",
             "",
-            f"- 查询语句数量: {len(queries)}",
-            f"- 测试数据单数量: {0 if queries else len(test_data_rows)}",
-            f"- Use case 数量: {0 if queries else len(use_cases)}",
-            "- 下一步建议: "
+            f"- Query count: {len(queries)}",
+            f"- Test-data count: {0 if queries else len(test_data_rows)}",
+            f"- Use-case count: {0 if queries else len(use_cases)}",
+            "- Next move: "
             + (
-                "先执行查数 SQL，再把结果贴回来让 AI 收紧成具体单号、页面路径和点击动作。"
+                "Run the SQL first, then paste the results back so the agent can tighten them into concrete IDs, page paths, and click actions."
                 if queries
-                else "继续结合真实页面名、按钮名和业务对象，把骨架补成可直接执行的手测单，并等待用户按 use cases 去预发手测。"
+                else "Continue refining the draft with real page names, button names, and business objects, then wait for the user to run the manual staging cases."
             ),
             "",
         ]
@@ -699,10 +699,10 @@ def main() -> int:
         json_path = (repo_root / args.json).resolve() if not Path(args.json).is_absolute() else Path(args.json)
         write_text(json_path, json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
 
-    print(f"🛠️ release-pack 已生成: {output_path.relative_to(repo_root)}")
+    print(f"🛠️ release-pack generated: {output_path.relative_to(repo_root)}")
     if args.json:
         json_path = (repo_root / args.json).resolve() if not Path(args.json).is_absolute() else Path(args.json)
-        print(f"JSON 已写入: {json_path.relative_to(repo_root)}")
+        print(f"JSON written to: {json_path.relative_to(repo_root)}")
     if args.stdout:
         print()
         print(markdown)
