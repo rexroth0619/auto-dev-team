@@ -1,4 +1,4 @@
-# auto-dev-team 1.0
+# auto-dev-team
 
 > 一个面向软件交付工作的 Agent Skill：自动路由模式、约束写入流程、持续验证，并保持可回退。
 
