@@ -5,6 +5,17 @@
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-Compatible-blue)](https://agentskills.io)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
+## What It Is
+
+`auto-dev-team` is a delivery-oriented skill for coding agents.
+
+It turns feature work, debugging, refactoring, testing, and staging validation into:
+- explicit mode routing
+- guarded write flows
+- scriptable blast-radius analysis
+- rollback-ready checkpoints and archives
+- interactive staging-validation loops
+
 ## Language
 
 - English: default branch `main`
@@ -21,6 +32,28 @@ Clone the Chinese skill:
 ```bash
 git clone -b zh-CN https://github.com/rexroth0619/AutoDevTeam.git
 ```
+
+## Current Version
+
+- English release tag: `v1.0.0`
+- Chinese release tag: `v1.0.0-zh-CN`
+
+## Recent Updates
+
+- See [CHANGELOG.md](CHANGELOG.md)
+- Current highlights:
+  - interactive staging-validation flow
+  - `release-pack` script and selftest
+  - anti-spaghetti quick check
+  - bilingual release branches
+
+## Agent Quick Start
+
+- read `SKILL.md` first
+- before write-mode work, read `references/mode-index.md`
+- then read `references/write-preflight.md`
+- after script changes, run the matching selftest
+- use `zh-CN` for Chinese work and `main` for English release work
 
 ## Contents
 
