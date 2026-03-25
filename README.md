@@ -1,4 +1,4 @@
-# auto-dev-team 1.0
+# auto-dev-team
 
 > An Agent Skill for software delivery work: mode routing, structured execution, continuous verification, and safe rollback.
 
