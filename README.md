@@ -24,13 +24,13 @@
 获取中文版：
 
 ```bash
-git clone -b zh-CN https://github.com/rexroth0619/AutoDevTeam.git
+git clone -b zh-CN https://github.com/rexroth0619/auto-dev-team.git
 ```
 
 获取英文版：
 
 ```bash
-git clone -b main https://github.com/rexroth0619/AutoDevTeam.git
+git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 ```
 
 ## 当前版本
