@@ -24,13 +24,13 @@ It turns feature work, debugging, refactoring, testing, and staging validation i
 Clone the English skill:
 
 ```bash
-git clone -b main https://github.com/rexroth0619/AutoDevTeam.git
+git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 ```
 
 Clone the Chinese skill:
 
 ```bash
-git clone -b zh-CN https://github.com/rexroth0619/AutoDevTeam.git
+git clone -b zh-CN https://github.com/rexroth0619/auto-dev-team.git
 ```
 
 ## Current Version

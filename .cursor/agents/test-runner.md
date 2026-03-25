@@ -8,3 +8,5 @@ model: inherit
 # Test Runner Subagent (Disabled)
 
 Not invoked by default. On explicit user request, execute project test commands and report results.
+
+Keep this agent intentionally narrow and opt-in.

@@ -8,3 +8,5 @@ model: inherit
 # Test Writer Subagent (Disabled)
 
 Not invoked by default. On explicit user request, write tests and report file locations.
+
+Keep this agent intentionally narrow and opt-in.
