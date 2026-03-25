@@ -1,20 +1,22 @@
 # auto-dev-team
 
-> 一个面向软件交付工作的 Agent Skill：自动路由模式、约束写入流程、持续验证，并保持可回退。
+> 一个实验性的 Agent Skill，面向软件交付场景下的 Harness engineering。
 
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-Compatible-blue)](https://agentskills.io)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## 这是什么
 
-`auto-dev-team` 是一个面向编码 Agent 的交付型 Skill。
+`auto-dev-team` 是一个面向软件交付的实验性 Agent Skill。它把更偏 harness 的 workflow 带进仓库内部，让编码 Agent 在明确的模式路由、写入护栏、验证闭环和回退点之上工作。
 
-它把开发、调试、重构、测试、预发验证这些流程，拆成：
-- 明确的模式路由
-- 统一的写前护栏
-- 可脚本化的 Blast Radius
-- 可回退的 checkpoint / archive
-- 可扩展的测试与交互式预发测试链路
+它仍然是一个轻量、可直接使用的 skill，但会随着真实的开发、调试、重构、测试和预发验证场景持续演化。
+
+## 适合谁
+
+- 使用 coding agents 参与软件交付的团队和个人
+- 了解现代 Web 工作流、但不想深挖实现细节的 PM
+- 希望给 Agent 增加验证、回退和执行护栏的工程师
+- 想在仓库内落地实用 workflow harness，而不是先搭完整 runtime 的团队
 
 ## 获取语言版本
 
@@ -58,6 +60,7 @@ git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 ## 目录
 
 - 简介
+- 适合谁
 - 当前入口结构
 - 目录结构
 - 主要模式
@@ -69,7 +72,7 @@ git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 
 ## 简介
 
-`auto-dev-team` 基于 [Agent Skills 规范](https://agentskills.io/specification) 构建，目标是把“开发流程知识”拆成可组合、可按需加载的文档和脚本，而不是把所有规则都堆进 `SKILL.md`。
+`auto-dev-team` 基于 [Agent Skills 规范](https://agentskills.io/specification) 构建，并以更偏 harness 的方式组织软件交付流程。目标是把“开发流程知识”拆成可组合、可按需加载的文档和脚本，而不是把所有规则都堆进 `SKILL.md`。
 
 核心思路：
 
