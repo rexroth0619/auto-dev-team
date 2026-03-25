@@ -100,11 +100,6 @@ references/principles/*.md
 ```text
 auto-dev-team/
 ├── SKILL.md
-├── .cursor/
-│   └── agents/
-│       ├── critique.md
-│       ├── test-runner.md
-│       └── test-writer.md
 ├── assets/
 │   └── templates/
 │       ├── autodev-config.json
