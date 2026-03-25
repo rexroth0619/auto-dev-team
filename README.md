@@ -1,20 +1,22 @@
 # auto-dev-team
 
-> An Agent Skill for software delivery work: mode routing, structured execution, continuous verification, and safe rollback.
+> An experimental Agent Skill for Harness engineering in software delivery.
 
 [![Agent Skills](https://img.shields.io/badge/Agent%20Skills-Compatible-blue)](https://agentskills.io)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
 ## What It Is
 
-`auto-dev-team` is a delivery-oriented skill for coding agents.
+`auto-dev-team` is an experimental Agent Skill for software delivery. It brings a more harness-oriented workflow into the repository, so coding agents operate with explicit mode routing, guarded writes, verification loops, and rollback points.
 
-It turns feature work, debugging, refactoring, testing, and staging validation into:
-- explicit mode routing
-- guarded write flows
-- scriptable blast-radius analysis
-- rollback-ready checkpoints and archives
-- interactive staging-validation loops
+It stays lightweight and practical: still a skill, but one shaped by Harness engineering and refined through real delivery work.
+
+## Who is this for?
+
+- teams and individuals using coding agents for delivery work
+- PMs who understand modern web workflows but do not want to manage implementation details
+- engineers who want stronger guardrails around agent execution, verification, and rollback
+- repos that want a practical workflow harness without building a full agent runtime
 
 ## Language
 
@@ -58,6 +60,7 @@ git clone -b zh-CN https://github.com/rexroth0619/auto-dev-team.git
 ## Contents
 
 - Overview
+- Who is this for?
 - Entry Structure
 - Repository Layout
 - Modes
@@ -69,7 +72,7 @@ git clone -b zh-CN https://github.com/rexroth0619/auto-dev-team.git
 
 ## Overview
 
-`auto-dev-team` is built on the [Agent Skills specification](https://agentskills.io/specification).
+`auto-dev-team` is built on the [Agent Skills specification](https://agentskills.io/specification) and organized with a more harness-oriented approach to software delivery.
 
 The goal is to keep the main entry light while moving reusable delivery rules into mode docs, shared principles, templates, and scripts.
 
