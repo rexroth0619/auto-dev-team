@@ -7,10 +7,10 @@ import json
 import re
 import subprocess
 from collections import Counter, defaultdict
-from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List, Sequence, Tuple
 
+AI_SOT_RELATIVE_PATH = ".autodev/ai-sot.json"
 
 DOMAIN_RULES = {
     "ui": {
@@ -127,7 +127,7 @@ ENTITY_STOPWORDS = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate an interactive pre-release testing session draft from recent git commits."
+        description="Generate a machine-readable pre-release test plan from recent git commits."
     )
     group = parser.add_mutually_exclusive_group()
     group.add_argument("--range", default="", help="Explicit git commit range, e.g. abc123..def456.")
@@ -138,23 +138,20 @@ def parse_args() -> argparse.Namespace:
         default=1,
         help="Use the latest N commits when --range/--commit is not provided. Default: 1.",
     )
-    parser.add_argument("--task", default="", help="Short task description for the output header.")
+    parser.add_argument("--task", default="", help="Short task description.")
     parser.add_argument("--env", default="预发", help="Environment label. Default: 预发.")
     parser.add_argument(
+        "--mode",
+        default="manual",
+        choices=["manual", "auto"],
+        help="Suggested execution mode to encode into the plan.",
+    )
+    parser.add_argument(
         "--output",
-        default=".autodev/temp/release-test-pack.md",
-        help="Markdown output path relative to repo root.",
+        default=".autodev/temp/release-plan.json",
+        help="Plan output path relative to repo root.",
     )
-    parser.add_argument(
-        "--json",
-        default="",
-        help="Optional JSON summary path relative to repo root.",
-    )
-    parser.add_argument(
-        "--stdout",
-        action="store_true",
-        help="Also print the generated markdown to stdout.",
-    )
+    parser.add_argument("--stdout", action="store_true", help="Print a short receipt to stdout.")
     return parser.parse_args()
 
 
@@ -246,9 +243,11 @@ def extract_entities(paths: Iterable[str]) -> List[str]:
     return [token for token, _ in counter.most_common(3)]
 
 
-def infer_need_queries(domains: Iterable[str]) -> bool:
+def normalize_entities(entities: List[str], domains: Iterable[str]) -> List[str]:
     domain_set = set(domains)
-    return bool(domain_set & {"data", "service", "api"})
+    if domain_set and domain_set <= {"docs", "tests", "config"}:
+        return []
+    return entities
 
 
 def read_optional_text(path: Path) -> str:
@@ -256,6 +255,59 @@ def read_optional_text(path: Path) -> str:
         return path.read_text(encoding="utf-8", errors="ignore")
     except Exception:
         return ""
+
+
+def load_ai_sot(repo_root: Path) -> Dict[str, object]:
+    ai_sot_path = repo_root / AI_SOT_RELATIVE_PATH
+    if not ai_sot_path.exists():
+        return {}
+    try:
+        return json.loads(ai_sot_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def deep_merge(base: Dict[str, object], override: Dict[str, object]) -> Dict[str, object]:
+    result = dict(base)
+    for key, value in override.items():
+        if isinstance(value, dict) and isinstance(result.get(key), dict):
+            result[key] = deep_merge(result[key], value)
+        else:
+            result[key] = value
+    return result
+
+
+def apply_ai_sot_overrides(plan: Dict[str, object], ai_sot: Dict[str, object]) -> Dict[str, object]:
+    if not ai_sot:
+        return plan
+
+    pre_release = ai_sot.get("pre_release", {})
+    if not isinstance(pre_release, dict):
+        return plan
+
+    for key in ("staging_context", "backend_execution_context", "gui_execution_context", "auth_hints"):
+        locked_section = pre_release.get(key)
+        if isinstance(locked_section, dict):
+            current = plan.get(key, {})
+            plan[key] = deep_merge(current if isinstance(current, dict) else {}, locked_section)
+
+    public_entry = pre_release.get("public_entry", {})
+    if isinstance(public_entry, dict):
+        base_url = str(public_entry.get("base_url", "")).strip()
+        if base_url:
+            gui_context = plan.get("gui_execution_context", {})
+            if isinstance(gui_context, dict):
+                gui_context.setdefault("base_url", base_url)
+                if not gui_context.get("base_url"):
+                    gui_context["base_url"] = base_url
+                plan["gui_execution_context"] = gui_context
+
+    plan["ai_sot"] = {
+        "path": AI_SOT_RELATIVE_PATH,
+        "lock_id": ai_sot.get("lock_id", ""),
+        "mutation_policy": ai_sot.get("ai_mutation_policy", {}),
+    }
+    return plan
 
 
 def detect_sql_dialect(repo_root: Path) -> Tuple[str, str]:
@@ -293,26 +345,87 @@ def seven_day_filter(dialect: str) -> str:
     return "updated_at >= <请按实际数据库方言替换最近7天条件>"
 
 
-def make_query_templates(entities: List[str], domains: Iterable[str], dialect: str) -> List[Dict[str, str]]:
+def infer_need_queries(domains: Iterable[str]) -> bool:
     domain_set = set(domains)
-    if not infer_need_queries(domain_set):
-        return []
+    return bool(domain_set & {"data", "service", "api"})
 
+
+def infer_auth_strategy(domains: Iterable[str]) -> List[str]:
+    domain_set = set(domains)
+    strategies: List[str] = ["existing_session"]
+    if "ui" in domain_set:
+        strategies.append("browser_login_handoff")
+    strategies.append("local_secret_store")
+    return strategies
+
+
+def infer_automation_scope(domains: Iterable[str]) -> str:
+    domain_set = set(domains)
+    if "ui" in domain_set:
+        return "be_plus_gui"
+    return "be_only"
+
+
+def infer_focus_summary(entities: List[str], commits: List[Tuple[str, str]]) -> str:
+    if entities:
+        return f"优先验证 {' / '.join(entities[:2])} 相关行为变化"
+    if commits:
+        return f"优先验证最近提交 `{commits[0][0][:7]}` 带来的直接行为变化"
+    return "优先验证最近提交对应的关键链路"
+
+
+def infer_expected_user_visible_changes(domains: Iterable[str], entities: List[str]) -> List[str]:
+    domain_set = set(domains)
+    primary = entities[0] if entities else "核心对象"
+    changes: List[str] = []
+    if "ui" in domain_set:
+        changes.append(f"{primary} 相关页面、按钮、表单或详情展示会有直接可见变化。")
+    if {"api", "service", "data"} & domain_set:
+        changes.append(f"{primary} 相关状态流转、接口结果或数据副作用应与最近提交保持一致。")
+    if not changes:
+        changes.append("本轮更偏底层或配置改动，用户可见变化可能较少，应优先观察关键结果是否正确。")
+    return changes
+
+
+def build_executive_summary(
+    *,
+    focus_summary: str,
+    domains: Iterable[str],
+    use_cases: List[Dict[str, object]],
+    entities: List[str],
+) -> Dict[str, object]:
+    domain_set = set(domains)
+    has_backend_tests = any(use_case.get("be_checks") for use_case in use_cases)
+    has_gui_tests = any(use_case.get("gui_checks") for use_case in use_cases)
+    summary_items: List[str] = [focus_summary]
+    if {"api", "service", "data"} & domain_set:
+        summary_items.append("优先验证后端状态流转、接口结果和副作用。")
+    if "ui" in domain_set:
+        summary_items.append("优先验证关键页面链路、交互反馈和最终展示。")
+    if not summary_items:
+        summary_items.append("优先验证最近提交直接影响的行为变化。")
+    return {
+        "has_backend_tests": has_backend_tests,
+        "has_gui_tests": has_gui_tests,
+        "summary_items": summary_items,
+        "expected_user_visible_changes": infer_expected_user_visible_changes(domains, entities),
+    }
+
+
+def make_query_statements(entities: List[str], dialect: str) -> List[Dict[str, str]]:
     entity = entities[0] if entities else "core"
     table_placeholder = f"<{entity}_table>"
     base_fields = "id, status, updated_at"
-    queries = [
+    return [
         {
             "id": "Q1",
             "purpose": f"找最近可用于验证 {entity} 相关变更的候选记录",
             "sql": f"SELECT {base_fields}\nFROM {table_placeholder}\nORDER BY updated_at DESC\nLIMIT 20;",
-            "usage": "先确认预发里有没有最近可直接拿来手测的样本数据。",
         },
         {
             "id": "Q2",
             "purpose": f"看 {entity} 在不同状态下的分布，便于挑选边界 case",
             "sql": f"SELECT status, COUNT(*) AS cnt\nFROM {table_placeholder}\nGROUP BY status\nORDER BY cnt DESC;",
-            "usage": "判断应该优先选哪种状态做 happy path、negative path 和 boundary path。",
         },
         {
             "id": "Q3",
@@ -322,105 +435,130 @@ def make_query_templates(entities: List[str], domains: Iterable[str], dialect: s
                 f"WHERE {seven_day_filter(dialect)}\n"
                 "ORDER BY updated_at DESC\nLIMIT 50;"
             ),
-            "usage": "优先挑近期仍在流转的数据，减少测到过期脏数据的概率。",
         },
     ]
-    if {"ui", "api"} & domain_set:
-        queries.append(
-            {
-                "id": "Q4",
-                "purpose": f"补一条可用于详情页或列表页直达验证的 {entity} 记录",
-                "sql": f"SELECT {base_fields}\nFROM {table_placeholder}\nWHERE id = <待替换ID>;",
-                "usage": "当 UI 需要直接粘贴单号或 ID 时，用它拿到一条可稳定复验的精确记录。",
-            }
-        )
-    return queries
 
 
-def make_test_data_rows(entities: List[str], domains: Iterable[str]) -> List[Dict[str, str]]:
-    domain_labels = ", ".join(DOMAIN_RULES[key]["label"] for key in sorted(set(domains)) if key in DOMAIN_RULES)
-    rows: List[Dict[str, str]] = []
-    seeds = entities or ["核心对象"]
-    for index, entity in enumerate(seeds[:3], start=1):
-        rows.append(
-            {
-                "id": f"TD-{index}",
-                "change": f"{entity} 相关最近提交",
-                "purpose": f"覆盖 {entity} 相关的主验证链路",
-                "method": "直接使用查询结果 / 手工造单 / 脚本造单",
-                "fields": f"建议至少确认 `{entity}_id / status / updated_at`，并结合 {domain_labels or '核心业务字段'} 细化。",
-                "expected": f"拿到一条可用于列表、详情或状态流转验证的 {entity} 样本数据。",
-            }
-        )
-    return rows
+def make_check(
+    *,
+    check_id: str,
+    title: str,
+    kind: str,
+    success_criteria: str,
+    required: bool = True,
+) -> Dict[str, object]:
+    return {
+        "id": check_id,
+        "title": title,
+        "kind": kind,
+        "required": required,
+        "command": "",
+        "success_criteria": success_criteria,
+        "manual_fallback_when": [
+            "缺少可执行命令",
+            "预发环境入口未在 path.md 中声明",
+        ],
+    }
 
 
-def make_use_cases(entities: List[str], domains: Iterable[str]) -> List[Dict[str, str]]:
+def make_use_cases(entities: List[str], domains: Iterable[str]) -> List[Dict[str, object]]:
     seeds = entities or ["核心对象"]
     primary = seeds[0]
-    use_cases = [
+    domain_set = set(domains)
+    use_cases: List[Dict[str, object]] = []
+
+    happy_be_checks = [
+        make_check(
+            check_id="BE-1",
+            title=f"{primary} 主链路后端验证",
+            kind="curl_or_log",
+            success_criteria="关键请求成功，且状态变化与最近提交预期一致。",
+        )
+    ]
+    happy_gui_checks: List[Dict[str, object]] = []
+    if "ui" in domain_set:
+        happy_gui_checks.append(
+            make_check(
+                check_id="GUI-1",
+                title=f"{primary} 主链路前端验证",
+                kind="playwright",
+                success_criteria="页面、网络和后端副作用同时符合预期。",
+            )
+        )
+
+    use_cases.append(
         {
             "id": "UC-1",
             "title": f"{primary} 主链路验证",
-            "change": f"{primary} 相关最近提交",
-            "preconditions": f"已拿到一条可直接搜索或粘贴的 {primary} 单号 / ID。",
-            "why": "先确认最近提交对应的 happy path 在预发环境确实可走通。",
-            "input": f"粘贴 `{primary}` 的单号 / ID。",
-            "page": f"`{primary}` 列表页或首个可搜索入口。",
-            "steps": [
-                "在列表页或搜索框粘贴测试数据中的单号 / ID。",
-                "点击“查询 / 搜索 / 筛选”。",
-                "进入详情页或执行最近提交直接影响的按钮操作。",
+            "priority": "high",
+            "requires_gui": "ui" in domain_set,
+            "change_anchor": f"{primary} 相关最近提交",
+            "requires_auth": "ui" in domain_set,
+            "requires_data": infer_need_queries(domain_set),
+            "why": "先确认最近提交直接影响的 happy path 在预发环境确实可走通。",
+            "success_criteria": [
+                "页面或接口行为与提交意图一致",
+                "关键状态变化可被后端证据确认",
             ],
-            "expected": "页面状态、按钮显隐、字段展示或提交结果与最近提交描述一致。",
-            "success": "说明本次改动影响到的主链路在预发环境可正常工作。",
-            "failure": "查无数据、状态不符、按钮缺失、接口报错、页面提示异常。",
-        },
+            "manual_fallback_when": [
+                "认证 handoff 无法完成",
+                "预发数据入口缺失",
+            ],
+            "be_checks": happy_be_checks,
+            "gui_checks": happy_gui_checks,
+        }
+    )
+
+    boundary_be_checks = [
+        make_check(
+            check_id="BE-2",
+            title=f"{primary} 边界或负例后端验证",
+            kind="curl_or_query",
+            success_criteria="拒绝路径、禁用态或错误提示符合预期，没有误放行。",
+        )
+    ]
+    boundary_gui_checks: List[Dict[str, object]] = []
+    if "ui" in domain_set:
+        boundary_gui_checks.append(
+            make_check(
+                check_id="GUI-2",
+                title=f"{primary} 边界或负例前端验证",
+                kind="playwright",
+                success_criteria="页面提示、按钮状态和副作用均符合边界预期。",
+            )
+        )
+
+    use_cases.append(
         {
             "id": "UC-2",
             "title": f"{primary} 边界或负例验证",
-            "change": f"{primary} 相关最近提交",
-            "preconditions": f"已准备另一条状态不同或字段不完整的 {primary} 样本。",
-            "why": "补一条最贴近本次改动的 boundary / negative case，避免只测 happy path。",
-            "input": f"粘贴边界态 `{primary}` 的单号 / ID。",
-            "page": f"`{primary}` 列表页、详情页或与本次改动最相关的操作弹窗。",
-            "steps": [
-                "打开与最近提交直接相关的页面或弹窗。",
-                "输入边界态样本数据并触发查询或操作。",
-                "观察页面提示、按钮状态和最终结果。",
+            "priority": "medium",
+            "requires_gui": "ui" in domain_set,
+            "change_anchor": f"{primary} 相关最近提交",
+            "requires_auth": "ui" in domain_set,
+            "requires_data": infer_need_queries(domain_set),
+            "why": "避免只测 happy path，补一条最贴近本次改动的边界场景。",
+            "success_criteria": [
+                "边界态不误放行",
+                "错误提示或禁用态符合预期",
             ],
-            "expected": "错误提示、禁用状态或兜底逻辑符合预期，不出现误放行。",
-            "success": "说明最近提交没有破坏异常链路或边界行为。",
-            "failure": "错误提示缺失、误提交成功、页面状态错乱、数据回显不一致。",
-        },
-        {
-            "id": "UC-3",
-            "title": "回归观察",
-            "change": "最近提交的关联旧链路",
-            "preconditions": "准备一条旧路径仍应可用的历史样本数据。",
-            "why": "验证最近提交没有误伤原有老链路或旧状态数据。",
-            "input": "粘贴历史样本单号 / ID。",
-            "page": "与主链路相同的入口页。",
-            "steps": [
-                "搜索历史样本数据。",
-                "重复旧版本就应该可以走通的操作。",
-                "对比页面展示与旧链路预期是否一致。",
+            "manual_fallback_when": [
+                "边界态样本数据无法自动筛出",
+                "GUI 入口依赖验证码或扫码",
             ],
-            "expected": "旧路径仍能按原预期运行，且不会误触发本次新逻辑。",
-            "success": "说明本次提交的影响范围相对收敛，没有明显回归。",
-            "failure": "旧数据被新逻辑错误拦截、页面文案异常、状态映射被改坏。",
-        },
-    ]
-    if "ui" not in set(domains):
-        for case in use_cases:
-            case["page"] = "调用该链路的业务页面或控制台入口。"
+            "be_checks": boundary_be_checks,
+            "gui_checks": boundary_gui_checks,
+        }
+    )
+
     return use_cases
 
 
-def render_markdown(
+def build_plan(
     *,
     task: str,
     env_label: str,
+    mode: str,
     target: str,
     commits: List[Tuple[str, str]],
     changed_files: List[Tuple[str, str]],
@@ -428,220 +566,135 @@ def render_markdown(
     entities: List[str],
     dialect: str,
     dialect_reason: str,
-    queries: List[Dict[str, str]],
-    test_data_rows: List[Dict[str, str]],
-    use_cases: List[Dict[str, str]],
-) -> str:
-    created_at = datetime.now().strftime("%Y-%m-%d %H:%M")
-    commit_summary = f"{commits[0][0][:7]} - {commits[0][1]}" if commits else "N/A"
-    behavior_lines = [f"- `{commit_hash[:7]}` {subject}" for commit_hash, subject in commits] or ["- 无"]
-    changed_file_lines = [f"- `{status}` `{path}`" for status, path in changed_files] or ["- 无"]
-    domain_lines = [
-        f"- {DOMAIN_RULES[key]['label']}" for key in sorted(set(domains)) if key in DOMAIN_RULES
-    ] or ["- 未识别，建议人工补充"]
-    entity_text = ", ".join(entities) if entities else "最近提交涉及的核心对象"
-    need_queries = "需先查数" if queries else "可直接造单"
-    task_text = task or "根据最近提交组织交互式预发测试"
-
-    lines: List[str] = [
-        "# 预发测试会话草稿",
-        "",
-        f"创建时间: {created_at}",
-        f"任务: {task_text}",
-        f"提交范围: `{target}`",
-        f"环境: {env_label}",
-        "",
-        "> 仅供 agent 组织当前轮互动时使用，不是默认直接发给用户的最终静态交付物。",
-        "",
-        f"## 🛠️ 预发测试开始 {{{commit_summary}}}",
-        "",
-        f"- 本轮关注的最近提交: `{target}`",
-        f"- 一句话场景摘要: 优先围绕 `{entity_text}` 相关变更做预发验收。",
-        "- 为什么优先测这个: 这些文件和提交最接近最近行为变化，最容易在预发环境暴露真实回归。",
-        "",
-        "## 最近提交的行为变化摘要",
-        "",
-        *behavior_lines,
-        "",
-        "### 变更文件",
-        "",
-        *changed_file_lines,
-        "",
-        "### 推断影响域",
-        "",
-        *domain_lines,
-        "",
-        "## 是否需要先查数",
-        "",
-        f"- 结论: {need_queries}",
-        "- 原因: "
-        + (
-            "最近提交涉及 API / Service / Data 路径，建议先从预发环境挑选真实样本数据。"
-            if queries
-            else "最近提交更偏 UI 或文档层，可先直接准备手测样本，再按实际页面补细节。"
-        ),
-        "",
-        "## 🛠️ 先导数据库查询",
-        "",
-        "> 先把下面 SQL 发给用户去预发执行，等结果贴回后再继续更准确地造单。",
-        "",
-    ]
-
-    if queries:
-        lines.extend(
-            [
-                f"- 当前推断数据库方言: {dialect}",
-                f"- 当前推断依据: {dialect_reason}",
-                "",
-                "```sql",
-            ]
-        )
-        for query in queries:
-            lines.extend(
-                [
-                    f"-- {query['id']}: {query['purpose']}",
-                    query["sql"],
-                    "",
-                ]
-            )
-        lines.extend(["```", ""])
-        for query in queries:
-            lines.extend(
-                [
-                    f"- `{query['id']}` {query['purpose']}",
-                    f"  结果回来后如何使用: {query['usage']}",
-                ]
-            )
-        lines.extend(
-            [
-                f"- 备注: 当前按 {dialect} 语法生成；若与项目实际数据库不符，先按当前项目方言整体替换后再执行。",
-                "",
-            ]
-        )
-    else:
-        lines.extend(
-            [
-                "- 本轮暂不强制查数；若后续发现页面路径或状态流仍不明确，再补一轮定向查询。",
-                "",
-            ]
-        )
-
-    lines.extend(
-        [
-            "## ⏸️ 等待预发查询结果",
-            "",
-            "- 请用户把整段查询结果贴回来。",
-            "- 收到结果前，不继续生成最终测试数据单、use cases 和手测步骤。",
-            "",
-        ]
-    )
-
-    if not queries:
-        lines.extend(
-            [
-                "## 🛠️ 开始生成测试数据单",
-                "",
-            ]
-        )
-        for row in test_data_rows:
-            lines.extend(
-                [
-                    f"### {row['id']}",
-                    "",
-                    f"- 关联变更点: {row['change']}",
-                    f"- 用途: {row['purpose']}",
-                    f"- 造单方式: {row['method']}",
-                    f"- 关键字段: {row['fields']}",
-                    f"- 预期拿到的数据: {row['expected']}",
-                    "",
-                ]
-            )
-
-        lines.extend(
-            [
-                "## 🛠️ 可测 Use Cases",
-                "",
-            ]
-        )
-        for case in use_cases:
-            lines.extend(
-                [
-                    f"### {case['id']} {case['title']}",
-                    "",
-                    f"- 关联变更: {case['change']}",
-                    f"- 前置条件: {case['preconditions']}",
-                    f"- 为什么要测: {case['why']}",
-                    "",
-                ]
-            )
-
-        lines.extend(
-            [
-                "## 🛠️ 预发手测步骤",
-                "",
-            ]
-        )
-        for case in use_cases:
-            lines.extend(
-                [
-                    f"### {case['id']} {case['title']}",
-                    "",
-                    f"- 输入内容: {case['input']}",
-                    f"- 打开页面: {case['page']}",
-                    "- 操作步骤:",
-                    *[f"  {index}. {step}" for index, step in enumerate(case["steps"], start=1)],
-                    f"- 预期结果: {case['expected']}",
-                    f"- 成功判定: {case['success']}",
-                    f"- 失败表现: {case['failure']}",
-                    "",
-                ]
-            )
-
-    lines.extend(
-        [
-            "## ⚠️ 待确认项与剩余风险",
-            "",
-            "- 待确认项: 请结合实际表名、状态字段、页面路径和按钮名再补齐最后一跳。",
-            "- 剩余风险: 当前脚本只能根据提交与文件路径生成骨架，仍需 AI 或人工结合业务语义细化。",
-            "",
-            "## ✅ 当前轮输出已准备",
-            "",
-            f"- 查询语句数量: {len(queries)}",
-            f"- 测试数据单数量: {0 if queries else len(test_data_rows)}",
-            f"- Use case 数量: {0 if queries else len(use_cases)}",
-            "- 下一步建议: "
-            + (
-                "先执行查数 SQL，再把结果贴回来让 AI 收紧成具体单号、页面路径和点击动作。"
-                if queries
-                else "继续结合真实页面名、按钮名和业务对象，把骨架补成可直接执行的手测单，并等待用户按 use cases 去预发手测。"
-            ),
-            "",
-        ]
-    )
-    return "\n".join(lines)
-
-
-def build_summary(
-    *,
-    target: str,
-    commits: List[Tuple[str, str]],
-    changed_files: List[Tuple[str, str]],
-    domains: List[str],
-    entities: List[str],
-    queries: List[Dict[str, str]],
 ) -> Dict[str, object]:
-    grouped: Dict[str, List[str]] = defaultdict(list)
+    grouped_files: Dict[str, List[str]] = defaultdict(list)
     for status, path in changed_files:
-        grouped[status].append(path)
-    return {
+        grouped_files[status].append(path)
+
+    focus_summary = infer_focus_summary(entities, commits)
+    needs_query = infer_need_queries(domains)
+    use_cases = make_use_cases(entities, domains)
+    domain_set = set(domains)
+    protected_target = env_label in {"预发", "生产"}
+    requires_gui = "ui" in domain_set
+    executive_summary = build_executive_summary(
+        focus_summary=focus_summary,
+        domains=domains,
+        use_cases=use_cases,
+        entities=entities,
+    )
+
+    plan: Dict[str, object] = {
+        "schema_version": "1.0",
+        "task": task or "根据最近提交组织预发测试",
+        "environment": env_label,
+        "selected_execution_mode": mode,
+        "automation_scope": infer_automation_scope(domains),
+        "available_execution_modes": ["manual", "auto"],
         "target": target,
+        "focus_summary": focus_summary,
         "commits": [{"hash": commit_hash, "subject": subject} for commit_hash, subject in commits],
-        "changed_files": grouped,
+        "changed_files": grouped_files,
         "domains": sorted(set(domains)),
+        "domain_labels": [DOMAIN_RULES[key]["label"] for key in sorted(set(domains)) if key in DOMAIN_RULES],
         "entities": entities,
-        "needs_queries": bool(queries),
-        "query_count": len(queries),
+        "needs_auth": "ui" in domain_set,
+        "auth_strategy": infer_auth_strategy(domains),
+        "staging_context": {
+            "requires_ssh": mode == "auto" and protected_target,
+            "ssh_access_mode": "none",
+            "ssh_alias": "",
+            "execution_host": "",
+            "working_directory": "",
+            "allowed_paths": [],
+            "protected_target": protected_target,
+            "requires_gui": requires_gui,
+            "auth_required_reason": "UI / protected staging target detected" if ("ui" in domain_set or protected_target) else "",
+        },
+        "backend_execution_context": {
+            "mode": "none",
+            "ssh_alias": "",
+            "execution_host": "",
+            "working_directory": "",
+            "allowed_paths": [],
+        },
+        "gui_execution_context": {
+            "mode": "local_browser" if requires_gui else "none",
+            "base_url": "",
+            "auth_mode": "existing_session" if requires_gui else "none",
+        },
+        "auth_hints": {
+            "login_url": "",
+            "storage_state_path": ".autodev/temp/release/storage-state.json",
+            "keychain_service": "autodev.release.staging",
+            "manual_fallback_when": [
+                "存在验证码、扫码或强 MFA",
+                "预发认证流程不支持会话复用",
+            ],
+        },
+        "cleanup_spec": {
+            "required": True,
+            "root": ".autodev/temp/release/",
+            "preserve_paths": [
+                ".autodev/ai-sot.json",
+                ".autodev/path.md",
+                ".autodev/autodev-config.json",
+                ".autodev/temp/release/storage-state.json",
+            ],
+            "description": "每次新的预发自动化开始前，清理上一轮预发测试的临时产物，但保留固定真相源和认证状态文件。",
+        },
+        "query_spec": {
+            "required": needs_query,
+            "dialect": dialect,
+            "dialect_reason": dialect_reason,
+            "entry_candidates": ["ssh", "db", "api"],
+            "command": "",
+            "skip_reason": "" if needs_query else "当前变更不需要自动查数",
+            "statements": make_query_statements(entities, dialect) if needs_query else [],
+            "manual_fallback_when": [
+                "缺少只读查询入口",
+                "无法确认表名或关键状态字段",
+            ],
+        },
+        "seed_spec": {
+            "required": needs_query,
+            "method_candidates": ["script", "api", "playwright", "manual_only"],
+            "command": "",
+            "allow_write": False,
+            "skip_reason": "" if needs_query else "当前变更不需要自动造单",
+            "manual_fallback_when": [
+                "造单需要高风险写操作且未显式放行",
+                "没有脚本/API/管理台入口可自动化",
+            ],
+        },
+        "use_cases": use_cases,
+        "receipt_protocol": {
+            "stages": [
+                "🛠️ 预发测试开始",
+                "🧭 自动化测试计划已生成",
+                "📋 执行摘要",
+                "🧹 上轮临时文件清理",
+                "🔐 认证态检测",
+                "🔎 自动查数开始",
+                "🧪 自动造单开始",
+                "🛰️ 后端 UC 验证开始",
+                "🖥️ 前端 GUI 验证开始",
+                "📦 证据已归档",
+                "⚠️ 待人工确认项与剩余风险",
+                "✅ 自动化预发结论",
+            ]
+        },
+        "executive_summary": executive_summary,
+        "evidence": {
+            "root": ".autodev/temp/release/",
+            "receipt_path": ".autodev/temp/release/release-auto-receipt.json",
+        },
+        "manual_mode_contract": {
+            "keep_current_flow": True,
+            "llm_reply_only": True,
+        },
     }
+    return plan
 
 
 def write_text(path: Path, content: str) -> None:
@@ -649,11 +702,39 @@ def write_text(path: Path, content: str) -> None:
     path.write_text(content, encoding="utf-8")
 
 
-def normalize_entities(entities: List[str], domains: Iterable[str]) -> List[str]:
-    domain_set = set(domains)
-    if domain_set and domain_set <= {"docs", "tests", "config"}:
-        return []
-    return entities
+def print_receipt(plan: Dict[str, object], output_path: Path) -> None:
+    commits = plan.get("commits", [])
+    commit_hash = commits[0]["hash"][:7] if commits else "N/A"
+    focus = plan.get("focus_summary", "")
+    mode = plan.get("selected_execution_mode", "manual")
+    query_required = plan.get("query_spec", {}).get("required", False)
+    staging_context = plan.get("staging_context", {})
+    ai_sot_meta = plan.get("ai_sot", {})
+    executive_summary = plan.get("executive_summary", {})
+    print(f"🛠️ 预发测试开始 {{{commit_hash} - {focus}}}")
+    print(f"🧭 计划已生成: {output_path}")
+    print(
+        "📋 执行摘要 "
+        f"{{后端测试={'有' if executive_summary.get('has_backend_tests') else '无'} | "
+        f"前端GUI测试={'有' if executive_summary.get('has_gui_tests') else '无'}}}"
+    )
+    for item in executive_summary.get("summary_items", []):
+        print(f"  - {item}")
+    for item in executive_summary.get("expected_user_visible_changes", []):
+        print(f"👀 预期变化 {item}")
+    print(f"📌 建议模式: {mode}")
+    print(
+        "🧭 自动化前置检查 "
+        f"{{SSH={'已确认' if staging_context.get('ssh_alias') or staging_context.get('execution_host') else '未确认'} | "
+        f"SSH方式={staging_context.get('ssh_access_mode') or '未确认'} | "
+        f"GUI宿主={plan.get('gui_execution_context', {}).get('mode') or '未确认'} | "
+        f"Auth={'已要求' if plan.get('needs_auth') else '未要求'} | "
+        f"GUI={'已要求' if staging_context.get('requires_gui') else '未要求'} | "
+        f"AI-SOT={'已锁定' if ai_sot_meta.get('path') else '未配置'} | "
+        f"WriteOps={'允许' if plan.get('seed_spec', {}).get('allow_write') else '不允许'}}}"
+    )
+    print(f"🔎 需要查数: {'是' if query_required else '否'}")
+    print(f"🧪 Use case 数量: {len(plan.get('use_cases', []))}")
 
 
 def main() -> int:
@@ -666,12 +747,11 @@ def main() -> int:
     all_domains = [domain for path in file_paths for domain in detect_domains(path)]
     entities = normalize_entities(extract_entities(file_paths), all_domains)
     dialect, dialect_reason = detect_sql_dialect(repo_root)
-    queries = make_query_templates(entities, all_domains, dialect)
-    test_data_rows = make_test_data_rows(entities, all_domains)
-    use_cases = make_use_cases(entities, all_domains)
-    markdown = render_markdown(
+    ai_sot = load_ai_sot(repo_root)
+    plan = build_plan(
         task=args.task,
         env_label=args.env,
+        mode=args.mode,
         target=target,
         commits=commits,
         changed_files=changed_files,
@@ -679,33 +759,15 @@ def main() -> int:
         entities=entities,
         dialect=dialect,
         dialect_reason=dialect_reason,
-        queries=queries,
-        test_data_rows=test_data_rows,
-        use_cases=use_cases,
     )
+    plan = apply_ai_sot_overrides(plan, ai_sot)
 
     output_path = (repo_root / args.output).resolve() if not Path(args.output).is_absolute() else Path(args.output)
-    write_text(output_path, markdown + "\n")
+    write_text(output_path, json.dumps(plan, ensure_ascii=False, indent=2) + "\n")
 
-    if args.json:
-        summary = build_summary(
-            target=target,
-            commits=commits,
-            changed_files=changed_files,
-            domains=all_domains,
-            entities=entities,
-            queries=queries,
-        )
-        json_path = (repo_root / args.json).resolve() if not Path(args.json).is_absolute() else Path(args.json)
-        write_text(json_path, json.dumps(summary, ensure_ascii=False, indent=2) + "\n")
-
-    print(f"🛠️ release-pack 已生成: {output_path.relative_to(repo_root)}")
-    if args.json:
-        json_path = (repo_root / args.json).resolve() if not Path(args.json).is_absolute() else Path(args.json)
-        print(f"JSON 已写入: {json_path.relative_to(repo_root)}")
+    print(f"🛠️ release-plan 已生成: {output_path.relative_to(repo_root)}")
     if args.stdout:
-        print()
-        print(markdown)
+        print_receipt(plan, output_path.relative_to(repo_root))
     return 0
 
 

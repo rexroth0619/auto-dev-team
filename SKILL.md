@@ -32,7 +32,7 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 - 排查 bug、线上止血、做最小修复
 - 小改动、调样式、改文案、补日志
 - 重构、优化、清理、补测试
-- 预发验收、根据最近提交生成测试数据单和手测步骤
+- 预发验收、根据最近提交生成测试计划，并选择手动或自动执行
 - Survey 项目结构、Explain 代码逻辑
 - 任何需要“先验证、可回退、别误删”的开发任务
 
@@ -117,6 +117,14 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 - AI 生成的临时台账、调试输出、草稿、诊断材料，一律写入 `.autodev/temp/`。
 - 非最终交付物，不得写入仓库其他路径。
 - 若工具必须在 `.autodev/temp/` 之外生成临时文件，生成后必须立即清理，或加入 ignore 后再继续执行。
+- Skill 本体、模板、schema、runner 中禁止写入项目实例化数据：
+  - 真实域名
+  - 真实 SSH alias
+  - 真实服务器路径
+  - 真实账号
+  - 真实样本订单号 / 手机号 / 密文
+  - 任何私有业务标识
+- 以上实例化数据只能存在于具体项目的 `.autodev/`、运行时环境变量、本地 `~/.ssh/config`、secret store 中；若是长期固定事实，优先落到 `.autodev/ai-sot.json`，不要漂在临时 `release-plan.json` 里。
 
 ### 必需文档
 
@@ -127,6 +135,7 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 | `.autodev/module-registry.md` | 可复用模块清单 | `assets/templates/module-registry.md` |
 | `.autodev/postmortem.md` | 问题与教训沉淀 | `assets/templates/postmortem.md` |
 | `.autodev/path.md` | 环境、路径、Git 与部署配置 | `assets/templates/path.md` |
+| `.autodev/ai-sot.json` | AI 专用固定事实锁定层（预发/部署/SSH/GUI/认证真相源） | `assets/templates/ai-sot.json` |
 | `.autodev/autodev-config.json` | Skill 策略开关与默认行为 | `assets/templates/autodev-config.json` |
 
 ### 条件文档
@@ -142,10 +151,12 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 配置职责拆分：
 
 - `.autodev/path.md`：项目环境、部署、Git、路径真相源
+- `.autodev/ai-sot.json`：AI 专用机器真相源；锁定预发/部署/SSH/GUI/认证等长期固定事实
 - `.autodev/autodev-config.json`：skill 行为策略真相源
   - 包括 blast radius 深度、输出、fail-close 策略
 
 `path.md` 的完整规则以 `references/principles/path-system.md` 为准。
+`ai-sot.json` 的完整规则以 `references/principles/ai-single-source-of-truth.md` 为准。
 
 ## 版本保护与任务收尾
 
@@ -178,9 +189,15 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 - `scripts/blast-radius-step-selftest.sh`
   - Step 包装脚本自检，验证解析、转发与超阈值 fail-close
 - `scripts/release-pack.py`
-  - 根据最近提交生成交互式预发测试会话草稿，优先组织“先查数、再等待用户结果、再造单和细化手测步骤”的链路
+  - 根据最近提交生成 `release-plan.json`，作为手动/自动预发测试的统一机器计划
 - `scripts/release-pack-selftest.sh`
-  - `release-pack.py` 自检脚本；验证 markdown 和 JSON 产物以及关键阶段标题存在
+  - `release-pack.py` 自检脚本；验证 plan JSON 的关键字段存在
+- `scripts/release-auto-run.py`
+  - 自动化预发执行 runner；按 auth/query/seed/be/gui/evidence 顺序执行
+- `scripts/release-auth-bridge.sh`
+  - 认证态桥接；优先 existing session，再尝试 browser handoff / local secret store
+- `scripts/release-auto-selftest.sh`
+  - `release-auto-run.py` 自检脚本；验证状态机、回执和 fail-close 行为
 - `references/gotchas.md`
   - 高信号坑位；优先放真实踩坑经验，而不是通用编程常识
 - `assets/templates/playwright-script-loop.js`
@@ -193,8 +210,8 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
   - GUI 用例矩阵模板，统一记录前置条件、页面变化、网络与副作用预期
 - `assets/templates/gui-evidence-bundle.md`
   - GUI 证据包模板，统一 timeline / screenshot / console / network / page state
-- `assets/templates/release-test-pack.md`
-  - 交互式预发测试会话草稿模板；用于在 `.autodev/temp/` 记录查数 SQL、等待点、测试数据单与手测步骤草稿
+- `assets/templates/release-plan.schema.json`
+  - `release-plan.json` schema；约束 plan 字段，避免 runner 读取自然语言
 - `references/shared/menu-contract.md`
   - 菜单型 UI 的统一协议；用于阶段确认、计划选择、任务收尾等编号菜单
 - `references/shared/flow-snippets.md`

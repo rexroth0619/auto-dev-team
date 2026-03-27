@@ -53,29 +53,28 @@ EOF
 git add src/repositories/order-repository.ts
 git commit -q -m "feat: add order repository"
 
-OUTPUT_PATH=".autodev/temp/release-test-pack.md"
-JSON_PATH=".autodev/temp/release-pack-summary.json"
+OUTPUT_PATH=".autodev/temp/release-plan.json"
 
 python3 "$RELEASE_PACK_SCRIPT" \
   --commits 2 \
   --task "release-pack selftest" \
-  --output "$OUTPUT_PATH" \
-  --json "$JSON_PATH" >/dev/null
+  --mode auto \
+  --output "$OUTPUT_PATH" >/dev/null
 
-[[ -f "$OUTPUT_PATH" ]] || fail "expected markdown output file to exist"
-[[ -f "$JSON_PATH" ]] || fail "expected json summary file to exist"
+[[ -f "$OUTPUT_PATH" ]] || fail "expected json plan file to exist"
 
-assert_file_contains "$OUTPUT_PATH" "## 🛠️ 预发测试开始"
-assert_file_contains "$OUTPUT_PATH" "## 🛠️ 先导数据库查询"
-assert_file_contains "$OUTPUT_PATH" "## ⏸️ 等待预发查询结果"
-assert_file_contains "$OUTPUT_PATH" "## ✅ 当前轮输出已准备"
-assert_file_contains "$OUTPUT_PATH" '```sql'
-assert_file_contains "$OUTPUT_PATH" "SELECT id, status, updated_at"
-assert_file_contains "$OUTPUT_PATH" "-- Q1:"
+assert_file_contains "$OUTPUT_PATH" '"selected_execution_mode": "auto"'
+assert_file_contains "$OUTPUT_PATH" '"query_spec"'
+assert_file_contains "$OUTPUT_PATH" '"auth_strategy"'
+assert_file_contains "$OUTPUT_PATH" '"staging_context"'
+assert_file_contains "$OUTPUT_PATH" '"backend_execution_context"'
+assert_file_contains "$OUTPUT_PATH" '"gui_execution_context"'
+assert_file_contains "$OUTPUT_PATH" '"ssh_access_mode"'
+assert_file_contains "$OUTPUT_PATH" '"allowed_paths"'
+assert_file_contains "$OUTPUT_PATH" '"use_cases"'
+assert_file_contains "$OUTPUT_PATH" '"receipt_protocol"'
+assert_file_contains "$OUTPUT_PATH" '"SELECT id, status, updated_at'
 assert_file_contains "$OUTPUT_PATH" "order"
-
-assert_file_contains "$JSON_PATH" '"query_count"'
-assert_file_contains "$JSON_PATH" '"needs_queries": true'
-assert_file_contains "$JSON_PATH" '"entities"'
+assert_file_contains "$OUTPUT_PATH" '"manual_mode_contract"'
 
 printf 'release-pack selftest passed\n'

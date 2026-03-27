@@ -44,8 +44,8 @@ git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 
 - 版本说明见 [CHANGELOG.md](CHANGELOG.md)
 - 当前重点能力：
-  - 交互式预发测试链路
-  - release-pack 脚本与自测
+  - 预发测试 plan + manual/auto 双执行器
+  - release-pack / release-auto-run / 自测脚本
   - 防屎山快速检查
   - 中英文双分支发布
 
@@ -118,7 +118,7 @@ auto-dev-team/
 │       ├── playwright-script-loop.js
 │       ├── postmortem.md
 │       ├── project-map.md
-│       ├── release-test-pack.md
+│       ├── release-plan.schema.json
 │       └── verification-checklist.md
 ├── scripts/
 │   ├── blast-radius.py
@@ -127,6 +127,9 @@ auto-dev-team/
 │   ├── blast-radius-step-selftest.sh
 │   ├── checkpoint.sh
 │   ├── checkpoint-selftest.sh
+│   ├── release-auth-bridge.sh
+│   ├── release-auto-run.py
+│   ├── release-auto-selftest.sh
 │   ├── release-pack.py
 │   ├── release-pack-selftest.sh
 │   └── init-autodev.sh
@@ -178,7 +181,7 @@ auto-dev-team/
 - `GUI 自治验收层`：命中页面流程、窗口、表单、会话、权限、可交互界面等风险时，AI 默认执行 GUI executor；Web 默认 Playwright。
 - `Web GUI executor`：既接受 `npx playwright test`，也接受 `node xxx.ui.test.js` 的脚本式 Playwright 闭环。
 - `人工验收层`：视觉、体感、外部系统等难以稳定自动化的部分。
-- `交互式预发测试层`：根据最近提交先提炼行为变化；若无法准确造单，则先生成查数 SQL，等待用户回贴结果后，再整理测试数据单、可测 use cases 与手测步骤。
+- `预发测试计划层`：先生成 `release-plan.json`，再分流到手动或自动执行。
 - `小测试`：输出 `🧾 测试回执`。
 - `大测试`：创建 `.autodev/current-test.md`，持续记录场景矩阵、执行状态和剩余风险。
 
@@ -193,6 +196,7 @@ auto-dev-team/
 - “把按钮颜色改成蓝色”
 - “这段代码太乱了，帮我重构”
 - “根据最近提交带我走一遍预发测试”
+- “根据最近提交自动跑一轮预发测试”
 
 ## 配置与脚本
 
@@ -205,18 +209,21 @@ auto-dev-team/
 - Step 包装自检：`scripts/blast-radius-step-selftest.sh`
 - 版本保护原语：`scripts/checkpoint.sh`
 - checkpoint 自检：`scripts/checkpoint-selftest.sh`
-- 交互式预发测试会话草稿生成：`scripts/release-pack.py`
-- 预发验收包自检：`scripts/release-pack-selftest.sh`
+- 预发测试 plan 生成：`scripts/release-pack.py`
+- 预发自动化 runner：`scripts/release-auto-run.py`
+- 预发 plan 自检：`scripts/release-pack-selftest.sh`
+- 预发自动化自检：`scripts/release-auto-selftest.sh`
 - 高频坑位沉淀：`references/gotchas.md`
 
-### 交互式预发测试脚本示例
+### 预发测试脚本示例
 
 给后续 agent 的标准调用示例：
 
 ```bash
-python3 scripts/release-pack.py --commits 3 --task "最近三次提交的预发验收"
-python3 scripts/release-pack.py --range abc123..def456 --task "审批流改造预发验收"
+python3 scripts/release-pack.py --commits 3 --mode auto --task "最近三次提交的预发验收"
+python3 scripts/release-pack.py --range abc123..def456 --mode auto --task "审批流改造预发验收"
 bash scripts/release-pack-selftest.sh
+bash scripts/release-auto-selftest.sh
 ```
 
 ## PM 资源

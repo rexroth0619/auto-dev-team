@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `release-plan.json` 机器计划
+- `release-auto-run.py`、`release-auth-bridge.sh` 与 `release-auto-selftest.sh`
+- 预发自动化闭环原则与 plan schema
+
+### Changed
+
+- `release-pack.py` 改为生成统一机器计划，不再默认产出 markdown 草稿
+- `Tester` 模式改为先生成 plan，再分流到手动或自动执行
+
 ## 1.0.0-zh-CN
 
 ### Added

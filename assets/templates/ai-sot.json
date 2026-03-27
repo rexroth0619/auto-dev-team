@@ -1,0 +1,47 @@
+{
+  "schema_version": "1.0",
+  "lock_id": "project-ai-sot-v1",
+  "ai_mutation_policy": {
+    "default": "read_only",
+    "requires_user_confirmation": true,
+    "note": "AI 默认只读；若需修改本文件，必须先取得用户明确确认。"
+  },
+  "pre_release": {
+    "staging_context": {
+      "requires_ssh": true,
+      "ssh_access_mode": "alias_only",
+      "ssh_alias": "",
+      "execution_host": "",
+      "working_directory": "",
+      "allowed_paths": [],
+      "protected_target": true
+    },
+    "backend_execution_context": {
+      "mode": "alias_only",
+      "ssh_alias": "",
+      "execution_host": "",
+      "working_directory": "",
+      "allowed_paths": []
+    },
+    "gui_execution_context": {
+      "mode": "local_browser",
+      "base_url": "",
+      "auth_mode": "none"
+    },
+    "auth_hints": {
+      "login_url": "",
+      "storage_state_path": ".autodev/temp/release/storage-state.json",
+      "keychain_service": "autodev.release.staging"
+    },
+    "public_entry": {
+      "base_url": "",
+      "basic_auth": {
+        "enabled": false,
+        "username_env": "",
+        "password_env": "",
+        "default_username": "",
+        "default_password": ""
+      }
+    }
+  }
+}

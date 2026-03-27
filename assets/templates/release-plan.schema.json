@@ -1,0 +1,275 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "auto-dev-team release plan",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task",
+    "environment",
+    "selected_execution_mode",
+    "automation_scope",
+    "available_execution_modes",
+    "target",
+    "focus_summary",
+    "commits",
+    "domains",
+    "needs_auth",
+    "auth_strategy",
+    "staging_context",
+    "backend_execution_context",
+    "gui_execution_context",
+    "cleanup_spec",
+    "query_spec",
+    "seed_spec",
+    "use_cases",
+    "executive_summary",
+    "receipt_protocol",
+    "evidence"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "task": {
+      "type": "string"
+    },
+    "environment": {
+      "type": "string"
+    },
+    "selected_execution_mode": {
+      "type": "string",
+      "enum": ["manual", "auto"]
+    },
+    "automation_scope": {
+      "type": "string",
+      "enum": ["be_only", "be_plus_gui", "full_env"]
+    },
+    "available_execution_modes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["manual", "auto"]
+      },
+      "minItems": 2
+    },
+    "target": {
+      "type": "string"
+    },
+    "focus_summary": {
+      "type": "string"
+    },
+    "commits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["hash", "subject"],
+        "properties": {
+          "hash": { "type": "string" },
+          "subject": { "type": "string" }
+        }
+      }
+    },
+    "domains": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "needs_auth": {
+      "type": "boolean"
+    },
+    "auth_strategy": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["existing_session", "browser_login_handoff", "local_secret_store"]
+      }
+    },
+    "staging_context": {
+      "type": "object",
+      "required": [
+        "requires_ssh",
+        "ssh_access_mode",
+        "ssh_alias",
+        "execution_host",
+        "working_directory",
+        "allowed_paths",
+        "protected_target",
+        "requires_gui",
+        "auth_required_reason"
+      ],
+      "properties": {
+        "requires_ssh": { "type": "boolean" },
+        "ssh_access_mode": {
+          "type": "string",
+          "enum": ["alias_only", "jump_alias", "web_terminal_only", "none"]
+        },
+        "ssh_alias": { "type": "string" },
+        "execution_host": { "type": "string" },
+        "working_directory": { "type": "string" },
+        "allowed_paths": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "protected_target": { "type": "boolean" },
+        "requires_gui": { "type": "boolean" },
+        "auth_required_reason": { "type": "string" }
+      }
+    },
+    "backend_execution_context": {
+      "type": "object",
+      "required": [
+        "mode",
+        "ssh_alias",
+        "execution_host",
+        "working_directory",
+        "allowed_paths"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["alias_only", "jump_alias", "web_terminal_only", "none"]
+        },
+        "ssh_alias": { "type": "string" },
+        "execution_host": { "type": "string" },
+        "working_directory": { "type": "string" },
+        "allowed_paths": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "gui_execution_context": {
+      "type": "object",
+      "required": ["mode", "base_url", "auth_mode"],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["local_browser", "local_runner", "remote_browser", "manual_only", "none"]
+        },
+        "base_url": { "type": "string" },
+        "auth_mode": { "type": "string" }
+      }
+    },
+    "cleanup_spec": {
+      "type": "object",
+      "required": ["required", "root", "preserve_paths", "description"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "root": { "type": "string" },
+        "preserve_paths": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "description": { "type": "string" }
+      }
+    },
+    "query_spec": {
+      "type": "object",
+      "required": ["required", "dialect", "entry_candidates", "command", "statements", "skip_reason"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "dialect": { "type": "string" },
+        "entry_candidates": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "command": { "type": "string" },
+        "skip_reason": { "type": "string" },
+        "statements": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["id", "purpose", "sql"],
+            "properties": {
+              "id": { "type": "string" },
+              "purpose": { "type": "string" },
+              "sql": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "seed_spec": {
+      "type": "object",
+      "required": ["required", "method_candidates", "command", "allow_write", "skip_reason"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "method_candidates": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "command": { "type": "string" },
+        "allow_write": { "type": "boolean" },
+        "skip_reason": { "type": "string" }
+      }
+    },
+    "use_cases": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "priority", "requires_gui", "be_checks", "gui_checks"],
+        "properties": {
+          "id": { "type": "string" },
+          "title": { "type": "string" },
+          "priority": { "type": "string" },
+          "requires_gui": { "type": "boolean" },
+          "be_checks": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/check" }
+          },
+          "gui_checks": {
+            "type": "array",
+            "items": { "$ref": "#/$defs/check" }
+          }
+        }
+      }
+    },
+    "executive_summary": {
+      "type": "object",
+      "required": ["has_backend_tests", "has_gui_tests", "summary_items", "expected_user_visible_changes"],
+      "properties": {
+        "has_backend_tests": { "type": "boolean" },
+        "has_gui_tests": { "type": "boolean" },
+        "summary_items": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "expected_user_visible_changes": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "receipt_protocol": {
+      "type": "object",
+      "required": ["stages"],
+      "properties": {
+        "stages": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["root", "receipt_path"],
+      "properties": {
+        "root": { "type": "string" },
+        "receipt_path": { "type": "string" }
+      }
+    }
+  },
+  "$defs": {
+    "check": {
+      "type": "object",
+      "required": ["id", "title", "kind", "required", "command", "success_criteria"],
+      "properties": {
+        "id": { "type": "string" },
+        "title": { "type": "string" },
+        "kind": { "type": "string" },
+        "required": { "type": "boolean" },
+        "command": { "type": "string" },
+        "success_criteria": { "type": "string" }
+      }
+    }
+  }
+}
