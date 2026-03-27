@@ -11,6 +11,7 @@
 .env*                    # 环境变量
 *.lock                   # 依赖锁定文件
 migrations/              # 数据库迁移
+.autodev/ai-sot.json     # AI 专用固定事实锁定层
 ```
 
 ## 需要审批才能改动

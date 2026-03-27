@@ -1,12 +1,14 @@
 # 路径清单机制 (path.md)
 
-> 📍 所有项目环境、部署、运行入口、Git 路径信息的唯一真相来源。Skill 自身的策略阈值不写在这里，放到 `.autodev/autodev-config.json`。
+> 📍 `path.md` 是人类可读的环境事实真相源；AI 执行侧的固定事实锁定层见 `.autodev/ai-sot.json`。Skill 自身的策略阈值不写在这里，放到 `.autodev/autodev-config.json`。
 
 ## 机制说明
 
 **每个项目必须有 `.autodev/path.md`**，记录所有与项目相关的固定路径和配置。
 
-这是"环境配置的单一真相来源"，避免路径信息分散在各处。
+这是"环境配置的人类真相来源"，避免路径信息分散在各处。
+
+若任务涉及自动化预发、SSH、GUI 宿主、认证桥接、远端工作目录等 AI 执行上下文，必须再配一份 `.autodev/ai-sot.json` 作为机器真相源。
 
 ## 必须包含的内容
 
@@ -29,6 +31,7 @@
 Skill 策略阈值职责划分：
 
 - `.autodev/path.md`：路径、环境、部署、Git 事实
+- `.autodev/ai-sot.json`：AI 专用机器真相源（预发/部署/SSH/GUI/auth 固定事实，默认只读）
 - `.autodev/autodev-config.json`：会诊阈值、版本保护策略、日志开关等 skill 行为配置
 
 ## 引用规则
@@ -54,24 +57,39 @@ Skill 策略阈值职责划分：
 - 数据库操作
 - 任何涉及服务器路径的操作
 
+以下操作**必须同时读取 `.autodev/ai-sot.json`**：
+
+- 自动化预发测试
+- 远端 SSH 执行
+- GUI 宿主选择
+- 认证桥接
+- release plan / auto-run 生成与执行
+
 ## 自动检测与创建
 
 进入任何模式时，AI 必须：
 
 1. 检查 `.autodev/path.md` 是否存在
 2. 不存在时，使用 `assets/templates/path.md` 模板创建
-3. 确认 `.git/info/exclude` 包含 `.autodev/`（由 write-preflight 统一处理）
-4. 输出: `📄 已创建: .autodev/path.md（使用模板初始化，请填写实际配置）`
+3. 若任务命中自动化预发 / SSH / GUI 宿主 / 认证桥接，检查 `.autodev/ai-sot.json` 是否存在
+4. 缺失时，使用 `assets/templates/ai-sot.json` 模板创建
+5. 确认 `.git/info/exclude` 包含 `.autodev/`（由 write-preflight 统一处理）
+6. 输出: `📄 已创建: .autodev/path.md（使用模板初始化，请填写实际配置）`
 
 ## 模板位置
 
 `assets/templates/path.md`
+
+机器真相源模板：
+
+`assets/templates/ai-sot.json`
 
 ## 维护规则
 
 | 时机 | 动作 |
 |------|------|
 | 环境变更时 | 更新 path.md |
+| 自动化预发固定事实变更时 | 先经用户确认，再更新 ai-sot.json |
 | 新增服务时 | 添加到 path.md |
 | 新增运行入口 / 观测入口时 | 更新 path.md |
 | 新增 GUI executor / 可视化执行入口时 | 更新 path.md |
@@ -85,6 +103,12 @@ Skill 策略阈值职责划分：
 - 用户提供环境/路径信息时，先比对 `path.md`
 - 新值缺失则新增，值变化则更新，值相同不重复写
 - 临时地址、试用值、当前轮专用值只在会话里使用，不落盘
+
+### `ai-sot.json` 更新规则
+
+- `ai-sot.json` 只写 AI 执行侧固定事实，不写当前任务动态计划
+- AI 默认只读，若需改动必须得到用户明确确认
+- `release-plan.json`、GUI 主脚本和远端命令都不得偷偷覆盖 `ai-sot.json` 中的锁定事实
 
 ## 与其他文档的关系
 

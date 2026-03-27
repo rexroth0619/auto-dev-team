@@ -7,6 +7,7 @@
 
 - 环境地址
 - 服务器路径
+- AI 固定事实真相源
 - 运行与观测入口
 - GUI 自治验收入口
 - Nginx 配置
@@ -32,6 +33,14 @@
 | 配置文件 | `/etc/项目名/config.json` |
 | 数据目录 | `/var/data/项目名` |
 | 备份目录 | `/var/backups/项目名` |
+
+## AI 固定事实真相源
+
+| 项目 | 值 |
+|------|-----|
+| 机器真相源文件 | `.autodev/ai-sot.json` |
+| 默认策略 | `AI 只读，修改需用户明确确认` |
+| 适用场景 | 预发自动化 / 部署 / SSH / GUI 宿主 / 认证桥接 |
 
 ## 运行与观测入口
 
@@ -64,6 +73,24 @@
 - 记录 evidence bundle 的落盘路径
 - 记录测试账号、种子数据、环境开关获取方式
 - 记录是否支持用户可见执行，以及限制条件
+
+## 预发自动化最小配置
+
+| 项目 | 值 |
+|------|-----|
+| 登录页 URL | `https://staging.example.com/login` |
+| 认证模式 | `existing_session / browser_login_handoff / local_secret_store / manual_only` |
+| 后端 SSH 接入方式 | `alias_only / jump_alias / web_terminal_only / none` |
+| 后端 SSH alias | `staging-web` |
+| storage state 路径 | `.autodev/temp/release/storage-state.json` |
+| 查询入口 | `ssh / db / api` |
+| 远端工作目录 | `/var/www/项目名-staging` |
+| 允许操作路径 | `/var/www/项目名-staging` |
+| GUI 执行方式 | `local_browser / local_runner / remote_browser / manual_only` |
+| GUI 基础 URL | `https://staging.example.com` |
+| 自动造单命令 | `./scripts/seed-staging-order.sh` |
+| 证据目录 | `.autodev/temp/release/` |
+| Manual only 限制 | `验证码 / 扫码 / 强 MFA / 真机` |
 
 ## Nginx 配置
 

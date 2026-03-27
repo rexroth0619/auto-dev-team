@@ -41,7 +41,10 @@
 3. 读取 `.autodev/context-snapshot.md`，恢复最近任务上下文。
 4. 读取 `.autodev/autodev-config.json`，加载 skill 策略。
 5. 若任务涉及 Git、部署、路径、环境、服务端配置、运行时路径、日志路径或控制台入口，先读取 `.autodev/path.md`。
-6. 读取 `references/gotchas.md` 中与当前任务最相关的部分。
+6. 若任务涉及预发自动化、部署、远端 SSH、GUI 宿主、认证桥接或运行时固定上下文，读取 `.autodev/ai-sot.json`。
+   - 若文件缺失，按 `references/principles/ai-single-source-of-truth.md` 创建模板
+   - 若文件存在，默认视为只读锁定层；未获用户确认，禁止修改
+7. 读取 `references/gotchas.md` 中与当前任务最相关的部分。
    - Git / 回退 / 分支 / 存档任务：重点看 checkpoint gotchas
    - “添加 / 删除 / 重写”类编辑任务：重点看保留性 gotchas
    - 跨模块 / monorepo / 契约变更：重点看影响分析 gotchas
@@ -85,6 +88,7 @@
 |----------|----------|
 | 所有写入模式进入时 | `references/principles/critique.md` |
 | 涉及 Git / 部署 / 路径 / 环境时 | `references/principles/path-system.md` |
+| 涉及预发自动化 / 部署 / SSH / GUI 宿主 / 认证桥接时 | `references/principles/ai-single-source-of-truth.md` |
 | 任意代码或配置写入前 | `references/principles/checkpoint-mechanism.md` |
 | 第一行代码写入前 | `references/principles/impact-analysis.md` |
 | 开始实际执行代码改动时 | `references/principles/test-verification.md` |
