@@ -66,6 +66,10 @@
   - `.autodev/path.md`
   - `.autodev/autodev-config.json`
   - 认证状态文件，如 `storage-state.json`
+- 默认保留项目本地 secret 文件：
+  - 位于 `.autodev/temp/release/` 根目录
+  - 文件名模式如 `*.local.json`
+  - 典型用途如机器人账号凭据 `admin-auth.local.json`
 - 默认保留项目级 release helper 脚本：
   - 位于 `.autodev/temp/release/` 根目录
   - 后缀为 `.js` / `.cjs` / `.mjs` / `.sh` / `.py`

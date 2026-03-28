@@ -54,10 +54,12 @@
    - 若脚本不可用，按 `references/principles/checkpoint-mechanism.md` 手工执行
 9. 🎯 建立里程碑（任务开始基线）。
    - 默认开启；优先执行 `scripts/checkpoint.sh milestone "<任务>#起点" "任务开始前基线" <task-slug>`
+   - 里程碑默认是 tag-only；它只给当前 `HEAD` 命名，不额外制造空 commit
    - 若脚本不可用，按 `references/principles/checkpoint-mechanism.md` 手工执行
 10. 💿 注册执行前快照闸门。
    - 不在此步建立快照，延迟到实际执行指令到达时强制触发
    - 优先执行 `scripts/checkpoint.sh snapshot-gate <task>`
+   - 快照闸门只在工作区脏时创建 commit；工作区干净时使用 tag-only 基线保护
 11. 🧭 注册 Blast Radius 闸门。
    - 不在此步提前伪造报告，延迟到“第一行代码写入前”强制触发
    - 默认执行 `scripts/blast-radius.py ... --write`

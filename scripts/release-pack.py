@@ -8,23 +8,39 @@ import re
 import subprocess
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Sequence, Tuple
 
 AI_SOT_RELATIVE_PATH = ".autodev/ai-sot.json"
 
 DOMAIN_RULES = {
     "ui": {
-        "segments": {"ui", "page", "pages", "view", "views", "component", "components", "frontend", "web"},
-        "suffixes": {".js", ".jsx", ".ts", ".tsx", ".vue", ".css", ".scss", ".less", ".html"},
+        "segments": {
+            "ui",
+            "page",
+            "pages",
+            "view",
+            "views",
+            "component",
+            "components",
+            "frontend",
+            "web",
+            "template",
+            "templates",
+            "public",
+        },
+        "strong_segments": {"page", "pages", "view", "views", "component", "components", "frontend", "public"},
+        "suffixes": {".jsx", ".tsx", ".vue", ".svelte", ".css", ".scss", ".less", ".html", ".ejs", ".hbs", ".njk"},
         "label": "UI / GUI",
     },
     "api": {
         "segments": {"api", "apis", "controller", "controllers", "route", "routes", "handler", "handlers"},
+        "strong_segments": {"api", "apis", "controller", "controllers", "route", "routes", "handler", "handlers"},
         "suffixes": {".js", ".jsx", ".ts", ".tsx", ".py", ".go"},
         "label": "API / Controller",
     },
     "service": {
         "segments": {"service", "services", "usecase", "usecases", "workflow", "logic", "domain"},
+        "strong_segments": {"service", "services", "usecase", "usecases", "workflow", "logic", "domain"},
         "suffixes": {".js", ".jsx", ".ts", ".tsx", ".py", ".go"},
         "label": "Service / Domain",
     },
@@ -50,21 +66,73 @@ DOMAIN_RULES = {
             "store",
             "stores",
         },
+        "strong_segments": {
+            "repo",
+            "repos",
+            "repository",
+            "repositories",
+            "dao",
+            "daos",
+            "mapper",
+            "mappers",
+            "model",
+            "models",
+            "migration",
+            "migrations",
+            "sql",
+            "db",
+            "database",
+            "store",
+            "stores",
+        },
         "suffixes": {".sql", ".py", ".go", ".ts", ".tsx", ".js", ".jsx"},
         "label": "Data / DB",
     },
     "config": {
         "segments": {"config", "configs", "env", "settings"},
+        "strong_segments": {"config", "configs", "env", "settings"},
         "suffixes": {".json", ".yaml", ".yml", ".toml", ".ini", ".env"},
         "label": "Config",
     },
     "docs": {
         "segments": {"docs", "references", "assets"},
+        "strong_segments": {"docs", "references"},
         "suffixes": {".md"},
         "label": "Docs",
     },
     "tests": {
-        "segments": {"test", "tests", "__tests__", "spec"},
+        "segments": {
+            "test",
+            "tests",
+            "__tests__",
+            "spec",
+            "specs",
+            "testing",
+            "integration",
+            "fixture",
+            "fixtures",
+            "mock",
+            "mocks",
+            "e2e",
+            "playwright",
+            "testdata",
+            "bench",
+            "benchmark",
+            "benchmarks",
+        },
+        "strong_segments": {
+            "test",
+            "tests",
+            "__tests__",
+            "spec",
+            "specs",
+            "integration",
+            "fixture",
+            "fixtures",
+            "e2e",
+            "playwright",
+            "testdata",
+        },
         "suffixes": {".spec.ts", ".test.ts", ".spec.js", ".test.js", ".spec.py", ".test.py"},
         "label": "Tests",
     },
@@ -110,7 +178,20 @@ ENTITY_STOPWORDS = {
     "components",
     "test",
     "tests",
+    "testing",
     "spec",
+    "specs",
+    "integration",
+    "e2e",
+    "fixture",
+    "fixtures",
+    "playwright",
+    "snapshot",
+    "snapshots",
+    "testdata",
+    "storybook",
+    "stories",
+    "story",
     "mock",
     "mocks",
     "config",
@@ -123,6 +204,16 @@ ENTITY_STOPWORDS = {
     "skill",
     "skills",
 }
+
+TEST_SEGMENT_MARKERS = set(DOMAIN_RULES["tests"]["segments"])
+TEST_FILE_MARKERS = (".test.", ".spec.")
+TEST_TOKEN_NORMALIZERS = (
+    re.compile(r"^(?P<core>[a-z0-9]+)[_-](test|tests|spec|specs)$"),
+    re.compile(r"^(test|tests|spec|specs)[_-](?P<core>[a-z0-9]+)$"),
+)
+UI_STRONG_EXTENSIONS = {".jsx", ".tsx", ".vue", ".svelte", ".html", ".ejs", ".hbs", ".njk"}
+STYLE_EXTENSIONS = {".css", ".scss", ".less", ".sass"}
+WORKFLOW_MARKERS = ("#保护", "#起点", "#信任起点", "#完成")
 
 
 def parse_args() -> argparse.Namespace:
@@ -196,6 +287,51 @@ def get_commit_rows(repo_root: Path, target: str, is_range: bool) -> List[Tuple[
     return rows
 
 
+def get_changed_files_for_commit(repo_root: Path, commit_hash: str) -> List[Tuple[str, str]]:
+    raw = run_cmd(["git", "show", "--name-status", "--format=", commit_hash], repo_root)
+    rows: List[Tuple[str, str]] = []
+    for line in raw.splitlines():
+        if not line.strip():
+            continue
+        status, _, path = line.partition("\t")
+        if path.strip():
+            rows.append((status.strip(), path.strip()))
+    return rows
+
+
+def classify_commit_subject(subject: str) -> str:
+    if any(marker in subject for marker in WORKFLOW_MARKERS):
+        return "workflow"
+    if subject.startswith("checkpoint:"):
+        return "workflow"
+    if "「" in subject and "」" in subject:
+        return "archive"
+    return "feature"
+
+
+def split_commit_rows(commits: List[Tuple[str, str]]) -> Tuple[List[Tuple[str, str]], List[Tuple[str, str]]]:
+    feature_commits: List[Tuple[str, str]] = []
+    workflow_commits: List[Tuple[str, str]] = []
+    for row in commits:
+        if classify_commit_subject(row[1]) == "workflow":
+            workflow_commits.append(row)
+        else:
+            feature_commits.append(row)
+    return feature_commits, workflow_commits
+
+
+def aggregate_changed_files(repo_root: Path, commits: List[Tuple[str, str]]) -> List[Tuple[str, str]]:
+    rows: List[Tuple[str, str]] = []
+    seen: set[Tuple[str, str]] = set()
+    for commit_hash, _ in commits:
+        for entry in get_changed_files_for_commit(repo_root, commit_hash):
+            if entry in seen:
+                continue
+            seen.add(entry)
+            rows.append(entry)
+    return rows
+
+
 def get_changed_files(repo_root: Path, target: str, is_range: bool) -> List[Tuple[str, str]]:
     if is_range:
         raw = run_cmd(["git", "diff", "--name-status", target], repo_root)
@@ -211,30 +347,106 @@ def get_changed_files(repo_root: Path, target: str, is_range: bool) -> List[Tupl
     return rows
 
 
-def detect_domains(path_text: str) -> List[str]:
+def is_test_path(path_text: str) -> bool:
+    path = Path(path_text)
+    lowered_parts = [part.lower() for part in path.parts]
+    if any(part in TEST_SEGMENT_MARKERS for part in lowered_parts):
+        return True
+    lowered_name = path.name.lower()
+    if any(marker in lowered_name for marker in TEST_FILE_MARKERS):
+        return True
+    return False
+
+
+def classify_file_role(path_text: str) -> str:
+    path = Path(path_text)
+    segments = {part.lower() for part in path.parts}
+    suffix = path.suffix.lower()
+    if is_test_path(path_text):
+        return "test"
+    if segments & DOMAIN_RULES["docs"]["segments"] or suffix in DOMAIN_RULES["docs"]["suffixes"]:
+        return "docs"
+    if segments & DOMAIN_RULES["config"]["segments"] or suffix in DOMAIN_RULES["config"]["suffixes"]:
+        return "config"
+    if "assets" in segments or suffix in STYLE_EXTENSIONS:
+        return "asset"
+    return "source"
+
+
+def detect_domain_scores(path_text: str) -> Dict[str, int]:
     path = Path(path_text)
     segments = {part.lower() for part in path.parts}
     suffix = path.suffix.lower()
     stem = path.name.lower()
-    matched: List[str] = []
+    role = classify_file_role(path_text)
+    scores: Dict[str, int] = defaultdict(int)
+
+    if role == "test":
+        scores["tests"] += 6
+
     for key, rule in DOMAIN_RULES.items():
-        if segments & rule["segments"]:
-            matched.append(key)
-            continue
+        segment_overlap = segments & rule["segments"]
+        strong_overlap = segments & set(rule.get("strong_segments", set()))
+        if segment_overlap:
+            scores[key] += len(segment_overlap)
+        if strong_overlap:
+            scores[key] += len(strong_overlap) * 2
         if suffix in rule["suffixes"] or stem in rule["suffixes"]:
-            matched.append(key)
-    if not matched:
-        matched.append("service")
-    return matched
+            scores[key] += 1
+
+    if role == "test":
+        for key in ("ui", "api", "service", "data"):
+            scores[key] = max(0, scores[key] - 2)
+
+    if suffix in UI_STRONG_EXTENSIONS:
+        scores["ui"] += 2
+    if suffix in STYLE_EXTENSIONS:
+        scores["ui"] += 3
+
+    if not scores:
+        scores["service"] = 1
+
+    return dict(scores)
+
+
+def detect_domains(path_text: str) -> List[str]:
+    scores = detect_domain_scores(path_text)
+    max_score = max(scores.values()) if scores else 0
+    if max_score <= 0:
+        return ["service"]
+    matched = [key for key, score in scores.items() if score > 0 and score >= max_score - 1]
+    return matched or ["service"]
+
+
+def normalize_test_context_token(token: str) -> str:
+    lowered = token.lower()
+    for pattern in TEST_TOKEN_NORMALIZERS:
+        matched = pattern.match(lowered)
+        if matched:
+            core = matched.groupdict().get("core", "")
+            if core:
+                return core
+    return lowered
+
+
+def has_ui_evidence(paths: Iterable[str]) -> bool:
+    for path_text in paths:
+        if classify_file_role(path_text) != "source":
+            continue
+        if detect_domain_scores(path_text).get("ui", 0) >= 3:
+            return True
+    return False
 
 
 def extract_entities(paths: Iterable[str]) -> List[str]:
     counter: Counter[str] = Counter()
     for path_text in paths:
+        if classify_file_role(path_text) != "source":
+            continue
         path = Path(path_text)
         tokens = re.split(r"[^a-zA-Z0-9]+", "/".join(path.parts))
         for token in tokens:
-            lowered = token.lower()
+            lowered = normalize_test_context_token(token)
             if len(lowered) < 3:
                 continue
             if lowered.isdigit() or lowered in ENTITY_STOPWORDS:
@@ -248,6 +460,58 @@ def normalize_entities(entities: List[str], domains: Iterable[str]) -> List[str]
     if domain_set and domain_set <= {"docs", "tests", "config"}:
         return []
     return entities
+
+
+def compute_domain_confidence(paths: Iterable[str], domains: Iterable[str]) -> Dict[str, Dict[str, Any]]:
+    role_counts: Counter[str] = Counter(classify_file_role(path_text) for path_text in paths)
+    source_paths = [path_text for path_text in paths if classify_file_role(path_text) == "source"]
+    summary: Dict[str, Dict[str, Any]] = {}
+
+    for domain in sorted(set(domains)):
+        evidence_score = 0
+        for path_text in source_paths:
+            evidence_score += detect_domain_scores(path_text).get(domain, 0)
+        confidence = "low"
+        if evidence_score >= 6:
+            confidence = "high"
+        elif evidence_score >= 3:
+            confidence = "medium"
+        if domain == "ui" and not has_ui_evidence(paths):
+            confidence = "low"
+            evidence_score = min(evidence_score, 1)
+        summary[domain] = {
+            "evidence_score": evidence_score,
+            "confidence": confidence,
+            "role_counts": dict(role_counts),
+        }
+
+    return summary
+
+
+def detect_plan_ambiguities(paths: Iterable[str], domains: Iterable[str], entities: List[str]) -> List[str]:
+    ambiguities: List[str] = []
+    role_counts: Counter[str] = Counter(classify_file_role(path_text) for path_text in paths)
+    if role_counts.get("test", 0) and not role_counts.get("source", 0):
+        ambiguities.append("Only test assets changed; release-pack should avoid inferring business entities from test paths.")
+    if "ui" in set(domains) and not has_ui_evidence(paths):
+        ambiguities.append("UI domain lacks strong source-side evidence; GUI checks should stay disabled.")
+    if not entities and role_counts.get("source", 0):
+        ambiguities.append("No stable business entity could be inferred from source paths; keep plan generic.")
+    return ambiguities
+
+
+def append_commit_scope_ambiguities(
+    ambiguities: List[str],
+    *,
+    feature_commits: List[Tuple[str, str]],
+    workflow_commits: List[Tuple[str, str]],
+) -> List[str]:
+    results = list(ambiguities)
+    if workflow_commits and not feature_commits:
+        results.append("Only workflow commits detected in range; release-pack should avoid inferring business changes from checkpoint noise.")
+    if workflow_commits and feature_commits:
+        results.append("Workflow commits were filtered; release-pack uses feature/archive commits as the effective change set.")
+    return results
 
 
 def read_optional_text(path: Path) -> str:
@@ -345,23 +609,36 @@ def seven_day_filter(dialect: str) -> str:
     return "updated_at >= <请按实际数据库方言替换最近7天条件>"
 
 
-def infer_need_queries(domains: Iterable[str]) -> bool:
-    domain_set = set(domains)
-    return bool(domain_set & {"data", "service", "api"})
+def infer_need_queries(domains: Iterable[str], entities: List[str], domain_confidence: Dict[str, Dict[str, Any]]) -> bool:
+    if not entities:
+        return False
+    for domain in ("data", "api"):
+        confidence = str(domain_confidence.get(domain, {}).get("confidence", ""))
+        if confidence in {"medium", "high"}:
+            return True
+    return False
 
 
-def infer_auth_strategy(domains: Iterable[str]) -> List[str]:
+def infer_need_seed(requires_gui: bool, needs_query: bool, domain_confidence: Dict[str, Dict[str, Any]]) -> bool:
+    if requires_gui and needs_query:
+        return True
+    api_confidence = str(domain_confidence.get("api", {}).get("confidence", ""))
+    data_confidence = str(domain_confidence.get("data", {}).get("confidence", ""))
+    return api_confidence == "high" and data_confidence == "high"
+
+
+def infer_auth_strategy(domains: Iterable[str], requires_gui: bool) -> List[str]:
     domain_set = set(domains)
     strategies: List[str] = ["existing_session"]
-    if "ui" in domain_set:
+    if requires_gui and "ui" in domain_set:
         strategies.append("browser_login_handoff")
     strategies.append("local_secret_store")
     return strategies
 
 
-def infer_automation_scope(domains: Iterable[str]) -> str:
+def infer_automation_scope(domains: Iterable[str], requires_gui: bool) -> str:
     domain_set = set(domains)
-    if "ui" in domain_set:
+    if requires_gui and "ui" in domain_set:
         return "be_plus_gui"
     return "be_only"
 
@@ -393,6 +670,7 @@ def build_executive_summary(
     domains: Iterable[str],
     use_cases: List[Dict[str, object]],
     entities: List[str],
+    requires_gui: bool,
 ) -> Dict[str, object]:
     domain_set = set(domains)
     has_backend_tests = any(use_case.get("be_checks") for use_case in use_cases)
@@ -400,7 +678,7 @@ def build_executive_summary(
     summary_items: List[str] = [focus_summary]
     if {"api", "service", "data"} & domain_set:
         summary_items.append("优先验证后端状态流转、接口结果和副作用。")
-    if "ui" in domain_set:
+    if requires_gui and "ui" in domain_set:
         summary_items.append("优先验证关键页面链路、交互反馈和最终展示。")
     if not summary_items:
         summary_items.append("优先验证最近提交直接影响的行为变化。")
@@ -461,7 +739,12 @@ def make_check(
     }
 
 
-def make_use_cases(entities: List[str], domains: Iterable[str]) -> List[Dict[str, object]]:
+def make_use_cases(
+    entities: List[str],
+    domains: Iterable[str],
+    requires_gui: bool,
+    requires_data: bool,
+) -> List[Dict[str, object]]:
     seeds = entities or ["核心对象"]
     primary = seeds[0]
     domain_set = set(domains)
@@ -476,7 +759,7 @@ def make_use_cases(entities: List[str], domains: Iterable[str]) -> List[Dict[str
         )
     ]
     happy_gui_checks: List[Dict[str, object]] = []
-    if "ui" in domain_set:
+    if requires_gui and "ui" in domain_set:
         happy_gui_checks.append(
             make_check(
                 check_id="GUI-1",
@@ -491,10 +774,10 @@ def make_use_cases(entities: List[str], domains: Iterable[str]) -> List[Dict[str
             "id": "UC-1",
             "title": f"{primary} 主链路验证",
             "priority": "high",
-            "requires_gui": "ui" in domain_set,
+            "requires_gui": requires_gui and "ui" in domain_set,
             "change_anchor": f"{primary} 相关最近提交",
-            "requires_auth": "ui" in domain_set,
-            "requires_data": infer_need_queries(domain_set),
+            "requires_auth": requires_gui and "ui" in domain_set,
+            "requires_data": requires_data,
             "why": "先确认最近提交直接影响的 happy path 在预发环境确实可走通。",
             "success_criteria": [
                 "页面或接口行为与提交意图一致",
@@ -518,7 +801,7 @@ def make_use_cases(entities: List[str], domains: Iterable[str]) -> List[Dict[str
         )
     ]
     boundary_gui_checks: List[Dict[str, object]] = []
-    if "ui" in domain_set:
+    if requires_gui and "ui" in domain_set:
         boundary_gui_checks.append(
             make_check(
                 check_id="GUI-2",
@@ -533,10 +816,10 @@ def make_use_cases(entities: List[str], domains: Iterable[str]) -> List[Dict[str
             "id": "UC-2",
             "title": f"{primary} 边界或负例验证",
             "priority": "medium",
-            "requires_gui": "ui" in domain_set,
+            "requires_gui": requires_gui and "ui" in domain_set,
             "change_anchor": f"{primary} 相关最近提交",
-            "requires_auth": "ui" in domain_set,
-            "requires_data": infer_need_queries(domain_set),
+            "requires_auth": requires_gui and "ui" in domain_set,
+            "requires_data": requires_data,
             "why": "避免只测 happy path，补一条最贴近本次改动的边界场景。",
             "success_criteria": [
                 "边界态不误放行",
@@ -554,6 +837,13 @@ def make_use_cases(entities: List[str], domains: Iterable[str]) -> List[Dict[str
     return use_cases
 
 
+def grouped_files_to_paths(grouped_files: Dict[str, List[str]]) -> List[str]:
+    paths: List[str] = []
+    for values in grouped_files.values():
+        paths.extend(values)
+    return paths
+
+
 def build_plan(
     *,
     task: str,
@@ -562,8 +852,12 @@ def build_plan(
     target: str,
     commits: List[Tuple[str, str]],
     changed_files: List[Tuple[str, str]],
+    feature_commits: List[Tuple[str, str]],
+    workflow_commits: List[Tuple[str, str]],
     domains: List[str],
     entities: List[str],
+    domain_confidence: Dict[str, Dict[str, Any]],
+    plan_ambiguities: List[str],
     dialect: str,
     dialect_reason: str,
 ) -> Dict[str, object]:
@@ -572,16 +866,19 @@ def build_plan(
         grouped_files[status].append(path)
 
     focus_summary = infer_focus_summary(entities, commits)
-    needs_query = infer_need_queries(domains)
-    use_cases = make_use_cases(entities, domains)
     domain_set = set(domains)
+    changed_paths = grouped_files_to_paths(grouped_files)
+    requires_gui = "ui" in domain_set and has_ui_evidence(changed_paths)
+    needs_query = infer_need_queries(domains, entities, domain_confidence)
+    needs_seed = infer_need_seed(requires_gui, needs_query, domain_confidence)
+    use_cases = make_use_cases(entities, domains, requires_gui, needs_query)
     protected_target = env_label in {"预发", "生产"}
-    requires_gui = "ui" in domain_set
     executive_summary = build_executive_summary(
         focus_summary=focus_summary,
         domains=domains,
         use_cases=use_cases,
         entities=entities,
+        requires_gui=requires_gui,
     )
 
     plan: Dict[str, object] = {
@@ -589,17 +886,22 @@ def build_plan(
         "task": task or "根据最近提交组织预发测试",
         "environment": env_label,
         "selected_execution_mode": mode,
-        "automation_scope": infer_automation_scope(domains),
+        "automation_scope": infer_automation_scope(domains, requires_gui),
         "available_execution_modes": ["manual", "auto"],
         "target": target,
         "focus_summary": focus_summary,
         "commits": [{"hash": commit_hash, "subject": subject} for commit_hash, subject in commits],
+        "feature_commits": [{"hash": commit_hash, "subject": subject} for commit_hash, subject in feature_commits],
+        "workflow_commits": [{"hash": commit_hash, "subject": subject} for commit_hash, subject in workflow_commits],
+        "effective_commit_count": len(feature_commits) if feature_commits else len(commits),
         "changed_files": grouped_files,
         "domains": sorted(set(domains)),
         "domain_labels": [DOMAIN_RULES[key]["label"] for key in sorted(set(domains)) if key in DOMAIN_RULES],
         "entities": entities,
-        "needs_auth": "ui" in domain_set,
-        "auth_strategy": infer_auth_strategy(domains),
+        "domain_confidence": domain_confidence,
+        "plan_ambiguities": plan_ambiguities,
+        "needs_auth": requires_gui and "ui" in domain_set,
+        "auth_strategy": infer_auth_strategy(domains, requires_gui),
         "staging_context": {
             "requires_ssh": mode == "auto" and protected_target,
             "ssh_access_mode": "none",
@@ -609,7 +911,7 @@ def build_plan(
             "allowed_paths": [],
             "protected_target": protected_target,
             "requires_gui": requires_gui,
-            "auth_required_reason": "UI / protected staging target detected" if ("ui" in domain_set or protected_target) else "",
+            "auth_required_reason": "UI / protected staging target detected" if (requires_gui or protected_target) else "",
         },
         "backend_execution_context": {
             "mode": "none",
@@ -639,6 +941,7 @@ def build_plan(
                 ".autodev/ai-sot.json",
                 ".autodev/path.md",
                 ".autodev/autodev-config.json",
+                ".autodev/temp/release/admin-auth.local.json",
                 ".autodev/temp/release/storage-state.json",
             ],
             "description": "每次新的预发自动化开始前，清理上一轮预发测试的临时产物，但保留固定真相源和认证状态文件。",
@@ -657,11 +960,11 @@ def build_plan(
             ],
         },
         "seed_spec": {
-            "required": needs_query,
+            "required": needs_seed,
             "method_candidates": ["script", "api", "playwright", "manual_only"],
             "command": "",
             "allow_write": False,
-            "skip_reason": "" if needs_query else "当前变更不需要自动造单",
+            "skip_reason": "" if needs_seed else "当前变更不需要自动造单",
             "manual_fallback_when": [
                 "造单需要高风险写操作且未显式放行",
                 "没有脚本/API/管理台入口可自动化",
@@ -700,6 +1003,13 @@ def build_plan(
 def write_text(path: Path, content: str) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(content, encoding="utf-8")
+
+
+def display_path(path: Path, repo_root: Path) -> str:
+    try:
+        return str(path.relative_to(repo_root))
+    except ValueError:
+        return str(path)
 
 
 def print_receipt(plan: Dict[str, object], output_path: Path) -> None:
@@ -742,10 +1052,22 @@ def main() -> int:
     repo_root = get_repo_root()
     target, is_range = resolve_target(args)
     commits = get_commit_rows(repo_root, target, is_range)
-    changed_files = get_changed_files(repo_root, target, is_range)
+    feature_commits, workflow_commits = split_commit_rows(commits)
+    if feature_commits:
+        changed_files = aggregate_changed_files(repo_root, feature_commits)
+        effective_commits = feature_commits
+    else:
+        changed_files = [] if workflow_commits else get_changed_files(repo_root, target, is_range)
+        effective_commits = commits if not workflow_commits else []
     file_paths = [path for _, path in changed_files]
     all_domains = [domain for path in file_paths for domain in detect_domains(path)]
     entities = normalize_entities(extract_entities(file_paths), all_domains)
+    domain_confidence = compute_domain_confidence(file_paths, all_domains)
+    plan_ambiguities = append_commit_scope_ambiguities(
+        detect_plan_ambiguities(file_paths, all_domains, entities),
+        feature_commits=feature_commits,
+        workflow_commits=workflow_commits,
+    )
     dialect, dialect_reason = detect_sql_dialect(repo_root)
     ai_sot = load_ai_sot(repo_root)
     plan = build_plan(
@@ -753,10 +1075,14 @@ def main() -> int:
         env_label=args.env,
         mode=args.mode,
         target=target,
-        commits=commits,
+        commits=effective_commits if effective_commits else commits,
         changed_files=changed_files,
+        feature_commits=feature_commits,
+        workflow_commits=workflow_commits,
         domains=all_domains,
         entities=entities,
+        domain_confidence=domain_confidence,
+        plan_ambiguities=plan_ambiguities,
         dialect=dialect,
         dialect_reason=dialect_reason,
     )
@@ -765,9 +1091,9 @@ def main() -> int:
     output_path = (repo_root / args.output).resolve() if not Path(args.output).is_absolute() else Path(args.output)
     write_text(output_path, json.dumps(plan, ensure_ascii=False, indent=2) + "\n")
 
-    print(f"🛠️ release-plan 已生成: {output_path.relative_to(repo_root)}")
+    print(f"🛠️ release-plan 已生成: {display_path(output_path, repo_root)}")
     if args.stdout:
-        print_receipt(plan, output_path.relative_to(repo_root))
+        print_receipt(plan, display_path(output_path, repo_root))
     return 0
 
 

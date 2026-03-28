@@ -138,6 +138,14 @@ def is_release_helper_script(target: Path, cleanup_root: Path) -> bool:
     return target.parent.resolve() == cleanup_root.resolve()
 
 
+def is_release_local_secret(target: Path, cleanup_root: Path) -> bool:
+    if not target.is_file():
+        return False
+    if target.parent.resolve() != cleanup_root.resolve():
+        return False
+    return target.name.endswith(".local.json")
+
+
 def cleanup_previous_release_temp(plan: Dict[str, Any], repo: Path, plan_path: Path, receipt_path: Path) -> Tuple[bool, str]:
     cleanup_spec = plan.get("cleanup_spec", {})
     if not cleanup_spec.get("required", False):
@@ -166,11 +174,15 @@ def cleanup_previous_release_temp(plan: Dict[str, Any], repo: Path, plan_path: P
             continue
         if is_release_helper_script(child.resolve(), cleanup_root):
             continue
+        if is_release_local_secret(child.resolve(), cleanup_root):
+            continue
         if child.is_dir():
             for nested in sorted(child.rglob("*"), reverse=True):
                 if should_preserve_cleanup_path(nested.resolve(), preserve_paths):
                     continue
                 if is_release_helper_script(nested.resolve(), cleanup_root):
+                    continue
+                if is_release_local_secret(nested.resolve(), cleanup_root):
                     continue
                 if nested.is_file() or nested.is_symlink():
                     nested.unlink(missing_ok=True)

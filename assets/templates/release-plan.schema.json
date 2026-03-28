@@ -69,6 +69,31 @@
         }
       }
     },
+    "feature_commits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["hash", "subject"],
+        "properties": {
+          "hash": { "type": "string" },
+          "subject": { "type": "string" }
+        }
+      }
+    },
+    "workflow_commits": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["hash", "subject"],
+        "properties": {
+          "hash": { "type": "string" },
+          "subject": { "type": "string" }
+        }
+      }
+    },
+    "effective_commit_count": {
+      "type": "integer"
+    },
     "domains": {
       "type": "array",
       "items": { "type": "string" }
