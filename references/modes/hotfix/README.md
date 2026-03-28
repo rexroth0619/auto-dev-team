@@ -64,7 +64,7 @@ AI:   0. 💿 执行前快照闸门（强制）
 
 ```text
 GUI 止血验证:
-- 真正拉起 GUI executor 前，先输出 `🖥️ 前端GUI测试开始 - [GUI-HOTFIX-{问题}-{caseID}-{executor}-r{轮次}] {scope=主验证 | visual=headed/headless | gate=GUI}`
+- 真正拉起 GUI executor 前，先输出 `🖥️ 前端GUI测试开始 - [GUI-HOTFIX-{问题}-{caseID}-{executor}-r{轮次}] {scope=主验证 | visual=headed-required | gate=GUI}`
 - 默认执行 GUI executor 复现原故障路径
 - 证据至少保留 screenshot / console / network / 关键操作时间线
 - 止血后必须重跑原 GUI case，确认症状消失

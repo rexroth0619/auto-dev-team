@@ -207,7 +207,7 @@
 证据: [关键输出]
 
 若位于 GUI 链路:
-🖥️ 前端GUI测试开始 - [GUI-DEBUG-{问题指纹}-{caseID}-{executor}-r{轮次}] {scope=主验证 | visual=headed/headless | gate=GUI}
+🖥️ 前端GUI测试开始 - [GUI-DEBUG-{问题指纹}-{caseID}-{executor}-r{轮次}] {scope=主验证 | visual=headed-required | gate=GUI}
 
 ✅ 治疗成功，病情已稳定
 ━━━━━━━━━━━━━━━━━━━━

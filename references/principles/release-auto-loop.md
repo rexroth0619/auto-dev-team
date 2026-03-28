@@ -2,6 +2,13 @@
 
 > 仅定义自动化版预发测试的最小规则。细节优先下沉到 `release-plan.json` 与脚本。
 
+## 继承关系
+
+- 测试编排、回执骨架、人工验收 fallback 继承 `references/principles/test-verification.md`
+- 观测档位、观测面、预期/实际对比继承 `references/principles/observation-driven-verification.md`
+- GUI 执行闭环、证据包和 executor 细则继承 `references/principles/gui-autonomous-loop.md`
+- 本文件只补自动化预发独有的阶段、固定输入、cleanup、auth、query/seed 与 fail-close 规则
+
 ## 触发
 
 - 用户显式选择 `自动`
@@ -59,6 +66,10 @@
   - `.autodev/path.md`
   - `.autodev/autodev-config.json`
   - 认证状态文件，如 `storage-state.json`
+- 默认保留项目级 release helper 脚本：
+  - 位于 `.autodev/temp/release/` 根目录
+  - 后缀为 `.js` / `.cjs` / `.mjs` / `.sh` / `.py`
+  - 典型用途如导出 `storage-state`、项目专用预发辅助脚本
 - 禁止把固定真相源、配置文件或用户明确要求保留的变量文件纳入 cleanup
 
 ## Fail-close
@@ -89,7 +100,7 @@
 - 后端自动检查通过 != 自动化预发测试通过
   - 若 GUI、认证桥接、远端执行任一缺失，必须明确写成 `manual_fallback`
 
-## 最小证据要求
+## 预发自动化附加约束
 
 - 每个自动化通过的 UC 至少有 1 条后端证据
 - GUI 通过不能替代副作用验证

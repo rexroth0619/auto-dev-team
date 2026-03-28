@@ -153,6 +153,9 @@ EOF
 
 printf 'stale\n' > .autodev/temp/release/old-artifact.txt
 printf 'state\n' > .autodev/temp/release/storage-state.json
+cat > .autodev/temp/release/export-storage-state.js <<'EOF'
+console.log('helper script');
+EOF
 
 cat > .autodev/ai-sot.json <<'EOF'
 {
@@ -201,6 +204,7 @@ RECEIPT_PATH=".autodev/temp/release/release-auto-receipt.json"
 [[ -f "$RECEIPT_PATH" ]] || fail "expected receipt output file to exist"
 [[ ! -f ".autodev/temp/release/old-artifact.txt" ]] || fail "expected stale artifact to be cleaned"
 [[ -f ".autodev/temp/release/storage-state.json" ]] || fail "expected storage-state to be preserved"
+[[ -f ".autodev/temp/release/export-storage-state.js" ]] || fail "expected top-level release helper script to be preserved"
 assert_file_contains "$RECEIPT_PATH" '"final_status": "passed"'
 assert_file_contains "$RECEIPT_PATH" '"stage": "summary"'
 assert_file_contains "$RECEIPT_PATH" '"stage": "cleanup"'

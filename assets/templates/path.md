@@ -69,7 +69,7 @@
 ### GUI loop 约定
 
 - Web GUI 若已有 `node xxx.ui.test.js`，优先记录为 `Script-first Playwright`
-- 记录至少 1 条 headed 命令和 1 条 headless/CI 命令
+- 记录至少 1 条 headed 命令；⛔ 不再记录 headless/CI 命令作为 GUI 验收入口
 - 记录 evidence bundle 的落盘路径
 - 记录测试账号、种子数据、环境开关获取方式
 - 记录是否支持用户可见执行，以及限制条件
