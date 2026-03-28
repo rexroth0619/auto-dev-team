@@ -12,7 +12,8 @@ Commands:
   snapshot-gate [task]
   archive <fingerprint> [type] [description]
   list
-  rollback <hash>
+  rollback <hash|tag|index|fingerprint>
+  merge-advice [integration-branch]
 EOF
 }
 
@@ -94,6 +95,15 @@ current_branch() {
   git branch --show-current
 }
 
+head_tags() {
+  git tag --points-at HEAD
+}
+
+head_has_tag_prefix() {
+  local prefix="$1"
+  head_tags | grep -q "^${prefix}/"
+}
+
 integration_mode() {
   json_get "integration_mode" "merge_allowed"
 }
@@ -120,6 +130,148 @@ repo_is_dirty() {
 
 last_subject() {
   git log -1 --pretty=%s 2>/dev/null || true
+}
+
+subject_fingerprint() {
+  local subject="${1:-}"
+  if [[ "$subject" =~ 「([^」]+)」 ]]; then
+    printf '%s\n' "${BASH_REMATCH[1]}"
+    return 0
+  fi
+  printf '\n'
+}
+
+subject_task_key() {
+  local subject="${1:-}"
+  local fingerprint
+  fingerprint="$(subject_fingerprint "$subject")"
+  if [[ -n "$fingerprint" ]]; then
+    printf '%s\n' "${fingerprint%%#*}"
+    return 0
+  fi
+  printf '其他\n'
+}
+
+workflow_commit_kind() {
+  local subject="${1:-}"
+  if [[ "$subject" == *"#保护"* ]]; then
+    printf 'snapshot\n'
+    return 0
+  fi
+  if [[ "$subject" == *"#起点"* || "$subject" == *"#信任起点"* || "$subject" == *"#完成"* ]]; then
+    printf 'milestone\n'
+    return 0
+  fi
+  printf 'feature\n'
+}
+
+is_workflow_commit() {
+  [[ "$(workflow_commit_kind "${1:-}")" != "feature" ]]
+}
+
+entry_icon() {
+  local kind="$1"
+  case "$kind" in
+    milestone) printf '🎯' ;;
+    snapshot) printf '💿' ;;
+    archive|feature|head) printf '💾' ;;
+    *) printf '•' ;;
+  esac
+}
+
+entry_backing() {
+  local kind="$1"
+  local ref="$2"
+  if [[ "$ref" == milestone/* || "$ref" == snapshot/* ]]; then
+    printf 'tag-only'
+    return 0
+  fi
+  if [[ "$kind" == "snapshot" || "$kind" == "archive" || "$kind" == "feature" ]]; then
+    printf 'commit'
+    return 0
+  fi
+  printf 'commit'
+}
+
+integration_branch_name() {
+  local explicit="${1:-}"
+  if [[ -n "$explicit" ]]; then
+    printf '%s\n' "$explicit"
+    return 0
+  fi
+
+  local configured
+  configured="$(json_get "integration_branch" "")"
+  if [[ -n "$configured" ]]; then
+    printf '%s\n' "$configured"
+    return 0
+  fi
+
+  local origin_head
+  origin_head="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null || true)"
+  if [[ -n "$origin_head" ]]; then
+    printf '%s\n' "${origin_head#origin/}"
+    return 0
+  fi
+
+  printf '%s\n' "$(current_branch)"
+}
+
+collect_checkpoint_entries() {
+  local -a milestone_entries=() archive_entries=()
+  local latest_snapshot_ts=0 latest_snapshot=""
+  local tag subject created hash line kind task
+
+  while IFS=$'\t' read -r created tag subject; do
+    [[ -z "$tag" ]] && continue
+    hash="$(git rev-list -n 1 "$tag")"
+    kind="archive"
+    [[ "$tag" == milestone/* ]] && kind="milestone"
+    [[ "$tag" == snapshot/* ]] && kind="snapshot"
+    task="$(subject_task_key "$subject")"
+    line="${created}|${kind}|$(entry_backing "$kind" "$tag")|${hash}|${tag}|${subject}|${task}"
+    if [[ "$kind" == "milestone" ]]; then
+      milestone_entries+=("$line")
+      continue
+    fi
+    if [[ "$kind" == "snapshot" && "${created:-0}" -ge "$latest_snapshot_ts" ]]; then
+      latest_snapshot_ts="${created:-0}"
+      latest_snapshot="$line"
+    fi
+  done < <(git for-each-ref --sort=-creatordate --format='%(creatordate:unix)%09%(refname:short)%09%(subject)' refs/tags/milestone refs/tags/snapshot)
+
+  local commit_ts full_hash short_hash kind_subject
+  while IFS=$'\t' read -r commit_ts full_hash short_hash subject; do
+    [[ -z "$short_hash" ]] && continue
+    if [[ -n "$(git tag --points-at "$full_hash" | grep '^milestone/' || true)" ]]; then
+      continue
+    fi
+    kind_subject="$(workflow_commit_kind "$subject")"
+    task="$(subject_task_key "$subject")"
+    if [[ "$kind_subject" == "snapshot" ]]; then
+      line="${commit_ts:-0}|snapshot|commit|${full_hash}|${short_hash}|${subject}|${task}"
+      if [[ "${commit_ts:-0}" -ge "$latest_snapshot_ts" ]]; then
+        latest_snapshot_ts="${commit_ts:-0}"
+        latest_snapshot="$line"
+      fi
+      continue
+    fi
+    if [[ "$kind_subject" == "milestone" ]]; then
+      line="${commit_ts:-0}|milestone|commit|${full_hash}|${short_hash}|${subject}|${task}"
+      milestone_entries+=("$line")
+      continue
+    fi
+    archive_entries+=("${commit_ts:-0}|archive|commit|${full_hash}|${short_hash}|${subject}|${task}")
+  done < <(git log --pretty='%ct%x09%H%x09%h%x09%s' -80)
+
+  printf '%s\n' "${milestone_entries[@]}"
+  [[ -n "$latest_snapshot" ]] && printf '%s\n' "$latest_snapshot"
+  local count=0 item
+  for item in "${archive_entries[@]}"; do
+    printf '%s\n' "$item"
+    count=$((count + 1))
+    [[ "$count" -ge 5 ]] && break
+  done
 }
 
 review_staging() {
@@ -150,6 +302,36 @@ review_staging() {
         ;;
     esac
   done
+}
+
+tag_base_for() {
+  local prefix="$1"
+  local task_slug="$2"
+  local base
+  base="${prefix}/${task_slug}-$(timestamp)"
+  if [[ "$(integration_mode)" == "pr_only" ]]; then
+    base="${prefix}/$(actor_slug)/${task_slug}-$(timestamp)"
+  fi
+  printf '%s\n' "$base"
+}
+
+create_annotated_tag() {
+  local prefix="$1"
+  local task_slug="$2"
+  local fingerprint="$3"
+  local description="$4"
+
+  local tag_base tag_name idx
+  tag_base="$(tag_base_for "$prefix" "$task_slug")"
+  tag_name="$tag_base"
+  idx=2
+  while git rev-parse -q --verify "refs/tags/$tag_name" >/dev/null 2>&1; do
+    tag_name="${tag_base}-${idx}"
+    idx=$((idx + 1))
+  done
+
+  git tag -a "$tag_name" -m "「${fingerprint}」chore: ${description}"
+  printf '%s\n' "$tag_name"
 }
 
 ensure_branch() {
@@ -190,22 +372,8 @@ create_milestone() {
   local task_slug
   task_slug="$(slugify "${3:-$fingerprint}")"
 
-  git add -A
-  review_staging "milestone"
-  git commit --allow-empty -m "「${fingerprint}」chore: ${description}" >/dev/null
-
-  local tag_base tag_name idx hash
-  tag_base="milestone/${task_slug}-$(timestamp)"
-  if [[ "$(integration_mode)" == "pr_only" ]]; then
-    tag_base="milestone/$(actor_slug)/${task_slug}-$(timestamp)"
-  fi
-  tag_name="$tag_base"
-  idx=2
-  while git rev-parse -q --verify "refs/tags/$tag_name" >/dev/null 2>&1; do
-    tag_name="${tag_base}-${idx}"
-    idx=$((idx + 1))
-  done
-  git tag "$tag_name"
+  local tag_name hash
+  tag_name="$(create_annotated_tag "milestone" "$task_slug" "$fingerprint" "$description")"
   hash="$(git rev-parse --short HEAD)"
 
   cat <<EOF
@@ -217,7 +385,7 @@ create_milestone() {
 标签: ${tag_name}
 ━━━━━━━━━━━━━━━━━━━━
 💡 随时可说「回退到 ${fingerprint}」
-━━━━━━━━━━━━━━━━━━━━
+$(if repo_is_dirty; then printf '📝 工作区有未提交改动；里程碑只标记当前 HEAD，未提交现场将由后续 💿 快照保护\n'; fi)━━━━━━━━━━━━━━━━━━━━
 EOF
 }
 
@@ -234,13 +402,15 @@ snapshot_gate() {
     return 0
   fi
 
-  if [[ "$subject" == *"「${task}"* || "$subject" == *"#保护"* || "$subject" == *"#起点"* ]]; then
+  if head_has_tag_prefix "milestone" || head_has_tag_prefix "snapshot" || [[ "$subject" == *"#保护"* || "$subject" == *"#起点"* ]]; then
     echo "💿 闸门通过（基线 $(git rev-parse --short HEAD) 即保护点）"
     return 0
   fi
 
-  git commit --allow-empty -m "「${task}#保护」chore: 自动存档" >/dev/null
-  echo "💿 已保护 → $(git rev-parse --short HEAD)（执行前闸门）"
+  local task_slug tag_name
+  task_slug="$(slugify "$task")"
+  tag_name="$(create_annotated_tag "snapshot" "$task_slug" "${task}#保护" "执行前基线保护（tag-only）")"
+  echo "💿 已保护 → $(git rev-parse --short HEAD)（tag-only: ${tag_name}）"
 }
 
 archive_commit() {
@@ -260,53 +430,86 @@ archive_commit() {
 }
 
 list_archives() {
-  local -a milestones=() snapshots=() archives=()
-  local hash subject
-  while IFS=$'\t' read -r hash subject; do
-    [[ "$subject" != *"「"* ]] && continue
-    if [[ -n "$(git tag --points-at "$hash" | grep '^milestone/' || true)" ]]; then
-      milestones+=("$hash|$subject")
-      continue
+  local head_hash head_subject head_task
+  head_hash="$(git rev-parse --short HEAD)"
+  head_subject="$(git log -1 --pretty=%s)"
+  head_task="$(subject_task_key "$head_subject")"
+  echo "━━━━━━━━━━━━━━━━━━━━"
+  echo "📍 版本点列表"
+  echo "━━━━━━━━━━━━━━━━━━━━"
+  echo "HEAD: ${head_hash} ${head_subject}"
+  echo "任务: ${head_task}"
+  echo "━━━━━━━━━━━━━━━━━━━━"
+  local idx=1 current_task="" item ts kind backing hash ref subject task icon short_hash
+  while IFS= read -r item; do
+    [[ -z "$item" ]] && continue
+    IFS='|' read -r ts kind backing hash ref subject task <<<"$item"
+    if [[ "$task" != "$current_task" ]]; then
+      current_task="$task"
+      echo "【任务: ${current_task}】"
     fi
-    if [[ "$subject" == *"#保护"* ]]; then
-      [[ ${#snapshots[@]} -lt 1 ]] && snapshots+=("$hash|$subject")
-      continue
-    fi
-    [[ ${#archives[@]} -lt 3 ]] && archives+=("$hash|$subject")
-  done < <(git log --pretty='%h%x09%s' -50)
-
+    icon="$(entry_icon "$kind")"
+    short_hash="${hash:0:7}"
+    echo "[$idx] ${icon} ${short_hash} ${subject} (${backing})"
+    idx=$((idx + 1))
+  done < <(collect_checkpoint_entries)
   echo "━━━━━━━━━━━━━━━━━━━━"
-  echo "📍 存档列表"
-  echo "━━━━━━━━━━━━━━━━━━━━"
-  local idx=1 item
-  if (( ${#milestones[@]} )); then
-    for item in "${milestones[@]}"; do
-      IFS='|' read -r hash subject <<<"$item"
-      echo "[$idx] 🎯 ${hash} ${subject}"
-      idx=$((idx + 1))
-    done
-  fi
-  if (( ${#snapshots[@]} )); then
-    for item in "${snapshots[@]}"; do
-      IFS='|' read -r hash subject <<<"$item"
-      echo "[$idx] 💿 ${hash} ${subject}"
-      idx=$((idx + 1))
-    done
-  fi
-  if (( ${#archives[@]} )); then
-    for item in "${archives[@]}"; do
-      IFS='|' read -r hash subject <<<"$item"
-      echo "[$idx] 💾 ${hash} ${subject}"
-      idx=$((idx + 1))
-    done
-  fi
-  echo "━━━━━━━━━━━━━━━━━━━━"
-  echo "回退到哪个？（输入序号或指纹）"
+  echo "回退到哪个？（输入序号 / tag / hash / 指纹）"
   echo "━━━━━━━━━━━━━━━━━━━━"
 }
 
+resolve_checkpoint_target() {
+  local target="${1:?target required}"
+
+  if [[ "$target" =~ ^[0-9]+$ ]]; then
+    local idx=1 item ts kind backing hash ref subject task
+    while IFS= read -r item; do
+      [[ -z "$item" ]] && continue
+      if [[ "$idx" -eq "$target" ]]; then
+        IFS='|' read -r ts kind backing hash ref subject task <<<"$item"
+        printf '%s|%s|%s|%s\n' "$kind" "$ref" "$hash" "$subject"
+        return 0
+      fi
+      idx=$((idx + 1))
+    done < <(collect_checkpoint_entries)
+    return 1
+  fi
+
+  if git rev-parse -q --verify "refs/tags/$target" >/dev/null 2>&1; then
+    local hash subject
+    hash="$(git rev-list -n 1 "$target")"
+    subject="$(git for-each-ref --format='%(subject)' "refs/tags/$target")"
+    local kind="archive"
+    [[ "$target" == milestone/* ]] && kind="milestone"
+    [[ "$target" == snapshot/* ]] && kind="snapshot"
+    printf '%s|%s|%s|%s\n' "$kind" "$target" "$hash" "$subject"
+    return 0
+  fi
+
+  if git rev-parse -q --verify "$target^{commit}" >/dev/null 2>&1; then
+    local hash subject kind
+    hash="$(git rev-parse "$target^{commit}")"
+    subject="$(git log -1 --pretty=%s "$hash")"
+    kind="$(workflow_commit_kind "$subject")"
+    [[ "$kind" == "feature" ]] && kind="archive"
+    printf '%s|%s|%s|%s\n' "$kind" "$target" "$hash" "$subject"
+    return 0
+  fi
+
+  local item ts kind backing hash ref subject task
+  while IFS= read -r item; do
+    [[ -z "$item" ]] && continue
+    IFS='|' read -r ts kind backing hash ref subject task <<<"$item"
+    if [[ "$subject" == *"$target"* ]]; then
+      printf '%s|%s|%s|%s\n' "$kind" "$ref" "$hash" "$subject"
+      return 0
+    fi
+  done < <(collect_checkpoint_entries)
+  return 1
+}
+
 rollback_to() {
-  local target="${1:?hash required}"
+  local target="${1:?target required}"
   local branch
   branch="$(current_branch)"
   if matches_branch_pattern "$branch"; then
@@ -323,14 +526,82 @@ EOF
     snapshot_gate "现场保存"
   fi
 
-  git reset --hard "$target" >/dev/null
+  local resolved kind ref hash subject
+  if ! resolved="$(resolve_checkpoint_target "$target")"; then
+    echo "❌ 找不到回退目标: $target" >&2
+    exit 1
+  fi
+  IFS='|' read -r kind ref hash subject <<<"$resolved"
+
+  git reset --hard "$hash" >/dev/null
   cat <<EOF
 ━━━━━━━━━━━━━━━━━━━━
 ✅ 已回退
-当前位置: $(git log -1 --pretty=%s) $(git rev-parse --short HEAD)
+目标: ${kind} ${ref}
+$(if [[ "$ref" == milestone/* || "$ref" == snapshot/* ]]; then printf '说明: 已回退到 tag 指向的 commit\n'; fi)当前位置: $(git log -1 --pretty=%s) $(git rev-parse --short HEAD)
 分支: $branch
 ━━━━━━━━━━━━━━━━━━━━
 EOF
+}
+
+merge_advice() {
+  local integration
+  integration="$(integration_branch_name "${1:-}")"
+
+  if ! git rev-parse -q --verify "$integration" >/dev/null 2>&1; then
+    echo "❌ 找不到集成分支: $integration" >&2
+    exit 1
+  fi
+
+  local branch
+  branch="$(current_branch)"
+  local -a feature_commits=() workflow_commits=()
+  local hash subject
+  while IFS=$'\t' read -r hash subject; do
+    [[ -z "$hash" ]] && continue
+    if is_workflow_commit "$subject"; then
+      workflow_commits+=("${hash:0:7}|$subject")
+    else
+      feature_commits+=("${hash:0:7}|$subject")
+    fi
+  done < <(git log --reverse --format='%H%x09%s' "${integration}..HEAD")
+
+  echo "━━━━━━━━━━━━━━━━━━━━"
+  echo "🧭 合并建议"
+  echo "━━━━━━━━━━━━━━━━━━━━"
+  echo "当前分支: $branch"
+  echo "目标分支: $integration"
+  echo "功能提交: ${#feature_commits[@]}"
+  echo "工作流提交: ${#workflow_commits[@]}"
+  echo "━━━━━━━━━━━━━━━━━━━━"
+
+  local item
+  if (( ${#feature_commits[@]} == 0 && ${#workflow_commits[@]} == 0 )); then
+    echo "结论: 当前分支没有领先提交"
+  elif (( ${#feature_commits[@]} == 0 )); then
+    echo "结论: 当前分支仅包含工作流提交，建议不要直接 merge"
+    echo "建议: 无可合并代码成果"
+  elif (( ${#workflow_commits[@]} > 0 )); then
+    echo "结论: 当前分支混有工作流提交，建议 clean merge / cherry-pick 真实功能提交"
+  else
+    echo "结论: 当前分支只包含真实功能提交，可直接 merge"
+  fi
+
+  if (( ${#feature_commits[@]} )); then
+    echo "功能提交:"
+    for item in "${feature_commits[@]}"; do
+      IFS='|' read -r hash subject <<<"$item"
+      echo "- ${hash} ${subject}"
+    done
+  fi
+  if (( ${#workflow_commits[@]} )); then
+    echo "工作流提交:"
+    for item in "${workflow_commits[@]}"; do
+      IFS='|' read -r hash subject <<<"$item"
+      echo "- ${hash} ${subject}"
+    done
+  fi
+  echo "━━━━━━━━━━━━━━━━━━━━"
 }
 
 command="${1:-}"
@@ -354,6 +625,9 @@ case "$command" in
     ;;
   rollback)
     rollback_to "$@"
+    ;;
+  merge-advice)
+    merge_advice "$@"
     ;;
   -h|--help|help)
     usage

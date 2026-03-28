@@ -23,8 +23,8 @@
 
 | 术语 | 图标 | 定义 | 存储 |
 |------|------|------|------|
-| **里程碑** | 🎯 | 核心版本锚点，标记任务边界 | commit + git tag |
-| **保护快照** | 💿 | 写代码前的自动现场保护 | commit |
+| **里程碑** | 🎯 | 核心版本锚点，标记任务边界 | annotated tag |
+| **保护快照** | 💿 | 写代码前的自动现场保护 | dirty=commit / clean=annotated tag |
 | **存档** | 💾 | 每步改动完成后的记录 | commit |
 | **指纹** | - | ≤10 字的业务功能摘要 | commit message |
 | **工作分支** | - | AI 干活用的本地分支，与主分支隔离 | - |
@@ -53,7 +53,8 @@
 | 执行前快照闸门 | `scripts/checkpoint.sh snapshot-gate <task>` |
 | 建立存档 | `scripts/checkpoint.sh archive "<指纹>" <type> "<描述>"` |
 | 展示存档列表 | `scripts/checkpoint.sh list` |
-| 回退到目标 | `scripts/checkpoint.sh rollback <hash>` |
+| 回退到目标 | `scripts/checkpoint.sh rollback <hash|tag|index|fingerprint>` |
+| 合并建议 | `scripts/checkpoint.sh merge-advice [integration-branch]` |
 
 脚本不可用时，再按本文手工兜底。
 
@@ -125,13 +126,16 @@ AI 开始任何代码改动前，**必须执行**：
 - `{业务摘要}#完成`
 - `{用户指定名}`
 
-### 提交规则
+### 建立规则
 
-- `git add -A`
-- `git commit --allow-empty -m "「{指纹}」chore: {描述}"`
-- `git tag milestone/{任务简述}-{MMDDHHmm}`
+- 不新建 commit，直接在当前 `HEAD` 上建立 annotated tag
+- tag message: `「{指纹}」chore: {描述}`
+- tag name: `milestone/{任务简述}-{MMDDHHmm}`
 
 `pr_only` 模式下 tag 格式为 `milestone/{actor}/{任务简述}-{MMDDHHmm}`。
+
+> 里程碑的职责是“给现有快照命名”，不是“再造一个空快照”。
+> 如果工作区里还有未提交改动，里程碑只标记当前 `HEAD`；未提交现场由后续 `💿` 快照负责保存。
 
 ### 输出格式
 
@@ -150,6 +154,11 @@ AI 开始任何代码改动前，**必须执行**：
 ## 💿 保护快照
 
 保护快照是写代码前的安全网，保留“改动前”状态。分为**执行前闸门（强制）**和**补充快照（智能触发）**两层。
+
+保护快照的原则：
+
+- 工作区有未提交改动：必须创建 commit，真正保存现场
+- 工作区干净：只需要给当前 `HEAD` 建立 `snapshot/*` annotated tag，不再额外制造空 commit
 
 ### 执行前快照闸门（强制）
 
@@ -177,7 +186,7 @@ AI 开始任何代码改动前，**必须执行**：
 ├─ 有未提交改动 → 建立 💿 快照 commit
 └─ 工作区干净
     ├─ 已有当前任务基线（🎯 / 💿 / 💾） → 输出"闸门通过"
-    └─ 无当前任务基线 → 建立允许为空的 💿 快照 commit
+    └─ 无当前任务基线 → 建立 `snapshot/*` tag-only 保护点
 ```
 
 #### 闸门输出
@@ -192,6 +201,12 @@ AI 开始任何代码改动前，**必须执行**：
 💿 闸门通过（基线 a1b2c3d 即保护点）
 ```
 
+工作区干净且新建 tag-only 保护点时，输出示例：
+
+```text
+💿 已保护 → a1b2c3d（tag-only: snapshot/会员登录-03071430）
+```
+
 ### 补充快照（智能触发）
 
 满足任一条件时建立补充快照：
@@ -199,7 +214,8 @@ AI 开始任何代码改动前，**必须执行**：
 1. 距离上次 commit > 10 分钟且即将写入
 2. 即将改动的文件与上次 commit 无关（跨模块）
 
-提交格式：`git commit --allow-empty -m "「{任务}#保护」chore: 自动存档"`
+- 工作区有未提交改动：`git commit -m "「{任务}#保护」chore: 自动存档"`
+- 工作区干净：创建 `snapshot/{任务简述}-{MMDDHHmm}` annotated tag，message 为 `「{任务}#保护」chore: 执行前基线保护（tag-only）`
 
 ## 💾 存档
 
@@ -252,7 +268,7 @@ credentials.* / secrets.*
 | `merge_allowed` | ⚠️ 警告并列出文件，默认不自动移除 |
 | `pr_only` | ⛔ 自动执行 `git reset HEAD <file>` 移出后再提交 |
 
-> 里程碑和保护快照同样执行审查，但仅针对敏感文件（`.env`、密钥类），不过滤 `.autodev/`。
+> 里程碑是 tag-only，不经过暂存区；保护快照只有在需要 commit 保存现场时才执行暂存区审查。
 
 ### 输出格式
 
@@ -280,31 +296,40 @@ git log --oneline -20
 git tag -l "milestone/*" --sort=-creatordate
 ```
 
-2. 对每条 commit 判断类型：
+2. 对每条记录判断类型：
 
 ```text
-git tag --points-at {hash} 含 milestone/* → 🎯 里程碑
-指纹含 #保护                            → 💿 保护快照
-其他                                     → 💾 存档
+tag 前缀 milestone/*                  → 🎯 里程碑
+tag 前缀 snapshot/*                   → 💿 保护快照
+commit 指纹含 #保护                   → 💿 保护快照
+commit 指纹含 #起点 / #信任起点 / #完成 → 🎯 工作流里程碑（兼容旧历史）
+其他 commit                           → 💾 存档
 ```
 
 3. 默认展示：
+   - 当前 `HEAD`
    - 所有里程碑
    - 最近 1 个保护快照
-   - 最近 3 个存档
+   - 最近 5 个存档
+   - 按任务维度分组
+   - 显示 `tag-only / commit` backing
 
 ### 输出格式
 
 ```text
 ━━━━━━━━━━━━━━━━━━━━
-📍 存档列表
+📍 版本点列表
 ━━━━━━━━━━━━━━━━━━━━
-[1] 🎯 a1b2c3d「会员登录#起点」
-[2] 💿 b2c3d4e「会员登录#保护」
-[3] 💾 c3d4e5f「会员登录#01」
-[4] 💾 d4e5f6g「会员登录#02」
+HEAD: d4e5f6g 「会员登录#02」
+任务: 会员登录
 ━━━━━━━━━━━━━━━━━━━━
-回退到哪个？（输入序号或指纹）
+【任务: 会员登录】
+[1] 🎯 a1b2c3d「会员登录#起点」 (tag-only)
+[2] 💿 b2c3d4e「会员登录#保护」 (commit)
+[3] 💾 c3d4e5f「会员登录#01」 (commit)
+[4] 💾 d4e5f6g「会员登录#02」 (commit)
+━━━━━━━━━━━━━━━━━━━━
+回退到哪个？（输入序号 / tag / hash / 指纹）
 ━━━━━━━━━━━━━━━━━━━━
 ```
 
@@ -314,6 +339,8 @@ git tag --points-at {hash} 含 milestone/* → 🎯 里程碑
 
 - “回退到「会员注册表单#01」”
 - “回退到 b2c3d4e”
+- “回退到 [2]”
+- “回退到 milestone/会员登录-03071430”
 - “回退”
 
 ### 回退安全检查
@@ -328,6 +355,8 @@ git tag --points-at {hash} 含 milestone/* → 🎯 里程碑
 
 ### 执行回退
 
+若目标是 index / fingerprint / tag，脚本先解析到真实 commit，再执行：
+
 `git reset --hard {hash}`
 
 ### 回退输出
@@ -335,6 +364,8 @@ git tag --points-at {hash} 含 milestone/* → 🎯 里程碑
 ```text
 ━━━━━━━━━━━━━━━━━━━━
 ✅ 已回退
+目标: {类型} {ref}
+说明: 若目标是 tag，则回退到 tag 指向的 commit
 当前位置:「{指纹}」{hash}
 分支: {工作分支}
 ━━━━━━━━━━━━━━━━━━━━
@@ -358,6 +389,18 @@ git tag --points-at {hash} 含 milestone/* → 🎯 里程碑
 - `pr_only`
   - 不允许本地 merge 到集成分支
   - 只允许推送工作分支，供 GitHub / GitLab 创建 PR
+
+### 合并前分类建议
+
+执行 `scripts/checkpoint.sh merge-advice [integration-branch]`：
+
+- 自动区分：
+  - `工作流提交`：`#保护 / #起点 / #信任起点 / #完成`
+  - `功能提交`：真实代码成果提交
+- 输出结论：
+  - 仅工作流提交 → 不建议 merge
+  - 功能提交 + 工作流提交混合 → 建议 clean merge / cherry-pick 真实功能提交
+  - 仅功能提交 → 可直接 merge
 
 ## 默认策略
 
@@ -394,7 +437,7 @@ git tag --points-at {hash} 含 milestone/* → 🎯 里程碑
 | 情况 | 处理方式 |
 |------|----------|
 | 无 `.autodev/path.md` | 提示用户先创建，使用模板 `assets/templates/path.md` |
-| 当前在受保护分支 | 自动创建工作分支后再建立里程碑 |
+| 当前在受保护分支 | 自动创建工作分支后再建立里程碑 tag |
 | push 失败 | 报告错误，保留本地 commit，提示手动处理 |
 | 冲突 | 停止自动流程，提示用户解决冲突后手动处理 |
 | 无改动 | 跳过 commit，正常输出任务完成报告 |
