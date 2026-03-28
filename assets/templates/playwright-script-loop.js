@@ -6,7 +6,7 @@
  *
  * Goal:
  * - fast local GUI loop
- * - headed execution by default
+ * - headed execution only
  * - easy failure classification and rerun
  */
 
@@ -17,7 +17,6 @@ const { spawn } = require("node:child_process");
 const runId = Date.now();
 const evidenceRoot = path.join(process.cwd(), ".autodev", "temp", "gui", `run-${runId}`);
 const baseUrl = process.env.GUI_BASE_URL || "http://127.0.0.1:3000";
-const headless = process.env.PLAYWRIGHT_HEADLESS === "true";
 const slowMo = Number(process.env.PLAYWRIGHT_SLOWMO || 250);
 
 fs.mkdirSync(evidenceRoot, { recursive: true });
@@ -49,6 +48,14 @@ function check(condition, message, detail = "") {
     throw new Error(`${message}${detail ? `: ${detail}` : ""}`);
   }
   pass(message);
+}
+
+function assertVisibleBrowserRequired() {
+  if (process.env.PLAYWRIGHT_HEADLESS === "true") {
+    throw new Error(
+      "Headless Playwright is forbidden by auto-dev-team GUI policy. Use a visible browser window."
+    );
+  }
 }
 
 function startServer() {
@@ -120,6 +127,7 @@ async function runNegativeCase(page) {
 
 async function run() {
   const { chromium } = require("playwright");
+  assertVisibleBrowserRequired();
   const server = process.env.GUI_BASE_URL ? null : startServer();
   let browser = null;
 
@@ -131,7 +139,7 @@ async function run() {
     await seedData();
 
     browser = await chromium.launch({
-      headless,
+      headless: false,
       slowMo,
     });
 

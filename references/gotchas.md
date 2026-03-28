@@ -30,7 +30,7 @@
 - 命中 GUI-capable task 却只写“建议执行”= 还没执行。
 - GUI 失败后必须重跑同一 case，不能只修代码不复验。
 - 不要拿历史业务 E2E 脚本充当当前步骤的 GUI 主验证；先准备 `.autodev/current-gui-test.js`，确认它直接对应本次改动。
-- Playwright 默认应该 headed；如果悄悄 headless 跑了，就不能说“用户看到了 GUI 执行过程”。
+- Playwright 必须 headed；如果悄悄改成 headless，就不能说“完成了 GUI 验收”，只能算违背协议。
 - Web GUI 不要只会写 `@playwright/test`；`node xxx.ui.test.js` 的脚本式 Playwright 往往更适合本地快速闭环。
 - 脚本式 GUI 测试不要只堆 selector；优先抽出登录、上传、筛选、打开详情等业务 helper。
 - 上传 / 下载 / 媒体预览场景不要只断言按钮点击；至少补一层 network 或 response headers 断言。

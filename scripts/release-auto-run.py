@@ -57,6 +57,10 @@ def repo_root() -> Path:
     return Path(proc.stdout.strip()).resolve()
 
 
+def skill_root() -> Path:
+    return Path(__file__).resolve().parent.parent
+
+
 def load_json(path: Path) -> Dict[str, Any]:
     return json.loads(path.read_text(encoding="utf-8"))
 
@@ -125,6 +129,15 @@ def should_preserve_cleanup_path(target: Path, preserve_paths: List[Path]) -> bo
     return False
 
 
+def is_release_helper_script(target: Path, cleanup_root: Path) -> bool:
+    helper_suffixes = {".js", ".cjs", ".mjs", ".sh", ".py"}
+    if target.suffix.lower() not in helper_suffixes:
+        return False
+    if not target.is_file():
+        return False
+    return target.parent.resolve() == cleanup_root.resolve()
+
+
 def cleanup_previous_release_temp(plan: Dict[str, Any], repo: Path, plan_path: Path, receipt_path: Path) -> Tuple[bool, str]:
     cleanup_spec = plan.get("cleanup_spec", {})
     if not cleanup_spec.get("required", False):
@@ -151,9 +164,13 @@ def cleanup_previous_release_temp(plan: Dict[str, Any], repo: Path, plan_path: P
     for child in cleanup_root.iterdir():
         if should_preserve_cleanup_path(child.resolve(), preserve_paths):
             continue
+        if is_release_helper_script(child.resolve(), cleanup_root):
+            continue
         if child.is_dir():
             for nested in sorted(child.rglob("*"), reverse=True):
                 if should_preserve_cleanup_path(nested.resolve(), preserve_paths):
+                    continue
+                if is_release_helper_script(nested.resolve(), cleanup_root):
                     continue
                 if nested.is_file() or nested.is_symlink():
                     nested.unlink(missing_ok=True)
@@ -212,7 +229,9 @@ def auth_ready_via_env(plan: Dict[str, Any], repo: Path) -> bool:
 
 
 def run_auth_bridge(plan: Dict[str, Any], repo: Path) -> Tuple[bool, str]:
-    script_path = repo / "scripts" / "release-auth-bridge.sh"
+    repo_script = repo / "scripts" / "release-auth-bridge.sh"
+    skill_script = skill_root() / "scripts" / "release-auth-bridge.sh"
+    script_path = repo_script if repo_script.exists() else skill_script
     auth_hints = plan.get("auth_hints", {})
     state_path = auth_hints.get("storage_state_path", "")
     login_url = auth_hints.get("login_url", "")

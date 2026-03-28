@@ -95,7 +95,7 @@ AI:   0. 💿 执行前快照闸门（强制）
 
 ```text
 GUI 自治验收:
-- 真正拉起 GUI executor 前，先输出 `🖥️ 前端GUI测试开始 - [GUI-SHORT-{主题}-{caseID}-{executor}-r{轮次}] {scope=主验证 | visual=headed/headless | gate=GUI}`
+- 真正拉起 GUI executor 前，先输出 `🖥️ 前端GUI测试开始 - [GUI-SHORT-{主题}-{caseID}-{executor}-r{轮次}] {scope=主验证 | visual=headed-required | gate=GUI}`
 - 默认执行 GUI executor（Web 默认 Playwright）
 - 优先可视化执行；做不到用户可见时，必须保留 screenshot / trace / console / network 证据
 - 若 GUI case 失败，先修复再重跑同一 case，最多 3 次

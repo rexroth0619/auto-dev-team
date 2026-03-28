@@ -115,7 +115,7 @@
 - 命中 GUI-capable task 时，必须先初始化或更新 `.autodev/current-gui-test.js`；若已有旧文件，必须先检查它与当前改动的文件/场景/风险是否直接对应。
 - 若 `.autodev/current-gui-test.js` 不能直接映射当前步骤的改动点，必须重写；⛔ 禁止直接拿历史业务 E2E 脚本充当本步主验证。
 - 现有仓库里的 GUI 脚本只能在 `.autodev/current-gui-test.js` 已通过后，作为补充回归使用，并在回执中明确标注“补充回归”。
-- Web GUI 默认以 headed 方式运行；只有用户明确允许 headless，或当前环境无法展示浏览器时，才允许退化。
+- Web GUI 必须以 headed 方式运行，且浏览器窗口必须真实出现；⛔ 禁止随意退化为 headless。
 - GUI use case 未达到 `已通过 / 暂不可执行 / 用户明确禁用` 前，不得宣称任务完成。
 - GUI 闭环执行失败时，默认进入“采证 → 修复 → 重跑同一 case”的自修复循环，最多 3 轮。
 - 命中 GUI fallback 时，必须输出 `🧭 开发者手测教程`，不能只写“请手动验证”。

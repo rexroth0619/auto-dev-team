@@ -118,7 +118,7 @@
 - 若本步命中 GUI-capable task，必须写明 GUI executor 与 `visual_mode`
 - 若本步命中 GUI-capable task，必须先创建或更新 `.autodev/current-gui-test.js`，并显式写出“当前改动文件/模块 -> GUI case”对应关系
 - 若复用现有 GUI 脚本，必须先确认它与本步覆盖场景直接对应；不直接对应时，必须重写 `.autodev/current-gui-test.js`
-- Web GUI 默认 headed；除非用户明确允许 headless，或当前环境无法展示浏览器
+- Web GUI 固定 headed，浏览器窗口必须真实出现；禁止随意改成 headless
 - 若当前步骤还不具备 GUI 联调条件，必须明确标记“GUI 暂不可执行”
 - Log 使用统一 fingerprint: `[DEV-{主题}-Step{N}]`
 - 只要本步影响运行行为，默认至少执行一轮 `L1 观测驱动验证`
@@ -202,11 +202,11 @@ GUI 自治验收:
 当状态为 `规划中` 或 `执行中` 时：
 
 - 默认直接执行 GUI executor，不再停在“建议执行”
-- 真正拉起 GUI executor 前，先输出 `🖥️ 前端GUI测试开始 - [GUI-{任务指纹}-Step{N}-{caseID}-{executor}-r{轮次}] {scope=主验证/supplemental | visual=headed/headless | gate=GUI}`
+- 真正拉起 GUI executor 前，先输出 `🖥️ 前端GUI测试开始 - [GUI-{任务指纹}-Step{N}-{caseID}-{executor}-r{轮次}] {scope=主验证/supplemental | visual=headed-required | gate=GUI}`
 - GUI 主验证默认执行 `.autodev/current-gui-test.js`；若该文件与当前改动不直接对应，必须先重写后再运行
 - 现有业务 E2E 脚本只能作为补充回归，不能替代 `.autodev/current-gui-test.js`
 - Web GUI 默认选择 Playwright；其他 GUI 使用当前环境可用的 executor
-- Web GUI 默认使用 headed Playwright；只有用户明确允许 headless 或环境不可见时，才允许退化为 headless
+- Web GUI 默认使用 headed Playwright，且浏览器窗口必须真实出现；若环境不可见，则直接标记 `Manual only / 暂不可执行`
 - Web GUI 可采用 `Script-first Playwright` 或 `Suite-first Playwright`；前者更适合本地快速闭环与自修复
 - 执行时同步采集 evidence bundle：timeline / screenshot / console / network / page state / backend trace
 - 若失败，进入“采证 → 修复 → 重跑同一 case”的自修复循环，最多 3 次
