@@ -37,16 +37,17 @@ git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 
 ## 当前版本
 
-- 中文版标签：`v1.0.0-zh-CN`
-- 英文版标签：`v1.0.0`
+- 中文版标签：`v1.1.0-zh-CN`
+- 英文版标签：`v1.1.0`
 
 ## 最近更新
 
 - 版本说明见 [CHANGELOG.md](CHANGELOG.md)
 - 当前重点能力：
-  - 交互式预发测试链路
-  - release-pack 脚本与自测
-  - 防屎山快速检查
+  - Brainstorm 模式：先讨论需求、边界与验收标准，再进入实现规划
+  - current-flow + flowctl：把 `current-*` 产物纳入 active flow 管理，减少上下文漂移
+  - Brainstorm Review + Quality Review：执行后先检查是否做对题，再检查代码质量
+  - 预发测试 plan + manual/auto 双执行器
   - 中英文双分支发布
 
 ## Agent Quick Start
