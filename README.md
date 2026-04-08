@@ -37,16 +37,17 @@ git clone -b zh-CN https://github.com/rexroth0619/auto-dev-team.git
 
 ## Current Version
 
-- English release tag: `v1.0.0`
-- Chinese release tag: `v1.0.0-zh-CN`
+- English release tag: `v1.1.0`
+- Chinese release tag: `v1.1.0-zh-CN`
 
 ## Recent Updates
 
 - See [CHANGELOG.md](CHANGELOG.md)
 - Current highlights:
-  - interactive staging-validation flow
-  - `release-pack` script and selftest
-  - anti-spaghetti quick check
+  - Brainstorm mode for aligning goals, boundaries, and acceptance before planning
+  - `current-flow` + `flowctl` for active-flow management of `current-*` artifacts
+  - Brainstorm Review + Quality Review so execution is checked for scope fit before code quality
+  - release-test plan plus manual/auto execution loop
   - bilingual release branches
 
 ## Agent Quick Start
