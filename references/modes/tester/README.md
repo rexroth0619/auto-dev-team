@@ -19,6 +19,8 @@
 
 进入此模式时，AI 必须主动读取：
 
+- `.autodev/current-brainstorm.md`
+- 若存在 `.autodev/current-metaphor.md`，一并读取，用于把测试结果翻译成用户能听懂的说明
 - 用户提到的目标源文件
 - 相关测试文件（若已有）
 - 若存在 `.autodev/current-test.md`，一并读取
@@ -28,6 +30,9 @@
 ⚠️ 若新增或修改 `.feature` / step definitions，必须读取 `references/principles/bdd-testing.md`。
 ⚠️ 进入本模式时，必须读取 `references/principles/test-verification.md`。
 ⚠️ 若测试目标涉及运行行为验证或根因定位，必须读取 `references/principles/observation-driven-verification.md`。
+
+`current-test.md` 必须保持与 `current-brainstorm.md`、`current-steps.md` 的 metadata 一致，不得脱离当前 flow 单独漂移。
+若启用比喻层，测试回执前可补 `🪄 类比说明`，但技术测试结果仍以 `references/principles/test-verification.md` 为准。
 
 ## Phase 0: 环境与现有覆盖检查
 

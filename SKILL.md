@@ -14,6 +14,7 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 - 读取总顺序
 - 首要原则
 - 默认严格策略
+- Current Artifact Pipeline
 - `.autodev` 记忆与配置
 - 版本保护与任务收尾
 - Bundled Resources
@@ -28,20 +29,23 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 
 ## 典型触发
 
+- 半路回来、热重启、切模型、断网后恢复、忘了现在做到哪了
 - 开发新功能、实现需求、交付 use case
 - 排查 bug、线上止血、做最小修复
 - 小改动、调样式、改文案、补日志
 - 重构、优化、清理、补测试
 - 预发验收、根据最近提交生成测试计划，并选择手动或自动执行
+- 需求讨论、边界澄清、先对齐再做方案
 - Survey 项目结构、Explain 代码逻辑
 - 任何需要“先验证、可回退、别误删”的开发任务
 
 ## 读取总顺序
 
 1. **先读** `references/mode-index.md`
-2. **若为写入模式**，先读 `references/write-preflight.md`
-3. **再读唯一模式文件**：对应的 `references/modes/*/README.md`
-4. **按模式、阶段、产物**加载对应 principles
+2. **若命中 Resume**，直接读 `references/modes/resume/README.md`
+3. **若为写入模式**，先读 `references/write-preflight.md`
+4. **再读唯一模式文件**：对应的 `references/modes/*/README.md`
+5. **按模式、阶段、产物**加载对应 principles
 
 ⛔ 禁止同时读取多个模式 README。  
 ⛔ 禁止跳过模式索引直接进入某个模式。  
@@ -103,6 +107,29 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 - GUI use case 未达到 `已通过 / 暂不可执行 / 用户禁用 / Manual only` 前，不得宣称完成
 - 验证通过后才允许建立存档
 
+## Current Artifact Pipeline
+
+- `.autodev/current-*` 是 active flow 的兼容入口，不再只是同名“当前文件”
+- 真实归属目录为 `.autodev/flows/<flow_id>/`
+- `.autodev/current-flow.json` 是当前 active flow 的 registry
+- `Resume` 模式默认把 `.autodev/current-flow.json + current-*` 视为记忆恢复入口，用于回答“现在在做什么、做到哪里了、还差多少”
+- 所有 `current-*` artefact 都必须带 metadata header，至少包含：
+  - `flow_id`
+  - `artifact_id`
+  - `artifact_type`
+  - `brainstorm_ref`
+  - `metaphor_ref`
+  - `plan_ref`
+  - `step_ref`
+- 优先使用 `scripts/flowctl.sh` 管理：
+  - `init`
+  - `activate`
+  - `ensure`
+  - `validate`
+  - `archive`
+  - `clean`
+- 若 `current-flow.json` 与 artefact header 不一致，视为 stale / 串线，不能直接继续执行
+
 完整激活矩阵见 `references/write-preflight.md`。
 
 ## `.autodev` 记忆与配置
@@ -112,7 +139,9 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 
 ### 工作区边界
 
-- 结构化长期记忆文档保留在 `.autodev/` 根下（如 `context-snapshot.md`、`current-steps.md`、`current-test.md`、`current-gui-test.js`）。
+- 结构化长期记忆文档保留在 `.autodev/` 根下（如 `context-snapshot.md`、`current-brainstorm.md`、`current-steps.md`、`current-test.md`、`current-gui-test.js`）。
+- 可选的用户表达层协议保留在 `.autodev/current-metaphor.md`；它用于比喻说明和反向解析，不替代技术真相源。
+- 当前 active flow 的兼容入口保留在 `.autodev/current-*`；真实归属保留在 `.autodev/flows/<flow_id>/`
 - Blast Radius 报告保留在 `.autodev/blast-radius/`；最近一次结论镜像到 `.autodev/current-blast-radius.md`
 - AI 生成的临时台账、调试输出、草稿、诊断材料，一律写入 `.autodev/temp/`。
 - 非最终交付物，不得写入仓库其他路径。
@@ -142,6 +171,8 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 
 | 文档 | 用途 | 模板 | 触发条件 |
 |------|------|------|----------|
+| `.autodev/current-brainstorm.md` | 当前需求讨论结果、边界、验收标准 | `assets/templates/current-brainstorm.md` | 进入 Brainstorm / Architect 前置 / 修复与测试需补对齐时 |
+| `.autodev/current-metaphor.md` | 当前 flow 的比喻层协议、映射表与用户问法 | `assets/templates/current-metaphor.md` | 用户要求“讲人话 / 用比喻解释”，或 Brainstorm 判断适合启用时 |
 | `.autodev/current-steps.md` | 多步执行计划与逐步记录 | `assets/templates/current-steps.md` | 多步任务 / Step 模式 |
 | `.autodev/current-test.md` | 大测试场景矩阵、执行记录、剩余风险 | `assets/templates/current-test.md` | 大测试 / 关键链路 / 跨模块任务 |
 | `.autodev/current-debug.md` | 多轮诊断假设、观测记录、复诊结论 | `assets/templates/current-debug.md` | 复杂 Debug / 多轮排查 / 回归定位 |
@@ -176,6 +207,10 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 
 - `scripts/init-autodev.sh`
   - 初始化 `.autodev/`、复制模板、补 `autodev-config.json`
+- `scripts/flowctl.sh`
+  - 初始化 / 激活 / 补齐 / 校验 / 归档 / 清理 current artefact flow
+- `references/principles/metaphor-layer.md`
+  - 比喻层总原则；规定餐厅 / 物流 / 工厂三套标准模板，以及用户反向提问如何翻译回技术语义
 - `scripts/checkpoint.sh`
   - 处理分支守卫、里程碑、快照闸门、存档、读档、回退
 - `scripts/checkpoint-selftest.sh`

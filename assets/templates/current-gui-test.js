@@ -1,4 +1,16 @@
 /**
+ * Current-Artifact-Metadata
+ * flow_id: FLOW-REPLACE-ME
+ * artifact_id: REPLACE-ARTIFACT-ID
+ * artifact_type: gui-script
+ * status: REPLACE-STATUS
+ * brainstorm_ref: REPLACE-BRAINSTORM-REF
+ * metaphor_ref: REPLACE-METAPHOR-REF
+ * plan_ref: REPLACE-PLAN-REF
+ * step_ref: REPLACE-STEP-REF
+ * derived_from: REPLACE-DERIVED-FROM
+ * updated_at: YYYY-MM-DDTHH:MM:SS+08:00
+ *
  * Current task GUI validation entry.
  *
  * Path contract:
@@ -19,6 +31,9 @@ const { spawn } = require("node:child_process");
 const taskMeta = {
   fingerprint: "TODO-current-task",
   step: "TODO-step",
+  brainstormRef: "REPLACE-BRAINSTORM-REF",
+  metaphorRef: "REPLACE-METAPHOR-REF",
+  planRef: "REPLACE-PLAN-REF",
   changedFiles: ["TODO-file"],
   changedModules: ["TODO-module"],
   coveredCases: ["G1 TODO-happy", "G2 TODO-boundary"],

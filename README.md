@@ -37,21 +37,24 @@ git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 
 ## 当前版本
 
-- 中文版标签：`v1.0.0-zh-CN`
-- 英文版标签：`v1.0.0`
+- 中文版标签：`v1.1.1-zh-CN`
+- 英文版标签：`v1.1.1`
 
 ## 最近更新
 
 - 版本说明见 [CHANGELOG.md](CHANGELOG.md)
 - 当前重点能力：
+  - Brainstorm + flow control plane + 双层 Review
+  - Resume 模式：半路回来 / 切模型后快速恢复 current-* 上下文
+  - Debug 系统性修复约束：不再只做单点补丁
   - 预发测试 plan + manual/auto 双执行器
   - release-pack / release-auto-run / 自测脚本
-  - 防屎山快速检查
   - 中英文双分支发布
 
 ## Agent Quick Start
 
 - 先读 `SKILL.md`
+- 需求还在讨论时，优先进入 `Brainstorm`
 - 写入模式前，先读 `references/mode-index.md`
 - 再读 `references/write-preflight.md`
 - 改脚本后，运行对应 selftest
@@ -81,12 +84,15 @@ git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 - Principles 按模式、阶段、产物触发
 - 机械步骤优先交给脚本，减少重复推理
 - Skill 策略由 `.autodev/autodev-config.json` 配置
+- 所有 `current-*` artefact 由 `.autodev/current-flow.json` + `scripts/flowctl.sh` 管理
+- 可选的比喻层由 `.autodev/current-metaphor.md` 管理，标准模板内置为餐厅 / 物流 / 工厂
 - 所有改动都要求验证和可回退
 - 第一行代码写入前默认执行脚本化 Blast Radius
 - 代码变更后默认执行后台自动测试
 - GUI-capable task 默认进入 GUI 自治验收闭环
 - Web GUI 支持 `Script-first Playwright` 和 `Suite-first Playwright`
 - 大测试使用 `.autodev/current-test.md` 记录场景、执行和风险
+- 前期推荐主路径升级为 `Brainstorm -> Architect -> Step -> Review`
 
 ## 当前入口结构
 
@@ -94,6 +100,7 @@ git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 SKILL.md
 references/mode-index.md
 references/write-preflight.md
+references/shared/current-artifact-contract.md
 references/modes/*/README.md
 references/principles/*.md
 ```
@@ -107,6 +114,9 @@ auto-dev-team/
 │   └── templates/
 │       ├── autodev-config.json
 │       ├── context-snapshot.md
+│       ├── current-brainstorm.md
+│       ├── current-flow.json
+│       ├── current-metaphor.md
 │       ├── current-test.md
 │       ├── current-steps.md
 │       ├── current-blast-radius.md
@@ -127,6 +137,7 @@ auto-dev-team/
 │   ├── blast-radius-step-selftest.sh
 │   ├── checkpoint.sh
 │   ├── checkpoint-selftest.sh
+│   ├── flowctl.sh
 │   ├── release-auth-bridge.sh
 │   ├── release-auto-run.py
 │   ├── release-auto-selftest.sh
@@ -137,9 +148,12 @@ auto-dev-team/
     ├── gotchas.md
     ├── mode-index.md
     ├── shared/
+    │   ├── current-artifact-contract.md
     │   └── flow-snippets.md
+    ├── metaphors/
     ├── write-preflight.md
     ├── modes/
+│   ├── brainstorm/README.md
     │   ├── architect/README.md
     │   ├── cleanup/README.md
     │   ├── debug/README.md
@@ -148,6 +162,7 @@ auto-dev-team/
     │   ├── hotfix/README.md
     │   ├── optimize/README.md
     │   ├── refactor/README.md
+    │   ├── resume/README.md
     │   ├── step/README.md
     │   ├── survey/README.md
     │   └── tester/README.md
@@ -160,6 +175,8 @@ auto-dev-team/
 
 | 模式 | 触发场景 | 用途 |
 |------|----------|------|
+| Brainstorm | 需求讨论、边界澄清、先对齐 | 产出 `current-brainstorm.md`，初始化 active flow |
+| Resume | 半路回来、热重启、切模型恢复 | 读取 `current-flow.json + current-*`，恢复当前任务记忆 |
 | Architect | 新功能、实现需求 | 方案设计与拆步 |
 | Debug | bug、报错、异常 | 先诊断后修复 |
 | Hotfix | 线上故障、紧急止血 | 最小改动恢复服务 |
@@ -171,6 +188,39 @@ auto-dev-team/
 | Survey | 了解项目结构 | 项目测绘 |
 | Explain | 解释代码 | 帮助理解 |
 | Step | Architect / Refactor / Optimize 的执行阶段 | 逐步落地 |
+
+## 可选比喻层
+
+- 默认关闭，对专业开发保持技术语言
+- Brainstorm 阶段可按用户需要启用
+- 固定内置三套模板：
+  - 餐厅 / 做饭
+  - 物流 / 仓储配送
+  - 工厂 / 流水线
+- 启用后，回执可先输出 `🪄 类比说明`，用户也可以继续用同一比喻提问
+
+## 推荐主路径
+
+```text
+半路回来 / 切模型 / 断网恢复
+  -> Resume
+  -> Step / Architect / Debug / Tester
+
+需求讨论 / 边界不清
+  -> Brainstorm
+  -> Architect
+  -> Step
+  -> Brainstorm Review
+  -> Quality Review
+
+小改动且范围明确
+  -> FastTrack
+
+问题排查 / 修复
+  -> Debug
+  -> Brainstorm Review
+  -> Quality Review
+```
 
 ## V2 测试协议
 
@@ -203,6 +253,7 @@ auto-dev-team/
 - 项目环境与路径：`.autodev/path.md`
 - Skill 策略与阈值：`.autodev/autodev-config.json`
 - 初始化 `.autodev/`：`scripts/init-autodev.sh`
+- current artefact flow 管理：`scripts/flowctl.sh`
 - 写入前 Blast Radius：`scripts/blast-radius.py`
 - Step 模式 Blast Radius 包装：`scripts/blast-radius-step.sh`
 - Blast Radius 自检：`scripts/blast-radius-selftest.sh`

@@ -125,6 +125,11 @@ GUI 自治验收:
 改动生效后，清理 [SHORT-*] log
 ```
 
+### 4.5 执行后复核
+
+- 执行 `references/principles/brainstorm-review.md`
+- 执行 `references/principles/quality-review.md`
+
 ## 自动升级条件
 
 以下情况自动升级为 Architect 模式:
