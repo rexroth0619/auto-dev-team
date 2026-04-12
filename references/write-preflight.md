@@ -35,11 +35,18 @@
    - 若脚本不可用，再手工复制 `assets/templates/` 中的必需模板
    - 必需文档包括 `.autodev/autodev-config.json`
    - 必须确保 `.autodev/temp/` 存在，用于承接 AI 生成的临时产物
+   - 必须确保 `.autodev/flows/` 存在，用于承接 active flow 与历史 flow
 2. 执行工作区边界检查。
    - AI 生成的临时台账、调试输出、草稿、诊断材料，必须统一写入 `.autodev/temp/`
    - 若发现仓库其他路径存在 AI 生成的非交付临时文件，先迁移到 `.autodev/temp/`、清理，或加入 ignore 后再继续
 3. 读取 `.autodev/context-snapshot.md`，恢复最近任务上下文。
 4. 读取 `.autodev/autodev-config.json`，加载 skill 策略。
+4.5 处理 current artefact flow。
+   - 优先读取 `.autodev/current-flow.json`
+   - 若不存在 active flow，优先执行 `scripts/flowctl.sh init <task-slug> <mode>`
+   - 优先执行 `scripts/flowctl.sh validate`
+   - 若缺失 required current artefacts，优先用 `scripts/flowctl.sh ensure <artifact-type>` 补齐
+   - 若 `current-flow.json` 与 artefact metadata header 不一致，视为 stale / 串线，停止继续执行
 5. 若任务涉及 Git、部署、路径、环境、服务端配置、运行时路径、日志路径或控制台入口，先读取 `.autodev/path.md`。
 6. 若任务涉及预发自动化、部署、远端 SSH、GUI 宿主、认证桥接或运行时固定上下文，读取 `.autodev/ai-sot.json`。
    - 若文件缺失，按 `references/principles/ai-single-source-of-truth.md` 创建模板
@@ -73,6 +80,8 @@
 ## 测试台账规则
 
 - `.autodev/current-steps.md`：记录多步执行计划、每步覆盖场景、每步测试回执。
+- `.autodev/current-brainstorm.md`：记录当前需求讨论结果、边界、验收标准；它是后续 `current-steps.md` 和 review 的统一上游。
+- `.autodev/current-metaphor.md`：记录当前 flow 的比喻层协议、映射表和用户可直接使用的问法；仅在启用比喻层时创建。
 - `.autodev/current-test.md`：记录大测试的场景矩阵、执行记录、待业务确认问题、剩余风险，以及关键观测结论。
 - `.autodev/current-debug.md`：记录复杂 Debug 的多轮假设、观测差异、修复与复诊结论。
 - `.autodev/current-gui-test.js`：记录当前任务的 GUI 主测试入口；命中 GUI-capable task 时必须创建或更新，并确保其与当前改动直接对应。
@@ -89,6 +98,8 @@
 | 触发条件 | 必须读取 |
 |----------|----------|
 | 所有写入模式进入时 | `references/principles/critique.md` |
+| 所有写入模式进入时 | `references/shared/current-artifact-contract.md` |
+| 存在 `.autodev/current-metaphor.md` 或用户要求“讲人话 / 用比喻解释”时 | `references/principles/metaphor-layer.md` |
 | 涉及 Git / 部署 / 路径 / 环境时 | `references/principles/path-system.md` |
 | 涉及预发自动化 / 部署 / SSH / GUI 宿主 / 认证桥接时 | `references/principles/ai-single-source-of-truth.md` |
 | 任意代码或配置写入前 | `references/principles/checkpoint-mechanism.md` |
@@ -132,7 +143,8 @@
 
 1. 先做脚本化 Blast Radius，并用结果刷新验证范围。
 2. 再执行后台自动测试 + 对应档位的观测驱动验证；若命中 GUI-capable task，继续执行 `GUI 自治验收闭环` 并保留证据 / 测试回执。
-3. 再建立存档，输出固定回执：
+3. 若达到阶段性执行收尾，补一轮 `Brainstorm 对齐复核` 与 `质量复核`。
+4. 再建立存档，输出固定回执：
 
 ```text
 💾【存档】{任务}#{序号} → {hash}
@@ -143,6 +155,7 @@
 ## 禁止行为
 
 - 跳过共享前置直接开始写代码。
+- 跳过 `current-flow.json` / artefact 校验直接开始写代码。
 - 未读 `path.md` 就做 Git / 部署 / 服务器路径相关操作。
 - 跳过 Blast Radius 闸门直接写代码。
 - 跳过验证直接建立存档。

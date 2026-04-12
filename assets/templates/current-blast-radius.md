@@ -1,8 +1,24 @@
+# Current Artifact Metadata
+- flow_id: FLOW-REPLACE-ME
+- artifact_id: REPLACE-ARTIFACT-ID
+- artifact_type: blast-radius
+- status: REPLACE-STATUS
+- brainstorm_ref: REPLACE-BRAINSTORM-REF
+- metaphor_ref: REPLACE-METAPHOR-REF
+- plan_ref: REPLACE-PLAN-REF
+- step_ref: REPLACE-STEP-REF
+- derived_from: REPLACE-DERIVED-FROM
+- updated_at: YYYY-MM-DDTHH:MM:SS+08:00
+
 # 当前 Blast Radius
 
 创建时间: YYYY-MM-DD HH:mm
 最近更新: YYYY-MM-DD HH:mm
 任务: [一句话任务]
+Brainstorm 对应: [REPLACE-BRAINSTORM-REF]
+Metaphor 对应: [REPLACE-METAPHOR-REF]
+Plan 对应: [REPLACE-PLAN-REF]
+Step 对应: [REPLACE-STEP-REF]
 模式 / Step: [FastTrack / Debug / Step 2 / ...]
 状态: 待分析 / 已生成 / 需补充 / 已确认
 

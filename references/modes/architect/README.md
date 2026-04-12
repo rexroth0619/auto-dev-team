@@ -17,6 +17,7 @@
 
 进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
 
+- `.autodev/current-brainstorm.md` - 当前需求讨论结果，作为唯一上游输入
 - `.autodev/project-map.md` - 了解项目结构
 - `.autodev/module-registry.md` - 查找可复用组件
 
@@ -50,6 +51,7 @@ AI:   0. 主动读取 project-map.md 和 module-registry.md
 用户: [经 Phase 0 澄清后的需求] / [本身已清晰的需求]
 
 AI:   0. （若 Phase 0 已读取则跳过）主动读取 project-map.md 和 module-registry.md
+      0.5 主动读取 current-brainstorm.md；若缺失，先生成 mini-brainstorm 再继续
       1. 重述需求（专业简洁）
       2. 生成行为场景包：
          - 用户明确提出的场景
@@ -131,8 +133,12 @@ AI:   1. 评估复杂度:
          - GUI 步骤标注 executor、可视化执行策略、关键 GUI case、Gate 结论
 
       4. 写入 `current-steps.md`，包含:
+         - 优先执行 `scripts/flowctl.sh ensure steps`
+         - Brainstorm 对应: `.autodev/current-brainstorm.md`
+         - Brainstorm Coverage: 每个 Step 覆盖 current-brainstorm 的哪些目标 / 场景
          - Log 标识: [DEV-{任务主题}]
          - 关键决策
+         - Not In Scope
          - 测试等级: [小测试 / 大测试]
          - 测试台账路径: [无 / .autodev/current-test.md]
          - 每步的目标文件 + 覆盖场景 + 后台自动测试
@@ -140,6 +146,7 @@ AI:   1. 评估复杂度:
          - 每步的观测驱动验证档位 + 主/备用观测面
          - 每步的 GUI 自治验收信息（是否命中 / executor / 可视化执行 / 关键 case / Gate）
          - 每步的 AI 执行版 How to Test（预期观测 + 通过标准）
+         - 每步的完成定义与偏航处理
 
       5. 若命中大测试:
          - 初始化 `.autodev/current-test.md`

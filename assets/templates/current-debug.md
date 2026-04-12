@@ -1,7 +1,23 @@
+# Current Artifact Metadata
+- flow_id: FLOW-REPLACE-ME
+- artifact_id: REPLACE-ARTIFACT-ID
+- artifact_type: debug-ledger
+- status: REPLACE-STATUS
+- brainstorm_ref: REPLACE-BRAINSTORM-REF
+- metaphor_ref: REPLACE-METAPHOR-REF
+- plan_ref: REPLACE-PLAN-REF
+- step_ref: REPLACE-STEP-REF
+- derived_from: REPLACE-DERIVED-FROM
+- updated_at: YYYY-MM-DDTHH:MM:SS+08:00
+
 # 当前调试
 
 创建时间: YYYY-MM-DD HH:mm
 任务: [一句话问题]
+Brainstorm 对应: [REPLACE-BRAINSTORM-REF]
+Metaphor 对应: [REPLACE-METAPHOR-REF]
+Plan 对应: [REPLACE-PLAN-REF]
+Step 对应: [REPLACE-STEP-REF]
 默认档位: `L2 / L3`
 状态: 诊断中 / 已定位 / 已修复 / 待确认
 

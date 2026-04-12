@@ -3,6 +3,8 @@
 > 何时进入: Architect / Refactor / Optimize 生成计划后用户说“开始” | 必读: `current-steps.md`；大测试时同步读取 `current-test.md`
 
 ⚠️ 执行本模式时，必须读取 `references/principles/incremental-testable.md`。
+⚠️ 执行本模式时，必须读取 `.autodev/current-brainstorm.md` 并确认它与 `current-steps.md` 属于同一条 active flow。
+⚠️ 若存在 `.autodev/current-metaphor.md`，必须读取它；用户回执中可按其协议输出类比说明，但内部判断仍以技术语义为准。
 ⚠️ 执行本模式时，第一行代码前必须读取 `references/principles/impact-analysis.md` 并优先运行 `scripts/blast-radius-step.sh`。
 ⚠️ 执行本模式时，必须读取 `references/principles/test-verification.md`。
 ⚠️ 若本步有行为改动，执行验证前必须读取 `references/principles/observation-driven-verification.md`。
@@ -67,6 +69,7 @@
 ### 2. 上下文确认（强制）
 
 - 必须读取 `current-steps.md`，包括：
+  - metadata header / `flow_id` / `brainstorm_ref` / `plan_ref`
   - 当前步骤
   - 关键决策
   - 模块策略
@@ -79,6 +82,12 @@
   - 场景矩阵状态
   - 待业务确认问题
   - GUI 自治验收状态
+- 若存在 `.autodev/current-metaphor.md`，必须同步读取：
+  - 是否启用
+  - 当前模板
+  - 输出深度
+  - 当前 flow 的关键映射
+- 必须确认 `.autodev/current-flow.json`、`current-brainstorm.md`、`current-steps.md` 三者属于同一条 active flow
 - 如发现计划与当前上下文不符 → 停下来问用户
 
 ### 2.5 Blast Radius 闸门（强制）
@@ -312,12 +321,14 @@ Step 模式必须额外说清：
 
 ```text
 1. 输出最终测试回执（强制；若命中人工验收 fallback，必须附 `🧭 开发者手测教程`）
-2. 自动更新文档（project-map / module-registry）
-3. 若存在 current-test.md，同步更新最终状态
-4. 建立存档（按 checkpoint-mechanism）
-5. 报告剩余风险 / 待业务确认项
-6. 询问是否建立里程碑 tag「{任务}#完成」
-7. 询问是否合并到集成分支、是否推送
+2. 执行 `references/principles/brainstorm-review.md`
+3. 执行 `references/principles/quality-review.md`
+4. 自动更新文档（project-map / module-registry）
+5. 若存在 current-test.md，同步更新最终状态
+6. 建立存档（按 checkpoint-mechanism）
+7. 报告剩余风险 / 待业务确认项
+8. 询问是否建立里程碑 tag「{任务}#完成」
+9. 询问是否合并到集成分支、是否推送
 ```
 
 ## 任务完成后选项
