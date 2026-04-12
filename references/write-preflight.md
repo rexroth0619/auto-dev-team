@@ -16,6 +16,7 @@
 
 ## Applicable Modes
 
+- Brainstorm
 - Architect
 - FastTrack
 - Debug
@@ -35,25 +36,28 @@
    - If unavailable, copy required templates manually from `assets/templates/`
    - `.autodev/autodev-config.json` is mandatory
    - ensure `.autodev/temp/` exists for temporary AI output
+   - ensure `.autodev/flows/` exists for active-flow storage
 2. Check workspace boundaries.
    - temporary ledgers, debug output, drafts, and diagnostics must stay under `.autodev/temp/`
    - if temporary AI files exist elsewhere, move them, delete them, or ignore them first
 3. Read `.autodev/context-snapshot.md`.
 4. Read `.autodev/autodev-config.json`.
-5. If the task touches git, deployment, paths, environments, service config, runtime paths, log paths, or console entrypoints, read `.autodev/path.md` first.
-6. Read the most relevant parts of `references/gotchas.md`.
-7. Run `git log -5 --oneline` and check for recent conflicts or related work.
-8. Run branch guard.
+5. Read `.autodev/current-flow.json` first when present and validate the current artifact set.
+6. If the task touches git, deployment, paths, environments, service config, runtime paths, log paths, or console entrypoints, read `.autodev/path.md` first.
+7. If the task touches staging automation, remote execution, GUI host selection, or auth bridging, read `.autodev/ai-sot.json`.
+8. Read the most relevant parts of `references/gotchas.md`.
+9. Run `git log -5 --oneline` and check for recent conflicts or related work.
+10. Run branch guard.
    - prefer `scripts/checkpoint.sh ensure-branch <task-slug>`
    - otherwise follow `references/principles/checkpoint-mechanism.md`
-9. Create a milestone baseline.
+11. Create a milestone baseline.
    - prefer `scripts/checkpoint.sh milestone "<task>#start" "task baseline" <task-slug>`
-10. Register the pre-write snapshot gate.
+12. Register the pre-write snapshot gate.
    - prefer `scripts/checkpoint.sh snapshot-gate <task>`
-11. Register the blast-radius gate.
+13. Register the blast-radius gate.
    - prefer `scripts/blast-radius.py ... --write`
    - output must land in `.autodev/current-blast-radius.md` and `.autodev/blast-radius/*.md`
-12. Run the anti-spaghetti quick check.
+14. Run the anti-spaghetti quick check.
    - decide whether new code should extend an existing module or create a new one
    - check for reusable implementations first
    - check abstraction opportunity first; do not force abstraction at 1-2 uses; require it after repeated proven reuse
@@ -61,6 +65,8 @@
 
 ## Test Ledger Rules
 
+- `.autodev/current-brainstorm.md`: requirement alignment, boundaries, and acceptance
+- `.autodev/current-metaphor.md`: optional non-technical explanation contract
 - `.autodev/current-steps.md`: multi-step plan, covered scenarios, and step receipts
 - `.autodev/current-test.md`: large-test matrix, execution log, business questions, residual risk, observation conclusions
 - `.autodev/current-debug.md`: multi-round debug hypotheses, observation differences, fixes, and re-checks
@@ -81,7 +87,10 @@ If not large-test, `current-test.md` is optional, but a `🧾` test receipt is s
 | Trigger | Must read |
 |---------|-----------|
 | every write mode | `references/principles/critique.md` |
+| every write mode | `references/shared/current-artifact-contract.md` |
+| when `.autodev/current-metaphor.md` exists or the user explicitly wants non-technical language | `references/principles/metaphor-layer.md` |
 | git / deployment / path / environment work | `references/principles/path-system.md` |
+| staging automation / deployment / SSH / GUI host / auth bridging | `references/principles/ai-single-source-of-truth.md` |
 | before any code or config write | `references/principles/checkpoint-mechanism.md` |
 | before the first line of code | `references/principles/impact-analysis.md` |
 | when actual code execution starts | `references/principles/test-verification.md` |
@@ -133,6 +142,7 @@ If not large-test, `current-test.md` is optional, but a `🧾` test receipt is s
 ## Prohibitions
 
 - writing code without shared preflight
+- writing code without validating `current-flow.json` and the current artifacts
 - touching git / deployment / server paths without reading `path.md`
 - skipping the blast-radius gate
 - archiving before validation

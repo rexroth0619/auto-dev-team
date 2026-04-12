@@ -1,61 +1,26 @@
-# Current Test Ledger
+# Current Artifact Metadata
+- flow_id: FLOW-REPLACE-ME
+- artifact_id: REPLACE-ARTIFACT-ID
+- artifact_type: test-ledger
+- status: REPLACE-STATUS
+- brainstorm_ref: REPLACE-BRAINSTORM-REF
+- metaphor_ref: REPLACE-METAPHOR-REF
+- plan_ref: REPLACE-PLAN-REF
+- step_ref: REPLACE-STEP-REF
+- derived_from: REPLACE-DERIVED-FROM
+- updated_at: YYYY-MM-DDTHH:MM:SS+08:00
+
+# Current Test
 
 Created: YYYY-MM-DD HH:mm
 Task: [one-line task]
+Brainstorm ref: [REPLACE-BRAINSTORM-REF]
+Metaphor ref: [REPLACE-METAPHOR-REF]
+Plan ref: [REPLACE-PLAN-REF]
+Step ref: [REPLACE-STEP-REF]
 Test level: large
 Status: planning / running / done
 
-## Goals
+## Test Goal
 
-- [what must be protected]
-
-## Scenario Matrix
-
-| ID | Scenario | Source | Layer | Status | Notes |
-|----|----------|--------|-------|--------|-------|
-| S1 | | user / AI / pending business | unit / integration / bdd / gui / manual | pending / running / passed / failed / pending business | |
-
-## Backend Test Plan
-
-- [commands and scope]
-
-## Observation Plan
-
-- Level: `L1 / L2 / L3`
-- Primary surface:
-- Backup surface:
-- Expected summary:
-
-## GUI Plan
-
-- Status: not triggered / planning / running / passed / failed / user disabled / not executable / manual only
-- Executor:
-- Visual mode:
-- Evidence:
-
-## Manual Validation Guide
-
-- Preconditions:
-- Steps:
-  1.
-  2.
-  3.
-- Expected result:
-- Evidence to return:
-
-## Open Business Questions
-
-- none / list
-
-## Execution Log
-
-### Round 1
-- Time:
-- Scope:
-- Method:
-- Result:
-- Evidence:
-
-## Residual Risk
-
-- none / list
+- [what this test must guarantee]

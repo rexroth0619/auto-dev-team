@@ -14,6 +14,7 @@ description: Activate when the user needs code changes, bug fixing, refactoring,
 - Read Order
 - First Principles
 - Default Strict Policy
+- Current Artifact Pipeline
 - `.autodev` Memory and Config
 - Version Protection and Task Closeout
 - Bundled Resources
@@ -32,6 +33,8 @@ When any mode is activated, output:
 
 - new features and implementation work
 - bug fixing and production stabilization
+- requirement discussion and boundary alignment
+- interruption recovery, model switching, and “where are we now” flows
 - small copy, styling, logging, or single-point changes
 - refactoring, optimization, cleanup, and test work
 - staging validation and release-oriented manual testing
@@ -41,9 +44,10 @@ When any mode is activated, output:
 ## Read Order
 
 1. Read `references/mode-index.md`
-2. If the task is write mode, read `references/write-preflight.md`
-3. Read exactly one mode README from `references/modes/*/README.md`
-4. Load matching principles by mode, phase, and artifact
+2. If the matched mode is `Resume`, read `references/modes/resume/README.md`
+3. If the task is write mode, read `references/write-preflight.md`
+4. Read exactly one mode README from `references/modes/*/README.md`
+5. Load matching principles by mode, phase, and artifact
 
 Do not:
 
@@ -109,6 +113,13 @@ Do not recommend paid solutions first when root cause is still uncertain.
 - historical GUI scripts may only serve as supplemental regression
 - a GUI use case must become `passed`, `not executable`, `user disabled`, or `manual only` before claiming completion
 - create archives only after verification passes
+
+## Current Artifact Pipeline
+
+- `.autodev/current-*` is the compatibility entrypoint for the active flow, not just a filename convention
+- the real ownership path is `.autodev/flows/<flow_id>/`
+- `.autodev/current-flow.json` is the active-flow registry
+- `Resume` treats `.autodev/current-flow.json + current-*` as the default memory-recovery surface
 
 See `references/write-preflight.md` for the full activation matrix.
 

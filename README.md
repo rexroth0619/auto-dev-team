@@ -37,22 +37,23 @@ git clone -b zh-CN https://github.com/rexroth0619/auto-dev-team.git
 
 ## Current Version
 
-- English release tag: `v1.1.0`
-- Chinese release tag: `v1.1.0-zh-CN`
+- English release tag: `v1.1.1`
+- Chinese release tag: `v1.1.1-zh-CN`
 
 ## Recent Updates
 
 - See [CHANGELOG.md](CHANGELOG.md)
 - Current highlights:
-  - Brainstorm mode for aligning goals, boundaries, and acceptance before planning
-  - `current-flow` + `flowctl` for active-flow management of `current-*` artifacts
-  - Brainstorm Review + Quality Review so execution is checked for scope fit before code quality
-  - release-test plan plus manual/auto execution loop
+  - Brainstorm + flow control plane + dual review
+  - Resume mode for recovering the active flow after interruptions or model switches
+  - systematic Debug rules that avoid narrow one-off bug patches
+  - release-test planning plus manual/auto execution loops
   - bilingual release branches
 
 ## Agent Quick Start
 
 - read `SKILL.md` first
+- when the request is still in discussion, start with `Brainstorm`
 - before write-mode work, read `references/mode-index.md`
 - then read `references/write-preflight.md`
 - after script changes, run the matching selftest

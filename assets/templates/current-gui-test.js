@@ -1,4 +1,16 @@
 /**
+ * Current-Artifact-Metadata
+ * flow_id: FLOW-REPLACE-ME
+ * artifact_id: REPLACE-ARTIFACT-ID
+ * artifact_type: gui-script
+ * status: REPLACE-STATUS
+ * brainstorm_ref: REPLACE-BRAINSTORM-REF
+ * metaphor_ref: REPLACE-METAPHOR-REF
+ * plan_ref: REPLACE-PLAN-REF
+ * step_ref: REPLACE-STEP-REF
+ * derived_from: REPLACE-DERIVED-FROM
+ * updated_at: YYYY-MM-DDTHH:MM:SS+08:00
+ *
  * Current task GUI validation entry.
  *
  * Path contract:
@@ -7,8 +19,9 @@
  * Hard rules:
  * - Update this file for the current task before running GUI validation.
  * - Do not use this file as-is with TODO markers.
- * - Default to headed Playwright. Only set PLAYWRIGHT_HEADLESS=true when the
- *   user explicitly allows headless, or the environment cannot show a browser.
+ * - Playwright must stay headed. A real browser window must appear.
+ * - Do not switch this template to headless unless the user explicitly asks to
+ *   change the skill policy itself.
  */
 
 const fs = require("node:fs");
@@ -18,6 +31,9 @@ const { spawn } = require("node:child_process");
 const taskMeta = {
   fingerprint: "TODO-current-task",
   step: "TODO-step",
+  brainstormRef: "REPLACE-BRAINSTORM-REF",
+  metaphorRef: "REPLACE-METAPHOR-REF",
+  planRef: "REPLACE-PLAN-REF",
   changedFiles: ["TODO-file"],
   changedModules: ["TODO-module"],
   coveredCases: ["G1 TODO-happy", "G2 TODO-boundary"],
@@ -30,7 +46,6 @@ const taskMeta = {
 const runId = Date.now();
 const evidenceRoot = path.join(process.cwd(), ".autodev", "temp", "gui", `run-${runId}`);
 const baseUrl = process.env.GUI_BASE_URL || "http://127.0.0.1:3000";
-const headless = process.env.PLAYWRIGHT_HEADLESS === "true";
 const slowMo = Number(process.env.PLAYWRIGHT_SLOWMO || 250);
 
 fs.mkdirSync(evidenceRoot, { recursive: true });
@@ -55,6 +70,14 @@ function assertPreparedMetadata() {
   if (hasTodo) {
     throw new Error(
       "Update .autodev/current-gui-test.js for the current task before running GUI validation."
+    );
+  }
+}
+
+function assertVisibleBrowserRequired() {
+  if (process.env.PLAYWRIGHT_HEADLESS === "true") {
+    throw new Error(
+      "Headless Playwright is forbidden by auto-dev-team GUI policy. Use a visible browser window."
     );
   }
 }
@@ -149,12 +172,13 @@ async function run() {
   const { chromium } = require("playwright");
 
   assertPreparedMetadata();
+  assertVisibleBrowserRequired();
   console.log(
     JSON.stringify(
       {
         taskMeta,
         baseUrl,
-        headless,
+        headless: false,
         evidenceRoot,
       },
       null,
@@ -173,7 +197,7 @@ async function run() {
     await seedData();
 
     browser = await chromium.launch({
-      headless,
+      headless: false,
       slowMo,
     });
 

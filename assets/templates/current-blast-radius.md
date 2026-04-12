@@ -1,27 +1,41 @@
+# Current Artifact Metadata
+- flow_id: FLOW-REPLACE-ME
+- artifact_id: REPLACE-ARTIFACT-ID
+- artifact_type: blast-radius
+- status: REPLACE-STATUS
+- brainstorm_ref: REPLACE-BRAINSTORM-REF
+- metaphor_ref: REPLACE-METAPHOR-REF
+- plan_ref: REPLACE-PLAN-REF
+- step_ref: REPLACE-STEP-REF
+- derived_from: REPLACE-DERIVED-FROM
+- updated_at: YYYY-MM-DDTHH:MM:SS+08:00
+
 # Current Blast Radius
 
-Generated: YYYY-MM-DD HH:mm
-Task: [task]
-Mode: [mode]
+Created: YYYY-MM-DD HH:mm
+Last refresh: YYYY-MM-DD HH:mm
+Task: [one-line task]
+Brainstorm ref: [REPLACE-BRAINSTORM-REF]
+Metaphor ref: [REPLACE-METAPHOR-REF]
+Plan ref: [REPLACE-PLAN-REF]
+Step ref: [REPLACE-STEP-REF]
+Mode / Step: [FastTrack / Debug / Step 2 / ...]
+Status: pending / generated / needs-follow-up / confirmed
 
-## Summary
+## Current Target
 
-- Risk level: low / medium / high
-- Gate: continue / revise plan / stop
-- Report path:
+- Target files:
+- Target symbols:
+- Planned change:
+- Expected threshold: low / medium / high
 
-## Targets
+## Latest Result
 
-- Files:
-- Symbols:
-
-## Must-Verify Scope
-
+- Risk level:
+- Gate:
+- Report:
 - Direct callers:
-- Key consumers:
+- Transitive impact:
 - Neighbor tests:
-- Config or environment surfaces:
-
-## Notes
-
-- Refresh this file whenever the real edit scope changes.
+- Config / environment:
+- Symmetric paths:

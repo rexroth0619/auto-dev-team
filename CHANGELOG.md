@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.1.1
+
+### Added
+
+- `Brainstorm`, `Resume`, `current-brainstorm.md`, `current-flow.json`, and `current-metaphor.md`
+- the current-artifact contract, `scripts/flowctl.sh`, `brainstorm-review`, and `quality-review`
+- the metaphor layer with standard restaurant / logistics / factory mappings
+- `.autodev/ai-sot.json`, `release-plan.schema.json`, and release auth-bridge / auto-run helpers
+- the automated staging-validation loop and related selftests
+
+### Changed
+
+- recommended primary paths now include `Resume` for interruption recovery
+- `current-*` templates now carry flow metadata and can be managed as active-flow artifacts
+- Debug now requires same-pattern scanning, repair-level evaluation, and anti-regression follow-up
+- Tester now generates a machine-readable `release-plan.json` before splitting into manual or automatic execution
+- GUI validation now requires a visible browser window and tighter current-step coverage
+
+### Fixed
+
+- reduced checkpoint noise and filtered workflow-generated commits from protection output
+- aligned selftests with the release automation loop
+
 ## 1.1.0
 
 ### Added

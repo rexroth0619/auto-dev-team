@@ -14,6 +14,27 @@
     "fallback_to_local_checklist": true,
     "require_user_choice_after_plan": true
   },
+  "flow_management": {
+    "enabled": true,
+    "registry_file": ".autodev/current-flow.json",
+    "flow_root": ".autodev/flows",
+    "validate_before_write": true,
+    "default_required_artifacts": [
+      "brainstorm"
+    ]
+  },
+  "metaphor_layer": {
+    "enabled": true,
+    "default_mode": "off",
+    "default_template": "restaurant",
+    "available_templates": [
+      "restaurant",
+      "logistics",
+      "factory"
+    ],
+    "allow_derived_templates": true,
+    "reverse_parse_enabled": true
+  },
   "checkpoint": {
     "milestone_on_write_start": true,
     "snapshot_gate": "always_before_write",

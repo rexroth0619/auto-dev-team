@@ -18,6 +18,7 @@
 | "I want a new feature" | Architect |
 | "there is a bug" | Debug |
 | "production is down" | Hotfix |
+| "where are we" / "continue yesterday's work" / "resume" / "hot restart" | Resume |
 | "clean this up" | Refactor |
 | "this is slow" | Optimize |
 | "survey the project" | Survey |
@@ -25,3 +26,9 @@
 | "add tests" / "help me validate staging" | Tester |
 | "what does this code do" | Explain |
 | "change copy" / "change color" | FastTrack |
+
+## Information
+
+| Saying | Agent action |
+|--------|--------------|
+| "where are we now" | enter Resume and show the current active-flow status |

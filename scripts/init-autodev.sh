@@ -34,6 +34,7 @@ EXCLUDE_FILE="$REPO_ROOT/.git/info/exclude"
 mkdir -p "$AUTODEV_DIR"
 mkdir -p "$AUTODEV_DIR/temp"
 mkdir -p "$AUTODEV_DIR/blast-radius"
+mkdir -p "$AUTODEV_DIR/flows"
 
 copy_if_missing() {
   local source_file="$1"
@@ -44,7 +45,7 @@ copy_if_missing() {
   fi
 
   cp "$source_file" "$dest_file"
-  echo "📄 Created: ${dest_file#$REPO_ROOT/} (initialized from template)"
+  echo "📄 已创建: ${dest_file#$REPO_ROOT/}（使用模板初始化）"
 }
 
 copy_if_missing "$TEMPLATE_DIR/context-snapshot.md" "$AUTODEV_DIR/context-snapshot.md"
@@ -52,6 +53,7 @@ copy_if_missing "$TEMPLATE_DIR/project-map.md" "$AUTODEV_DIR/project-map.md"
 copy_if_missing "$TEMPLATE_DIR/module-registry.md" "$AUTODEV_DIR/module-registry.md"
 copy_if_missing "$TEMPLATE_DIR/postmortem.md" "$AUTODEV_DIR/postmortem.md"
 copy_if_missing "$TEMPLATE_DIR/path.md" "$AUTODEV_DIR/path.md"
+copy_if_missing "$TEMPLATE_DIR/ai-sot.json" "$AUTODEV_DIR/ai-sot.json"
 copy_if_missing "$TEMPLATE_DIR/forbidden-zones.md" "$AUTODEV_DIR/forbidden-zones.md"
 copy_if_missing "$TEMPLATE_DIR/autodev-config.json" "$AUTODEV_DIR/autodev-config.json"
 copy_if_missing "$TEMPLATE_DIR/current-blast-radius.md" "$AUTODEV_DIR/current-blast-radius.md"
@@ -59,5 +61,5 @@ copy_if_missing "$TEMPLATE_DIR/current-blast-radius.md" "$AUTODEV_DIR/current-bl
 touch "$EXCLUDE_FILE"
 if ! grep -qxF ".autodev/" "$EXCLUDE_FILE"; then
   printf '\n.autodev/\n' >>"$EXCLUDE_FILE"
-  echo "🛡️ Added .autodev/ to .git/info/exclude (local ignore, does not modify project .gitignore)"
+  echo "🛡️ 已将 .autodev/ 加入 .git/info/exclude（本地忽略，不影响项目 .gitignore）"
 fi

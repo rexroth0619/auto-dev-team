@@ -13,16 +13,18 @@
 
 | # | Mode | Trigger | Path | Write mode |
 |---|------|---------|------|------------|
-| 1 | Hotfix | production issue, urgent outage, stop the bleeding | `references/modes/hotfix/README.md` | yes |
-| 2 | Debug | bug, error, broken behavior | `references/modes/debug/README.md` | yes |
-| 3 | FastTrack | tiny change, copy tweak, style tweak, single-point fix | `references/modes/fasttrack/README.md` | yes |
-| 4 | Refactor | restructure, split, extract, clean architecture | `references/modes/refactor/README.md` | yes |
-| 5 | Optimize | slow, performance, acceleration | `references/modes/optimize/README.md` | yes |
-| 6 | Cleanup | remove dead code or redundancy | `references/modes/cleanup/README.md` | yes |
-| 7 | Tester | tests, coverage, use-case validation, staging validation, test-data generation, manual test guidance | `references/modes/tester/README.md` | yes |
-| 8 | Survey | learn the project, map the structure, first contact | `references/modes/survey/README.md` | no |
-| 9 | Explain | explain code, flow, or architecture | `references/modes/explain/README.md` | no |
-| 10 | Architect | new feature, implementation request, capability development | `references/modes/architect/README.md` | yes |
+| 1 | Resume | interruption recovery, model switching, “where are we”, “continue yesterday's work” | `references/modes/resume/README.md` | no |
+| 2 | Hotfix | production issue, urgent outage, stop the bleeding | `references/modes/hotfix/README.md` | yes |
+| 3 | Debug | bug, error, broken behavior | `references/modes/debug/README.md` | yes |
+| 4 | Brainstorm | requirement discussion, boundary clarification, align before planning | `references/modes/brainstorm/README.md` | yes |
+| 5 | FastTrack | tiny change, copy tweak, style tweak, single-point fix | `references/modes/fasttrack/README.md` | yes |
+| 6 | Refactor | restructure, split, extract, clean architecture | `references/modes/refactor/README.md` | yes |
+| 7 | Optimize | slow, performance, acceleration | `references/modes/optimize/README.md` | yes |
+| 8 | Cleanup | remove dead code or redundancy | `references/modes/cleanup/README.md` | yes |
+| 9 | Tester | tests, coverage, use-case validation, staging validation, test-data generation, manual test guidance | `references/modes/tester/README.md` | yes |
+| 10 | Survey | learn the project, map the structure, first contact | `references/modes/survey/README.md` | no |
+| 11 | Explain | explain code, flow, or architecture | `references/modes/explain/README.md` | no |
+| 12 | Architect | new feature, implementation request, capability development | `references/modes/architect/README.md` | yes |
 
 ## Write Intent Fallback
 
@@ -33,6 +35,14 @@ If the user says things like "change this", "adjust this", or "modify X" without
 - still run `references/write-preflight.md` and the pre-write snapshot gate
 
 Do not write files before mode selection.
+
+## Recommended Primary Paths
+
+- interruption recovery / model switch / network loss: `Resume -> Step / Architect / Debug / Tester`
+- requirement still unclear: `Brainstorm -> Architect -> Step`
+- small scoped change: `FastTrack`
+- clearly-scoped new feature: `Architect`
+- bug fixing: `Debug`
 
 ## Progressive Disclosure Rules
 
