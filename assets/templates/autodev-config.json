@@ -8,6 +8,17 @@
     "release/*"
   ],
   "integration_mode": "merge_allowed",
+  "intent_confirmation": {
+    "enabled": true,
+    "required_before_write": "always",
+    "clarification_after_confirmation": true,
+    "force_stop_after_clarification_questions": true,
+    "allow_direct_execute_preauthorization": false,
+    "minimum_clarification_questions": 1,
+    "default_clarification_questions": "2-5",
+    "block_on_pending_confirmation": true,
+    "block_on_pending_clarification": true
+  },
   "critique": {
     "enabled": true,
     "threshold": "all_write_modes",
@@ -22,6 +33,19 @@
     "default_required_artifacts": [
       "brainstorm"
     ]
+  },
+  "stack_management": {
+    "enabled": true,
+    "registry_file": ".autodev/current-stack.json",
+    "script_entry": "scripts/stackctl.sh",
+    "auto_resume_enabled": true,
+    "resume_threshold_hours": 24,
+    "sync_flow_on_init": true
+  },
+  "scope_router": {
+    "enabled": true,
+    "minimum_safe_planning_level": "auto",
+    "expand_active_frontier_only": true
   },
   "metaphor_layer": {
     "enabled": true,
@@ -51,6 +75,31 @@
     "update_current_report": true,
     "fail_close_on_unknown_target": true,
     "fail_close_on_risk_escalation": true
+  },
+  "code_navigation": {
+    "enabled": true,
+    "preferred_provider": "codegraph",
+    "provider_order": [
+      "codegraph"
+    ],
+    "fallback": "rg-read",
+    "required_before_raw_search": true,
+    "record_downgrade_reason": true,
+    "trust_non_stale_results": true
+  },
+  "drift_detection": {
+    "enabled": true,
+    "precheck_on_message": true,
+    "precheck_events": [
+      "message",
+      "resume",
+      "step_complete",
+      "goal_change",
+      "long_pause"
+    ],
+    "full_detect_requires_signal": true,
+    "script_entry": "scripts/planctl.py",
+    "staleness_hours": 24
   },
   "testing": {
     "default_backend_tests": true,

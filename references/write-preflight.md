@@ -30,6 +30,13 @@
 
 ## 共享前置步骤（默认 strict）
 
+0. 完成入口需求确认与澄清。
+   - 按 `references/shared/interaction-contract.md` 的 `需求确认与澄清闸门` 先输出 `🧾 需求确认`
+   - 用户确认后，必须输出 `🧾 需求澄清问题包`，问影响后续 plan / 执行的细节问题
+   - 输出澄清问题包后必须停下来等用户回复；不得继续本前置流程
+   - 用户回复后，先总结已确认细节；若仍有缺口，继续问增量问题包
+   - 如果用户说“直接执行 / 不用确认 / 信任模式”，只能压缩说明和问题数量，不能跳过确认与澄清
+   - 若确认或澄清中存在 `待确认` 项，先停下补齐；不得直接进入 FastTrack / 快照 / Blast Radius
 1. 初始化 `.autodev/`。
    - 优先执行 `scripts/init-autodev.sh`
    - 若脚本不可用，再手工复制 `assets/templates/` 中的必需模板
@@ -40,6 +47,11 @@
    - AI 生成的临时台账、调试输出、草稿、诊断材料，必须统一写入 `.autodev/temp/`
    - 若发现仓库其他路径存在 AI 生成的非交付临时文件，先迁移到 `.autodev/temp/`、清理，或加入 ignore 后再继续
 3. 读取 `.autodev/context-snapshot.md`，恢复最近任务上下文。
+3.1 若存在 `.autodev/project-map.md` / `.autodev/module-registry.md`，先读取头部状态与短摘要，恢复最近 Survey 的项目级结构认知。
+   - 只消费模块分布、入口、关键接缝、复用点、测试面和风险区。
+   - 旧 Survey 是宏观索引，不是当前精确代码证据；涉及具体改动点、调用链、影响面或可能 stale 的局部实现时，继续按 7.5 重新调用代码导航器。
+   - 若摘要缺失、过期或与当前任务无关，在导航回执里记录原因，继续代码导航预扫描。
+   - 禁止为了“稳定使用”把 CodeGraph 原始结果重新台账化；`.autodev` 只保留人类可读短摘要和执行决策。
 4. 读取 `.autodev/autodev-config.json`，加载 skill 策略。
 4.5 处理 current artefact flow。
    - 优先读取 `.autodev/current-flow.json`
@@ -47,6 +59,10 @@
    - 优先执行 `scripts/flowctl.sh validate`
    - 若缺失 required current artefacts，优先用 `scripts/flowctl.sh ensure <artifact-type>` 补齐
    - 若 `current-flow.json` 与 artefact metadata header 不一致，视为 stale / 串线，停止继续执行
+4.6 处理 current stack。
+   - 若存在 `.autodev/current-stack.json`，优先执行 `scripts/stackctl.sh validate`
+   - 若不存在，但 `assets/templates/current-stack.json` 可用，优先执行 `scripts/stackctl.sh init`
+   - 若存在 active flow，优先执行 `scripts/stackctl.sh sync-from-flow`
 5. 若任务涉及 Git、部署、路径、环境、服务端配置、运行时路径、日志路径或控制台入口，先读取 `.autodev/path.md`。
 6. 若任务涉及预发自动化、部署、远端 SSH、GUI 宿主、认证桥接或运行时固定上下文，读取 `.autodev/ai-sot.json`。
    - 若文件缺失，按 `references/principles/ai-single-source-of-truth.md` 创建模板
@@ -55,6 +71,13 @@
    - Git / 回退 / 分支 / 存档任务：重点看 checkpoint gotchas
    - “添加 / 删除 / 重写”类编辑任务：重点看保留性 gotchas
    - 跨模块 / monorepo / 契约变更：重点看影响分析 gotchas
+7.5 执行代码导航预扫描。
+   - 读取 `references/principles/code-navigation.md`
+   - 已读取 Survey 摘要且当前只需宏观结构时，优先引用该摘要；需要当前、精确、局部结构时，重新调用代码导航器，不要整库 raw read
+   - 若任务是了解代码架构 / 当前结构，先判断已有 `.autodev/project-map.md` 是否足够回答；不足时优先用 `semantic_files` + `semantic_explore`，只把短摘要更新到 `.autodev/project-map.md`
+   - 若任务是定位改动点 / 影响面，优先用 `semantic_explore` / `semantic_impact` 定位相关符号、入口、调用链、复用点和候选影响面
+   - 若不可用、未索引或结果标记 stale，记录原因后降级为 `rg` / `Read` / 脚本化 Blast Radius
+   - 导航结果只沉淀必要决策：目标文件 / 符号、模块归属、复用点、验证范围和降级原因；不要新增独立 CodeGraph 记录文件
 7. 执行 `git log -5 --oneline`，判断最近改动与当前任务的关联或冲突。
 8. 执行分支守卫。
    - 优先执行 `scripts/checkpoint.sh ensure-branch <task-slug>`
@@ -72,6 +95,8 @@
    - 默认执行 `scripts/blast-radius.py ... --write`
    - 产物落到 `.autodev/current-blast-radius.md` 和 `.autodev/blast-radius/*.md`
 12. 🧱 执行防屎山快速检查。
+   - 先按 `references/principles/language-lock.md` 收紧架构语言，明确模块、接口面、接缝、适配器、测试面
+   - 再读取 `references/principles/implementation-simplicity.md`，按实现阶梯判断“不做 / 复用 / 原生能力 / 已有依赖 / 局部实现 / 新抽象 / 新依赖”
    - 先判断新增代码应融入现有模块还是新建
    - 先判断是否已有可复用实现
    - 先判断是否命中抽象机会；1-2 次不强抽象，3 次以上必须抽象
@@ -80,6 +105,7 @@
 ## 测试台账规则
 
 - `.autodev/current-steps.md`：记录多步执行计划、每步覆盖场景、每步测试回执。
+- `.autodev/current-stack.json`：记录当前活跃栈（`project / milestone / phase / flow / step`）与自动 Resume 时间语义。
 - `.autodev/current-brainstorm.md`：记录当前需求讨论结果、边界、验收标准；它是后续 `current-steps.md` 和 review 的统一上游。
 - `.autodev/current-metaphor.md`：记录当前 flow 的比喻层协议、映射表和用户可直接使用的问法；仅在启用比喻层时创建。
 - `.autodev/current-test.md`：记录大测试的场景矩阵、执行记录、待业务确认问题、剩余风险，以及关键观测结论。
@@ -99,7 +125,14 @@
 |----------|----------|
 | 所有写入模式进入时 | `references/principles/critique.md` |
 | 所有写入模式进入时 | `references/shared/current-artifact-contract.md` |
+| 涉及已有代码理解、定位、改动、复用检查或影响面判断时 | `references/principles/code-navigation.md` |
+| 开始实际实现代码、测试或配置改动前 | `references/principles/implementation-simplicity.md` |
+| 存在 `.autodev/current-stack.json` 时 | `references/shared/current-stack-contract.md` |
 | 存在 `.autodev/current-metaphor.md` 或用户要求“讲人话 / 用比喻解释”时 | `references/principles/metaphor-layer.md` |
+| 需要判断任务层级时 | `references/principles/scope-router.md` |
+| 需要层级化规划时 | `references/principles/hierarchical-planning.md` |
+| 命中 Resume / 自动恢复时 | `references/principles/resume-router.md` |
+| 命中动态重规划 / 规划漂移时 | `references/principles/drift-detection.md` |
 | 涉及 Git / 部署 / 路径 / 环境时 | `references/principles/path-system.md` |
 | 涉及预发自动化 / 部署 / SSH / GUI 宿主 / 认证桥接时 | `references/principles/ai-single-source-of-truth.md` |
 | 任意代码或配置写入前 | `references/principles/checkpoint-mechanism.md` |
@@ -109,6 +142,7 @@
 | 命中 GUI-capable task（页面、窗口、表单、可点击界面）时 | `references/principles/gui-autonomous-loop.md` |
 | 进入 Step 执行阶段时 | `references/principles/incremental-testable.md` |
 | 新增或修改 `.feature` / step definitions 时 | `references/principles/bdd-testing.md` |
+| 涉及架构、模块归属、接口面、接缝、抽象或测试落层时 | `references/principles/language-lock.md` |
 | 做抽象、提取共享模块、设计通用接口时 | `references/principles/abstraction-rules.md` |
 | 准备写入 Pattern 时 | `references/patterns/README.md` |
 
@@ -141,7 +175,7 @@
 
 ## 完成动作（写入模式通用）
 
-1. 先做脚本化 Blast Radius，并用结果刷新验证范围。
+1. 先做代码导航预扫描 + 脚本化 Blast Radius，并用结果刷新验证范围。
 2. 再执行后台自动测试 + 对应档位的观测驱动验证；若命中 GUI-capable task，继续执行 `GUI 自治验收闭环` 并保留证据 / 测试回执。
 3. 若达到阶段性执行收尾，补一轮 `Brainstorm 对齐复核` 与 `质量复核`。
 4. 再建立存档，输出固定回执：

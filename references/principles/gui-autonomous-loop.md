@@ -98,6 +98,7 @@ Skill 不强制二选一。它只要求：
 - 运行前必须检查 `.autodev/current-gui-test.js` 是否直接对应当前改动：
   - 至少 1 个 case 直接覆盖当前改动引入的用户可见风险
   - case 中的页面、网络、后端副作用断言能映射到当前改动文件/模块
+  - 若 case 穿过 API、服务协作或模块契约，按 `references/principles/language-lock.md` 标明接口面和测试面
   - 脚本中的 boot / seed / helper 不依赖无关业务链路
 - 若现有 `.autodev/current-gui-test.js` 残留旧任务内容，必须重写；⛔ 禁止直接沿用不对应的旧脚本。
 - 仓库里的历史 GUI 脚本只能被 `.autodev/current-gui-test.js` 引用、裁剪或作为补充回归；不能跳过 `.autodev/current-gui-test.js` 直接执行并声称“当前改动已验收”。

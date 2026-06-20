@@ -35,6 +35,7 @@ mkdir -p "$AUTODEV_DIR"
 mkdir -p "$AUTODEV_DIR/temp"
 mkdir -p "$AUTODEV_DIR/blast-radius"
 mkdir -p "$AUTODEV_DIR/flows"
+mkdir -p "$AUTODEV_DIR/plans"
 
 copy_if_missing() {
   local source_file="$1"
@@ -57,6 +58,23 @@ copy_if_missing "$TEMPLATE_DIR/ai-sot.json" "$AUTODEV_DIR/ai-sot.json"
 copy_if_missing "$TEMPLATE_DIR/forbidden-zones.md" "$AUTODEV_DIR/forbidden-zones.md"
 copy_if_missing "$TEMPLATE_DIR/autodev-config.json" "$AUTODEV_DIR/autodev-config.json"
 copy_if_missing "$TEMPLATE_DIR/current-blast-radius.md" "$AUTODEV_DIR/current-blast-radius.md"
+copy_if_missing "$TEMPLATE_DIR/current-stack.json" "$AUTODEV_DIR/current-stack.json"
+copy_if_missing "$TEMPLATE_DIR/project-roadmap.md" "$AUTODEV_DIR/project-roadmap.md"
+
+python3 - "$AUTODEV_DIR/current-stack.json" "$(basename "$REPO_ROOT")" "$(date +"%Y-%m-%dT%H:%M:%S%z" | sed 's/\(..\)$/:\1/')" <<'PY'
+import json, pathlib, sys
+path = pathlib.Path(sys.argv[1])
+task_slug = sys.argv[2]
+now = sys.argv[3]
+data = json.loads(path.read_text(encoding="utf-8"))
+if data.get("stack_id") == "STACK-REPLACE-ME":
+    data["stack_id"] = f"STACK-{task_slug}-v1"
+if str(data.get("last_meaningful_touch_at", "")).startswith("YYYY-"):
+    data["last_meaningful_touch_at"] = now
+if str(data.get("updated_at", "")).startswith("YYYY-"):
+    data["updated_at"] = now
+path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+PY
 
 touch "$EXCLUDE_FILE"
 if ! grep -qxF ".autodev/" "$EXCLUDE_FILE"; then

@@ -1,12 +1,16 @@
 # Step 模式 (步骤执行)
 
 > 何时进入: Architect / Refactor / Optimize 生成计划后用户说“开始” | 必读: `current-steps.md`；大测试时同步读取 `current-test.md`
+> 路由 / 回执遵循 `references/shared/interaction-contract.md`
 
 ⚠️ 执行本模式时，必须读取 `references/principles/incremental-testable.md`。
 ⚠️ 执行本模式时，必须读取 `.autodev/current-brainstorm.md` 并确认它与 `current-steps.md` 属于同一条 active flow。
+⚠️ 若存在 `.autodev/current-stack.json`，执行本模式时必须同步确认当前 active stack 与 active flow 对齐。
 ⚠️ 若存在 `.autodev/current-metaphor.md`，必须读取它；用户回执中可按其协议输出类比说明，但内部判断仍以技术语义为准。
+⚠️ 执行本模式时，第一行代码前必须读取 `references/principles/code-navigation.md`，可用且已索引时先用导航器收窄目标。
 ⚠️ 执行本模式时，第一行代码前必须读取 `references/principles/impact-analysis.md` 并优先运行 `scripts/blast-radius-step.sh`。
 ⚠️ 执行本模式时，必须读取 `references/principles/test-verification.md`。
+⚠️ 若本步涉及模块策略、接口面、接缝、适配器、抽象或测试落层，必须读取 `references/principles/language-lock.md`。
 ⚠️ 若本步有行为改动，执行验证前必须读取 `references/principles/observation-driven-verification.md`。
 ⚠️ 若本步命中 GUI-capable task，执行验证前必须读取 `references/principles/gui-autonomous-loop.md`。
 
@@ -60,6 +64,14 @@
 
 闸门通过后才进入“开始声明”。
 
+### 0.6 Drift Precheck（V2）
+
+- 若存在 `scripts/planctl.py`，在真正开始本步前优先执行一次：
+  - `python3 scripts/planctl.py detect-drift --mode precheck`
+- 若 precheck 报警：
+  - 不直接继续堆改动
+  - 先判断是否需要回到 `flow / phase / milestone / project` 重规划
+
 ### 1. 开始声明
 
 ```text
@@ -92,11 +104,13 @@
 
 ### 2.5 Blast Radius 闸门（强制）
 
+- 若代码导航器可用且项目已索引，先用 semantic_explore / semantic_impact 确认本步目标符号、调用方、复用点、邻近测试和候选影响面。
 - 默认执行 `scripts/blast-radius-step.sh --step {N}`
 - 该脚本会自动解析 `current-steps.md` 中本步的 `[Blast Radius: ... → ≤风险]`
 - 只有当 `current-steps.md` 缺失或标记不合法时，才允许手工降级为 `scripts/blast-radius.py`
 - 必须把最新报告写入 `.autodev/current-blast-radius.md`
 - 必须在回执中说明：
+  - 代码导航器使用情况（provider / 查询目标 / 降级原因）
   - 本步 Blast Radius 目标
   - 风险等级
   - 直接调用方 / 关键消费方
@@ -118,7 +132,7 @@
 
 - 遵守模块策略：代码写入 `current-steps.md` 指定的目标文件，不随意换文件
 - 复用检查：写新代码前，先确认 `module-registry` 里有没有能用的
-- 增量可测：本步必须产出可独立验证的模块 / 函数 / 组件
+- 增量可测：本步必须产出可独立验证的模块 / 函数 / 组件；涉及架构判断时，按术语锁说明接口面和测试面
 - 若真实触碰的文件 / 符号超出本步 Blast Radius 目标，必须先刷新报告再继续
 - 同步测试资产：
   - 更新本步覆盖的行为场景
@@ -298,11 +312,12 @@ Step 模式必须额外说清：
 用户说“信任模式”时：
 
 - 可连续执行多步，无需每步确认
+- 开始前仍必须完成 `🧾 需求确认` 和 `🧾 需求澄清问题包`；信任模式只跳过逐步确认，不跳过入口确认、澄清、测试回执或风险闸门
 - 🎯 开始前建立里程碑 tag「{任务}#信任起点」
 - 整个任务完成后建立 1 个存档（非每步）
 - 仍然必须输出每步的 `🧾 测试回执`
 - 若命中 GUI-capable task：
-  - 用户已预授权 → 直接执行
+  - 需求确认与澄清已完成，且用户授权本步 GUI → 直接执行
   - 未显式禁用 → 仍默认执行 GUI executor
 - 遇到问题立即停止，按 `references/principles/checkpoint-mechanism.md` 的读档模块展示存档列表
 - 完成后统一报告所有改动，并询问是否合并 / 推送
@@ -368,7 +383,7 @@ Step 模式必须额外说清：
 📒 auto-dev-team - 微任务 @Step{N}
 [简述要做什么]
 
-→ 直接执行 → 后台自动测试 → 输出测试回执 → 完成
+→ 精简需求确认 → 澄清问题包并停下 → 用户回复后直接执行 → 后台自动测试 → 输出测试回执 → 完成
 ```
 
 边界：

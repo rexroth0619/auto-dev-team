@@ -34,6 +34,19 @@ PY_EXTENSIONS = {".py"}
 GO_EXTENSIONS = {".go"}
 SHELL_EXTENSIONS = {".sh", ".bash", ".zsh"}
 COMMON_INDEX_NAMES = {"index.js", "index.jsx", "index.ts", "index.tsx", "__init__.py"}
+DOCUMENTATION_EXTENSIONS = {".md", ".mdx", ".rst", ".adoc", ".txt"}
+CONFIG_EXTENSIONS = {".json", ".jsonc", ".yaml", ".yml", ".toml", ".ini", ".env"}
+GENERIC_PATH_STEMS = {
+    "index",
+    "main",
+    "config",
+    "settings",
+    "setup",
+    "utils",
+    "helpers",
+    "types",
+    "constants",
+}
 IGNORED_DIR_NAMES = {
     ".git",
     ".autodev",
@@ -93,6 +106,14 @@ class Match:
     text: str
     kind: str
     depth: int = 0
+
+
+@dataclass(frozen=True)
+class ReferenceBuckets:
+    code: List[Match]
+    config: List[Match]
+    docs: List[Match]
+    other: List[Match]
 
 
 def parse_args() -> argparse.Namespace:
@@ -301,6 +322,34 @@ def is_test_file(path: str) -> bool:
     ) or name.startswith("test_") or name.endswith("_test.py") or name.endswith("_test.go")
 
 
+def is_source_file(path: str) -> bool:
+    return Path(path).suffix in SUPPORTED_SOURCE_EXTENSIONS
+
+
+def is_documentation_file(path: str) -> bool:
+    lower = path.lower()
+    name = Path(lower).name
+    return Path(lower).suffix in DOCUMENTATION_EXTENSIONS or name in {
+        "readme",
+        "changelog",
+        "license",
+        "notice",
+    }
+
+
+def is_config_file(path: str) -> bool:
+    lower = path.lower()
+    suffix = Path(lower).suffix
+    name = Path(lower).name
+    return suffix in CONFIG_EXTENSIONS or name in {
+        ".env",
+        ".env.local",
+        ".gitignore",
+        "dockerfile",
+        "makefile",
+    }
+
+
 def same_path(a: str, b: str) -> bool:
     return Path(a).as_posix() == Path(b).as_posix()
 
@@ -324,11 +373,17 @@ def compile_symbol_patterns(symbol: str) -> List[re.Pattern[str]]:
 
 
 def find_symbol_definitions(
-    symbol: str, repo_root: Path, source_files: Sequence[str], text_cache: Dict[str, str]
+    symbol: str,
+    repo_root: Path,
+    source_files: Sequence[str],
+    text_cache: Dict[str, str],
+    only_files: Optional[Set[str]] = None,
 ) -> List[Match]:
     patterns = compile_symbol_patterns(symbol)
     matches: List[Match] = []
     for rel_path in source_files:
+        if only_files is not None and rel_path not in only_files:
+            continue
         text = text_cache.setdefault(rel_path, read_text(repo_root / rel_path))
         if not text:
             continue
@@ -358,6 +413,24 @@ def search_string_matches(
                 continue
             matches.append(Match(rel_path, line_no, line.strip(), kind))
     return matches
+
+
+def partition_references(matches: Iterable[Match]) -> ReferenceBuckets:
+    buckets = ReferenceBuckets([], [], [], [])
+    for match in matches:
+        if is_source_file(match.file):
+            buckets.code.append(match)
+        elif is_documentation_file(match.file):
+            buckets.docs.append(match)
+        elif is_config_file(match.file):
+            buckets.config.append(match)
+        else:
+            buckets.other.append(match)
+    return buckets
+
+
+def dedupe_list(values: Iterable[str]) -> List[str]:
+    return sorted(dict.fromkeys(value for value in values if value))
 
 
 def resolve_js_spec(repo_root: Path, source_file: str, spec: str) -> List[str]:
@@ -475,6 +548,31 @@ def resolve_shell_spec(repo_root: Path, source_file: str, spec: str) -> List[str
     return []
 
 
+def extract_python_import_specs(text: str, package_roots: Set[str]) -> List[str]:
+    specs: List[str] = []
+    for match in re.finditer(r"^\s*from\s+([.\w]+)\s+import\s+([A-Za-z_][\w]*(?:\s*,\s*[A-Za-z_][\w]*)*)", text, re.MULTILINE):
+        base = match.group(1)
+        specs.append(base)
+        root = base.lstrip(".").split(".", 1)[0]
+        if base.startswith(".") or root in package_roots:
+            for imported in re.split(r"\s*,\s*", match.group(2)):
+                if imported and imported != "*":
+                    specs.append(f"{base}.{imported}")
+    for match in re.finditer(r"^\s*import\s+([.\w]+)", text, re.MULTILINE):
+        specs.append(match.group(1))
+    return dedupe_list(specs)
+
+
+def extract_go_import_specs(text: str) -> List[str]:
+    specs: List[str] = []
+    for match in re.finditer(r"^\s*import\s+\"([^\"]+)\"", text, re.MULTILINE):
+        specs.append(match.group(1))
+    for block in re.finditer(r"^\s*import\s*\((.*?)^\s*\)", text, re.MULTILINE | re.DOTALL):
+        for match in re.finditer(r"\"([^\"]+)\"", block.group(1)):
+            specs.append(match.group(1))
+    return dedupe_list(specs)
+
+
 def extract_import_targets(
     repo_root: Path,
     source_file: str,
@@ -506,11 +604,7 @@ def extract_import_targets(
                 if spec.startswith((".", "@/","~/")):
                     unresolved += 1
     elif suffix in PY_EXTENSIONS:
-        for pattern in (
-            re.compile(r"^\s*from\s+([.\w]+)\s+import\b", re.MULTILINE),
-            re.compile(r"^\s*import\s+([.\w]+)", re.MULTILINE),
-        ):
-            specs.extend(match.group(1) for match in pattern.finditer(text))
+        specs.extend(extract_python_import_specs(text, package_roots))
         for spec in specs:
             resolved = resolve_python_spec(repo_root, source_file, spec, package_roots)
             if resolved:
@@ -520,7 +614,7 @@ def extract_import_targets(
                 if spec.startswith("."):
                     unresolved += 1
     elif suffix in GO_EXTENSIONS:
-        specs.extend(match.group(1) for match in re.finditer(r'"([^"]+)"', text))
+        specs.extend(extract_go_import_specs(text))
         for spec in specs:
             resolved = resolve_go_spec(repo_root, go_module_path, spec)
             if resolved:
@@ -610,13 +704,15 @@ def find_path_mentions(
     for rel_path in target_files:
         path = Path(rel_path)
         without_suffix = str(path.with_suffix("")).replace("\\", "/")
+        stem = without_suffix.split("/")[-1]
         needles.update(
             {
                 path.name,
                 without_suffix,
-                without_suffix.split("/")[-1],
             }
         )
+        if stem not in GENERIC_PATH_STEMS:
+            needles.add(stem)
     for rel_path in repo_files:
         text = text_cache.setdefault(rel_path, read_text(repo_root / rel_path))
         if not text:
@@ -924,9 +1020,13 @@ def render_markdown(report: dict) -> str:
                 ["符号", "文件", "行号", "命中内容"],
             )
         )
-        lines.append("")
+    lines.append("")
 
     lines.append("## 直接影响（调用方 / 引用方）")
+    lines.append(
+        f"- 代码影响命中: `{report['direct_reference_total_count']}` 条 / "
+        f"`{report['direct_reference_file_count']}` 个文件"
+    )
     if report["direct_references"]:
         lines.extend(
             markdown_table(
@@ -937,11 +1037,14 @@ def render_markdown(report: dict) -> str:
                 ["文件", "行号", "类型", "命中内容"],
             )
         )
+        if report["direct_reference_omitted_count"]:
+            lines.append(f"- 另有 `{report['direct_reference_omitted_count']}` 条代码引用未展示。")
     else:
         lines.append("- 无明显直接调用方，或当前静态搜索未命中。")
     lines.append("")
 
     lines.append("## 传递调用链（reverse import chain）")
+    lines.append(f"- 传递命中总数: `{report['reverse_chain_total_count']}`")
     if report["reverse_chain"]:
         for depth, files in report["reverse_chain"].items():
             lines.append(f"### Depth {depth}")
@@ -1004,6 +1107,44 @@ def render_markdown(report: dict) -> str:
         )
     if not report["config_signals"] and not report["dynamic_signals"]:
         lines.append("- 未命中明显配置或动态调用信号。")
+    lines.append("")
+
+    lines.append("## 文档 / 配置提及（不计入直接风险）")
+    if report["config_mentions"]:
+        lines.append("### 配置提及")
+        lines.extend(
+            markdown_table(
+                [
+                    [item["file"], str(item["line"]), item["kind"], truncate_text(item["text"])]
+                    for item in report["config_mentions"]
+                ],
+                ["文件", "行号", "类型", "命中内容"],
+            )
+        )
+    if report["documentation_mentions"]:
+        lines.append("### 文档提及")
+        lines.extend(
+            markdown_table(
+                [
+                    [item["file"], str(item["line"]), item["kind"], truncate_text(item["text"])]
+                    for item in report["documentation_mentions"]
+                ],
+                ["文件", "行号", "类型", "命中内容"],
+            )
+        )
+    if report["other_mentions"]:
+        lines.append("### 其他非代码提及")
+        lines.extend(
+            markdown_table(
+                [
+                    [item["file"], str(item["line"]), item["kind"], truncate_text(item["text"])]
+                    for item in report["other_mentions"]
+                ],
+                ["文件", "行号", "类型", "命中内容"],
+            )
+        )
+    if not report["config_mentions"] and not report["documentation_mentions"] and not report["other_mentions"]:
+        lines.append("- 未发现非代码提及。")
     lines.append("")
 
     lines.append("## 对称路径候选")
@@ -1081,12 +1222,11 @@ def write_file(path: Path, content: str) -> None:
 
 
 def summarize_stdout(report: dict) -> str:
-    direct_files = len({item["file"] for item in report["direct_references"]})
-    reverse_count = sum(len(files) for files in report["reverse_chain"].values())
     return (
         f"Blast Radius {report['risk_level']} | gate={report['gate']} | "
-        f"direct={direct_files} | transitive={reverse_count} | "
-        f"tests={len(report['neighbor_tests'])}"
+        f"direct={report['direct_reference_file_count']} | "
+        f"transitive={report['reverse_chain_total_count']} | "
+        f"non_code={report['non_code_reference_total_count']} | tests={len(report['neighbor_tests'])}"
     )
 
 
@@ -1156,8 +1296,10 @@ def build_summary(report: dict) -> dict:
         "target_symbols": report["target_symbols"],
         "report_path": report.get("report_path", ""),
         "json_path": report.get("json_path", ""),
-        "direct_reference_count": len({item["file"] for item in report["direct_references"]}),
-        "transitive_reference_count": sum(len(files) for files in report["reverse_chain"].values()),
+        "direct_reference_count": report["direct_reference_file_count"],
+        "direct_reference_total_count": report["direct_reference_total_count"],
+        "transitive_reference_count": report["reverse_chain_total_count"],
+        "non_code_reference_total_count": report["non_code_reference_total_count"],
         "neighbor_test_count": len(report["neighbor_tests"]),
         "blind_spot_count": len(report["blind_spots"]),
     }
@@ -1177,20 +1319,33 @@ def main() -> int:
         max_refs = int(config_get(config, "blast_radius.max_refs_per_section", 25))
 
     target_files = list(args.file)
-    target_symbols = list(args.symbol)
+    global_target_symbols = list(args.symbol)
+    scoped_targets: List[Tuple[str, str]] = []
     for raw_target in args.target:
         if "::" in raw_target:
             file_part, symbol_part = raw_target.split("::", 1)
             if file_part:
                 target_files.append(file_part)
             if symbol_part:
-                target_symbols.append(symbol_part)
+                if file_part:
+                    scoped_targets.append((file_part, symbol_part))
+                else:
+                    global_target_symbols.append(symbol_part)
         else:
             target_files.append(raw_target)
 
     target_files = [normalize_repo_path(path, repo_root) for path in target_files]
     target_files = sorted(dict.fromkeys(target_files))
-    target_symbols = sorted(dict.fromkeys(symbol for symbol in target_symbols if symbol))
+    scoped_targets = [
+        (normalize_repo_path(path, repo_root), symbol)
+        for path, symbol in scoped_targets
+        if path and symbol
+    ]
+    scoped_targets = sorted(dict.fromkeys(scoped_targets))
+    global_target_symbols = sorted(dict.fromkeys(symbol for symbol in global_target_symbols if symbol))
+    target_symbols = sorted(
+        dict.fromkeys(list(global_target_symbols) + [symbol for _, symbol in scoped_targets])
+    )
 
     if not target_files and not target_symbols:
         print("blast-radius.py: at least one --file, --symbol, or --target is required", file=sys.stderr)
@@ -1217,16 +1372,55 @@ def main() -> int:
         repo_root, source_files, text_cache
     )
 
+    missing_target_files = [path for path in target_files if not (repo_root / path).exists()]
     definitions: List[dict] = []
-    definition_matches_by_symbol: Dict[str, List[Match]] = {}
+    seen_definition_keys: Set[Tuple[str, str, int]] = set()
+    definition_matches_by_symbol: Dict[str, List[Match]] = defaultdict(list)
     ambiguous_symbols: List[str] = []
+    missing_target_symbols: List[str] = []
     derived_target_files: Set[str] = set(target_files)
-    for symbol in target_symbols:
+    for scoped_file, symbol in scoped_targets:
+        matches = find_symbol_definitions(
+            symbol,
+            repo_root,
+            source_files,
+            text_cache,
+            only_files={scoped_file},
+        )
+        if not matches:
+            missing_target_symbols.append(f"{scoped_file}::{symbol}")
+            continue
+        if len(matches) > 1:
+            ambiguous_symbols.append(f"{scoped_file}::{symbol}")
+        definition_matches_by_symbol[symbol].extend(matches)
+        for match in matches:
+            key = (symbol, match.file, match.line)
+            if key in seen_definition_keys:
+                continue
+            seen_definition_keys.add(key)
+            derived_target_files.add(match.file)
+            definitions.append(
+                {
+                    "symbol": symbol,
+                    "file": match.file,
+                    "line": match.line,
+                    "text": match.text,
+                }
+            )
+
+    for symbol in global_target_symbols:
         matches = find_symbol_definitions(symbol, repo_root, source_files, text_cache)
-        definition_matches_by_symbol[symbol] = matches
+        if not matches:
+            missing_target_symbols.append(symbol)
+            continue
+        definition_matches_by_symbol[symbol].extend(matches)
         if len({match.file for match in matches}) > 1:
             ambiguous_symbols.append(symbol)
         for match in matches:
+            key = (symbol, match.file, match.line)
+            if key in seen_definition_keys:
+                continue
+            seen_definition_keys.add(key)
             derived_target_files.add(match.file)
             definitions.append(
                 {
@@ -1239,19 +1433,27 @@ def main() -> int:
 
     target_files = sorted(derived_target_files)
     direct_refs: List[Match] = []
-    if target_symbols:
-        for symbol in target_symbols:
+    config_mentions: List[Match] = []
+    documentation_mentions: List[Match] = []
+    other_mentions: List[Match] = []
+    if global_target_symbols:
+        for symbol in global_target_symbols:
             matches = search_string_matches(symbol, repo_root, repo_files, text_cache, "symbol_ref")
             definition_lines = {
                 (match.file, match.line)
                 for match in definition_matches_by_symbol.get(symbol, [])
             }
-            direct_refs.extend(
+            filtered_matches = [
                 match
                 for match in matches
                 if (match.file, match.line) not in definition_lines
                 and not any(same_path(match.file, path) for path in target_files)
-            )
+            ]
+            buckets = partition_references(filtered_matches)
+            direct_refs.extend(buckets.code)
+            config_mentions.extend(buckets.config)
+            documentation_mentions.extend(buckets.docs)
+            other_mentions.extend(buckets.other)
 
     if target_files:
         direct_importers = [
@@ -1260,13 +1462,21 @@ def main() -> int:
         ]
         direct_refs.extend(direct_importers)
         path_mentions = find_path_mentions(target_files, repo_root, repo_files, text_cache)
-        direct_refs.extend(
+        filtered_mentions = [
             match
             for match in path_mentions
             if not any(same_path(match.file, path) for path in target_files)
-        )
+        ]
+        buckets = partition_references(filtered_mentions)
+        direct_refs.extend(buckets.code)
+        config_mentions.extend(buckets.config)
+        documentation_mentions.extend(buckets.docs)
+        other_mentions.extend(buckets.other)
 
     direct_refs = dedupe_matches(direct_refs)
+    config_mentions = dedupe_matches(config_mentions)
+    documentation_mentions = dedupe_matches(documentation_mentions)
+    other_mentions = dedupe_matches(other_mentions)
     reverse_chain = expand_reverse_chain(target_files, reverse_graph, depth)
 
     outbound_local = sorted(
@@ -1314,7 +1524,22 @@ def main() -> int:
         ambiguous_symbols,
     )
 
+    resolution_errors: List[str] = []
+    if missing_target_files:
+        resolution_errors.append(f"目标文件不存在：{', '.join(missing_target_files)}")
+    if missing_target_symbols:
+        resolution_errors.append(f"目标符号无法定位：{', '.join(missing_target_symbols)}")
+    fail_close_unknown_target = bool(
+        config_get(config, "blast_radius.fail_close_on_unknown_target", True)
+    )
+    if resolution_errors:
+        risk_score = max(risk_score, 8)
+        risk_level = "🔴 高"
+        gate = "停止直接改动，先缩小目标；目标文件或符号无法定位清楚"
+        risk_reasons.extend(f"+fail-close {item}" for item in resolution_errors)
+
     blind_spots: List[str] = []
+    blind_spots.extend(resolution_errors)
     if not target_files:
         blind_spots.append("未定位到明确目标文件，请补 `--file` 或确认符号定义。")
     if ambiguous_symbols:
@@ -1325,6 +1550,13 @@ def main() -> int:
         blind_spots.append("命中动态调用/注册信号，需要手工补数据流和运行时路径。")
     if not neighbor_tests:
         blind_spots.append("未找到邻近测试，请手工补至少 1 个保护性回归入口。")
+
+    direct_reference_total_count = len(direct_refs)
+    direct_reference_file_count = len({match.file for match in direct_refs})
+    reverse_chain_total_count = sum(len(files) for files in reverse_chain.values())
+    non_code_reference_total_count = (
+        len(config_mentions) + len(documentation_mentions) + len(other_mentions)
+    )
 
     report = {
         "generated_at": datetime.now().isoformat(timespec="seconds"),
@@ -1337,17 +1569,26 @@ def main() -> int:
         "target_symbols": target_symbols,
         "definitions": definitions,
         "direct_references": [asdict(match) for match in select_top_matches(direct_refs, max_refs)],
+        "direct_reference_total_count": direct_reference_total_count,
+        "direct_reference_file_count": direct_reference_file_count,
+        "direct_reference_omitted_count": max(0, direct_reference_total_count - max_refs),
         "reverse_chain": {
             str(level): files[:max_refs]
             for level, files in reverse_chain.items()
             if files
         },
+        "reverse_chain_total_count": reverse_chain_total_count,
         "outbound_local_dependencies": outbound_local[:max_refs],
         "outbound_external_dependencies": outbound_external[:max_refs],
         "neighbor_tests": [asdict(match) for match in select_top_matches(neighbor_tests, max_refs)],
         "config_signals": [asdict(match) for match in select_top_matches(config_signals, max_refs)],
         "dynamic_signals": [asdict(match) for match in select_top_matches(dynamic_signals, max_refs)],
         "symmetry_candidates": symmetry_candidates,
+        "config_mentions": [asdict(match) for match in select_top_matches(config_mentions, max_refs)],
+        "documentation_mentions": [asdict(match) for match in select_top_matches(documentation_mentions, max_refs)],
+        "other_mentions": [asdict(match) for match in select_top_matches(other_mentions, max_refs)],
+        "non_code_reference_total_count": non_code_reference_total_count,
+        "non_code_reference_omitted_count": max(0, non_code_reference_total_count - max_refs * 3),
         "risk_level": risk_level,
         "risk_score": risk_score,
         "risk_reasons": risk_reasons,
@@ -1418,6 +1659,8 @@ def main() -> int:
             print("")
             print(f"报告已写入: {report['report_path']}")
             print(f"JSON 已写入: {report['json_path']}")
+    if resolution_errors and fail_close_unknown_target:
+        return 3
     return 0
 
 

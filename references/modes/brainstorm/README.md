@@ -1,6 +1,8 @@
 # Brainstorm 模式 (需求讨论)
 
 > 适用: 需求还在讨论、边界未清、希望先达成共识再做方案 | 产出: `current-brainstorm.md`；若启用比喻层，再产出 `current-metaphor.md`
+> 路由 / 回执遵循 `references/shared/interaction-contract.md`
+> 若讨论中出现 `组件 / 服务 / API / 边界 / 抽象` 等技术范围词，按 `references/principles/language-lock.md` 先在内部翻译，避免把需求边界误当架构接缝。
 
 ## 目录
 
@@ -15,9 +17,10 @@
 
 1. 调用 `scripts/flowctl.sh init <task-slug> brainstorm` 初始化或激活当前 flow。
 2. 读取 `.autodev/current-flow.json`，确认 active flow。
-3. 创建或更新 `.autodev/current-brainstorm.md`。
-4. 若用户需要“人能听懂的比喻解释”，创建或更新 `.autodev/current-metaphor.md`。
-5. 仅讨论目标、边界、验收，不直接进入代码实现。
+3. 若存在 `scripts/stackctl.sh`，优先执行 `scripts/stackctl.sh init` 和 `scripts/stackctl.sh sync-from-flow`。
+4. 创建或更新 `.autodev/current-brainstorm.md`。
+5. 若用户需要“人能听懂的比喻解释”，创建或更新 `.autodev/current-metaphor.md`。
+6. 仅讨论目标、边界、验收，不直接进入代码实现。
 
 ## 流程
 
@@ -27,7 +30,29 @@
 AI:
 1. 先确认用户真正要解决的问题
 2. 区分“目标”与“解决方案”
-3. 若需求描述模糊，每次只追问 1 个关键问题
+3. 若需求描述模糊，按轮次生成 `Brainstorm 问题包`：
+   - 同一轮把当前阶段能想到的高信号问题一次性给出
+   - 默认按「目标 / 用户场景 / 边界 / 约束 / 验收」分组
+   - 不拆成连续的一问一答
+   - 若用户本轮已补齐，直接进入下一阶段
+   - 若仍有缺口，再输出下一轮补充问题包，但只问剩余问题
+4. 必要时先用 `Scope Router` 判断当前属于 `flow / phase / milestone / project` 哪一层
+```
+
+### Phase 1.2: 问题包输出协议
+
+```text
+AI:
+1. 使用 `references/shared/flow-snippets.md` 中的 `brainstorm-question-batch`
+2. 一次性列出当前阶段全部高信号未决问题
+3. 问题数量以“本轮用户可一次性填写”为上限：
+   - 默认优先 3-7 个
+   - 若问题天然成组，可适当增加，但仍保持一次性完整给出
+4. 允许用户对单项回答“未知 / 待定 / 暂不回答”
+5. 收到回答后：
+   - 先总结已确认事实
+   - 再判断是否还需要下一轮问题包
+   - 若需要下一轮，只追问增量问题，不重复上一轮已闭合项
 ```
 
 ### Phase 2: 边界与约束
@@ -37,6 +62,7 @@ AI:
 1. 明确本次要做什么
 2. 明确本次不做什么
 3. 补齐约束：时间、兼容性、权限、环境、成本
+4. 若用户用技术词描述范围，写入前先区分：用户需求边界 / 业务边界 / 架构接缝 / 接口面
 ```
 
 ### Phase 3: 验收标准
@@ -94,6 +120,7 @@ AI:
 - `.autodev/current-brainstorm.md`
 - `.autodev/current-metaphor.md` (可选)
 - `.autodev/current-flow.json`
+- `.autodev/current-stack.json` (V2 可选)
 
 ## 阶段结束选项
 

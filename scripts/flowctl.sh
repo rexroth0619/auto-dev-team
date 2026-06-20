@@ -10,6 +10,7 @@ Commands:
   init <task-slug> <mode>   Create and activate a new flow
   activate <flow-id>        Switch active flow
   ensure <artifact-type>    Ensure artifact exists for active flow
+                            Supported: brainstorm, metaphor, steps, test, debug, blast_radius, gui
   validate                  Validate active flow registry and artifacts
   archive <flow-id>         Mark flow archived
   clean                     Clean stale active links and flow temp outputs
@@ -23,6 +24,7 @@ REPO_ROOT="$(git rev-parse --show-toplevel 2>/dev/null || pwd)"
 AUTODEV_DIR="$REPO_ROOT/.autodev"
 FLOWS_DIR="$AUTODEV_DIR/flows"
 ACTIVE_REGISTRY="$AUTODEV_DIR/current-flow.json"
+STACK_REGISTRY="$AUTODEV_DIR/current-stack.json"
 
 mkdir -p "$AUTODEV_DIR" "$FLOWS_DIR"
 
@@ -119,6 +121,55 @@ write_registry_links() {
       ln -s "$src" "$dest" 2>/dev/null || cp "$src" "$dest"
     fi
   done
+}
+
+ensure_stack_registry() {
+  local task_slug="$1"
+  if [[ ! -f "$STACK_REGISTRY" ]]; then
+    cp "$TEMPLATE_DIR/current-stack.json" "$STACK_REGISTRY"
+  fi
+  python3 - "$STACK_REGISTRY" "$task_slug" "$(timestamp)" <<'PY'
+import json, sys
+path, task_slug, now = sys.argv[1:]
+with open(path, "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+if data.get("stack_id") == "STACK-REPLACE-ME":
+    data["stack_id"] = f"STACK-{task_slug}-v1"
+if str(data.get("updated_at", "")).startswith("YYYY-"):
+    data["updated_at"] = now
+if str(data.get("last_meaningful_touch_at", "")).startswith("YYYY-"):
+    data["last_meaningful_touch_at"] = now
+with open(path, "w", encoding="utf-8") as fh:
+    json.dump(data, fh, ensure_ascii=False, indent=2)
+    fh.write("\n")
+PY
+}
+
+sync_stack_from_flow() {
+  local flow_json="$1"
+  [[ -f "$STACK_REGISTRY" ]] || return 0
+  python3 - "$STACK_REGISTRY" "$flow_json" "$(timestamp)" <<'PY'
+import json, sys
+stack_path, flow_path, now = sys.argv[1:]
+with open(stack_path, "r", encoding="utf-8") as fh:
+    stack = json.load(fh)
+with open(flow_path, "r", encoding="utf-8") as fh:
+    flow = json.load(fh)
+flow_id = flow.get("flow_id")
+active_step = flow.get("active_step")
+stack["flow_ref"] = flow_id
+stack["step_ref"] = active_step
+if flow_id:
+    recent = [item for item in stack.get("recent_flow_ids", []) if item != flow_id]
+    recent.insert(0, flow_id)
+    stack["recent_flow_ids"] = recent[:10]
+stack["updated_at"] = now
+if not stack.get("last_meaningful_touch_at") or str(stack.get("last_meaningful_touch_at")).startswith("YYYY-"):
+    stack["last_meaningful_touch_at"] = now
+with open(stack_path, "w", encoding="utf-8") as fh:
+    json.dump(stack, fh, ensure_ascii=False, indent=2)
+    fh.write("\n")
+PY
 }
 
 sync_metaphor_ref_into_artifacts() {
@@ -266,6 +317,7 @@ sync_registry() {
   local flow_dir="$1"
   local flow_json="$flow_dir/flow.json"
   cp "$flow_json" "$ACTIVE_REGISTRY"
+  sync_stack_from_flow "$flow_json"
   write_registry_links "$flow_dir"
 }
 
@@ -286,6 +338,7 @@ command_init() {
 
   mkdir -p "$flow_dir/blast-radius" "$flow_dir/evidence" "$flow_dir/temp"
   flow_template "$TEMPLATE_DIR/current-flow.json" "$flow_id" "$task_slug" "$mode" "$now" >"$flow_json"
+  ensure_stack_registry "$task_slug"
   local brainstorm_id
   brainstorm_id="$(ensure_artifact_file "$flow_dir" "$task_slug" "$flow_id" "BRAINSTORM-${task_slug}-v1" "" "" "brainstorm")"
   update_flow_json "$flow_json" "brainstorm" ".autodev/current-brainstorm.md" "$brainstorm_id" "$now"
@@ -383,6 +436,19 @@ if artifact_files["steps"].exists() and (not plan_ref or plan_ref == "null"):
 
 print("Active flow is valid")
 PY
+  if [[ -f "$STACK_REGISTRY" ]]; then
+    python3 - "$STACK_REGISTRY" "$flow_id" <<'PY'
+import json, sys
+path, flow_id = sys.argv[1:]
+with open(path, "r", encoding="utf-8") as fh:
+    data = json.load(fh)
+stack_flow = data.get("flow_ref")
+if stack_flow and stack_flow != flow_id:
+    raise SystemExit(
+        f"current-stack.json flow_ref {stack_flow} does not match active flow {flow_id}"
+    )
+PY
+  fi
 }
 
 command_archive() {

@@ -24,15 +24,25 @@
 - 用户提到的目标源文件
 - 相关测试文件（若已有）
 - 若存在 `.autodev/current-test.md`，一并读取
+- `references/principles/code-navigation.md` - 根据目标源文件、影响面和调用链寻找邻近测试、回归入口和测试落层
 - 若任务涉及“最近提交 / 预发验收 / 发版手测”，主动读取最近相关提交、用户指定的 commit range 或 PR diff
 - 若任务涉及预发数据库查询、造单或环境路径，主动读取 `.autodev/path.md`
 
 ⚠️ 若新增或修改 `.feature` / step definitions，必须读取 `references/principles/bdd-testing.md`。
 ⚠️ 进入本模式时，必须读取 `references/principles/test-verification.md`。
 ⚠️ 若测试目标涉及运行行为验证或根因定位，必须读取 `references/principles/observation-driven-verification.md`。
+⚠️ 若测试目标涉及模块、接口面、契约、适配器或测试落层，必须读取 `references/principles/language-lock.md`。
 
 `current-test.md` 必须保持与 `current-brainstorm.md`、`current-steps.md` 的 metadata 一致，不得脱离当前 flow 单独漂移。
 若启用比喻层，测试回执前可补 `🪄 类比说明`，但技术测试结果仍以 `references/principles/test-verification.md` 为准。
+
+## Phase -1: 需求确认与澄清
+
+进入 Tester 写入或生成测试资产前，必须先完成 `references/shared/interaction-contract.md` 的 `需求确认与澄清闸门`。
+
+- 先输出 `🧾 需求确认`
+- 用户确认后，输出 `🧾 需求澄清问题包`，重点问 use case、验收口径、测试落层、环境限制
+- 输出澄清问题包后必须停下来等用户回复；用户回复前不得生成测试计划、测试文件、release-plan 或执行测试
 
 ## Phase 0: 环境与现有覆盖检查
 
@@ -53,6 +63,7 @@ AI 检查项目当前测试能力:
    ❌ 未配置 -> 记录为“暂不可自动化”
 
 4. 现有覆盖:
+   - 若代码导航器可用且项目已索引，先用 semantic_impact / semantic_files 找邻近测试和受影响入口
    - 目标 use case 是否已有测试？
    - 是否已有历史失败案例 / 回归测试？
 ```
@@ -130,6 +141,8 @@ AI 为每个场景选择测试层:
 - 集成 / 契约测试: 服务协作 / 接口 / 状态流
 - GUI 自治验收: 页面流程 / 跳转 / 会话 / 表单 / 任意可交互界面
 - 人工验收: 视觉 / 动效 / 体感 / 外部系统
+
+测试落层时必须说明测试穿过哪个接口面；接口面就是测试面，避免为了测试实现细节而扩大公共接口。
 ```
 
 同时判断：
@@ -156,6 +169,7 @@ AI 为每个场景选择测试层:
 - 能复用现有测试资产时，不重复造轮子
 - 若当前项目没有 BDD 框架，也可以先用场景矩阵和自动测试组合，不强制装框架
 - 第一行测试代码写入前，也要先做 Blast Radius，至少分析目标源文件和测试入口
+- 若导航器可用，写测试前先用导航器确认被测符号、调用入口、邻近测试和受影响场景
 
 ## Phase 4: 执行验证
 

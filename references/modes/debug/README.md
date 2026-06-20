@@ -83,12 +83,22 @@
 - `.autodev/current-brainstorm.md` - 当前问题对应的需求讨论 / 修复边界
 - 若存在 `.autodev/current-metaphor.md`，一并读取，用于用户可理解回执与反向提问翻译
 - 若存在 `.autodev/current-debug.md`，一并读取
+- `references/principles/code-navigation.md` - 生成假设前先查相关符号、调用链、同型路径和候选影响面
 - `references/principles/observation-driven-verification.md` - 本模式默认按 `L2` 启用观测驱动验证
 - 若问题位于 GUI 链路，读取 `references/principles/gui-autonomous-loop.md`
+- 若修复涉及模块归属、接口面、接缝、抽象或同型扩散，读取 `references/principles/language-lock.md`
 
 **注意**：context-snapshot、git log、分支守卫等共享动作，已在 `references/write-preflight.md` 中统一执行。
 
 ## 流程
+
+### Phase 0: 需求确认与澄清
+
+进入 Debug 写入流程前，必须先完成 `references/shared/interaction-contract.md` 的 `需求确认与澄清闸门`。
+
+- 先输出 `🧾 需求确认`
+- 用户确认后，输出 `🧾 需求澄清问题包`，重点问症状、复现路径、最近改动、环境差异
+- 输出澄清问题包后必须停下来等用户回复；用户回复前不得开始诊断、假设、方案或代码修复
 
 ### Phase 1: 问诊（症状收集）
 ```
@@ -116,7 +126,10 @@
 **⛔ 此阶段禁止开处方，只能开检查单**
 
 ```
-医师: 基于症状生成鉴别诊断，按检查成本排序（简单无创的在前）:
+医师: 0. 若代码导航器可用且项目已索引，先用 semantic_explore 定位症状相关实现；
+         必要时用 semantic_callers / semantic_callees 检查入口、同型路径和对称实现。
+
+      1. 基于症状和导航结果生成鉴别诊断，按检查成本排序（简单无创的在前）:
       
       | # | 疑似病因 | 检查方法 | 成本 | 状态 |
       |---|----------|----------|------|------|
@@ -198,8 +211,10 @@
             - 为什么不只改单点？
             - 为什么不直接上更重的平台改造？
          📐 如果修复需要添加新逻辑，快速判断归属：
+            - 先按术语锁把“组件 / 服务 / API / 边界 / 抽象”翻译成模块、接口面、接缝、适配器或测试面
             - 新逻辑属于哪个模块？放在出错的文件里合理吗？
             - 如果不合理（职责不同），应放到合适的现有模块或新建
+            - 若要新增接缝，必须说明适配器类型和测试面
          🛡️ 必须写出防复发策略：
             - 哪些同类入口已一起覆盖
             - 哪些回归用例会防止同型 bug 再出现

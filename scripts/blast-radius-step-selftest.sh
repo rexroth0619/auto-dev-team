@@ -18,7 +18,7 @@ cat >"$STEPS_FILE" <<'EOF'
 ## 计划 (每步必须增量可测)
 
 - [ ] 🌀 Step 1: 自检通过路径 [可测产出: selftest] [Blast Radius: scripts/init-autodev.sh::copy_if_missing → ≤🔴]
-- [ ] 🌀 Step 2: 自检拦截路径 [可测产出: selftest] [Blast Radius: scripts/init-autodev.sh::copy_if_missing → ≤🟢]
+- [ ] 🌀 Step 2: 自检拦截路径 [可测产出: selftest] [Blast Radius: scripts/blast-radius.py → ≤🟢]
 EOF
 
 "$REPO_ROOT/scripts/blast-radius-step.sh" \

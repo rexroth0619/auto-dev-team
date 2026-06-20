@@ -45,6 +45,7 @@ git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 - 版本说明见 [CHANGELOG.md](CHANGELOG.md)
 - 当前重点能力：
   - Brainstorm + flow control plane + 双层 Review
+  - V2 MVP: active stack + scope router + resume router + drift detect 骨架
   - Resume 模式：半路回来 / 切模型后快速恢复 current-* 上下文
   - Debug 系统性修复约束：不再只做单点补丁
   - 预发测试 plan + manual/auto 双执行器
@@ -85,6 +86,7 @@ git clone -b main https://github.com/rexroth0619/auto-dev-team.git
 - 机械步骤优先交给脚本，减少重复推理
 - Skill 策略由 `.autodev/autodev-config.json` 配置
 - 所有 `current-*` artefact 由 `.autodev/current-flow.json` + `scripts/flowctl.sh` 管理
+- 当前多尺度注意力由 `.autodev/current-stack.json` + `scripts/stackctl.sh` 管理
 - 可选的比喻层由 `.autodev/current-metaphor.md` 管理，标准模板内置为餐厅 / 物流 / 工厂
 - 所有改动都要求验证和可回退
 - 第一行代码写入前默认执行脚本化 Blast Radius
@@ -101,6 +103,8 @@ SKILL.md
 references/mode-index.md
 references/write-preflight.md
 references/shared/current-artifact-contract.md
+references/shared/current-stack-contract.md
+references/shared/interaction-contract.md
 references/modes/*/README.md
 references/principles/*.md
 ```
@@ -116,10 +120,14 @@ auto-dev-team/
 │       ├── context-snapshot.md
 │       ├── current-brainstorm.md
 │       ├── current-flow.json
+│       ├── current-stack.json
 │       ├── current-metaphor.md
 │       ├── current-test.md
 │       ├── current-steps.md
 │       ├── current-blast-radius.md
+│       ├── project-roadmap.md
+│       ├── milestone-plan.md
+│       ├── phase-plan.md
 │       ├── forbidden-zones.md
 │       ├── module-registry.md
 │       ├── gui-case-matrix.md
@@ -138,6 +146,8 @@ auto-dev-team/
 │   ├── checkpoint.sh
 │   ├── checkpoint-selftest.sh
 │   ├── flowctl.sh
+│   ├── stackctl.sh
+│   ├── planctl.py
 │   ├── release-auth-bridge.sh
 │   ├── release-auto-run.py
 │   ├── release-auto-selftest.sh
@@ -149,11 +159,14 @@ auto-dev-team/
     ├── mode-index.md
     ├── shared/
     │   ├── current-artifact-contract.md
+    │   ├── current-stack-contract.md
+    │   ├── interaction-contract.md
+    │   ├── menu-contract.md
     │   └── flow-snippets.md
     ├── metaphors/
     ├── write-preflight.md
     ├── modes/
-│   ├── brainstorm/README.md
+    │   ├── brainstorm/README.md
     │   ├── architect/README.md
     │   ├── cleanup/README.md
     │   ├── debug/README.md
@@ -169,6 +182,10 @@ auto-dev-team/
     ├── patterns/
     ├── pm-guide/
     └── principles/
+        ├── hierarchical-planning.md
+        ├── scope-router.md
+        ├── resume-router.md
+        ├── drift-detection.md
 ```
 
 ## 主要模式
@@ -176,7 +193,7 @@ auto-dev-team/
 | 模式 | 触发场景 | 用途 |
 |------|----------|------|
 | Brainstorm | 需求讨论、边界澄清、先对齐 | 产出 `current-brainstorm.md`，初始化 active flow |
-| Resume | 半路回来、热重启、切模型恢复 | 读取 `current-flow.json + current-*`，恢复当前任务记忆 |
+| Resume | 半路回来、热重启、切模型恢复 | 读取 `current-stack.json + current-flow.json + current-*`，恢复当前任务记忆 |
 | Architect | 新功能、实现需求 | 方案设计与拆步 |
 | Debug | bug、报错、异常 | 先诊断后修复 |
 | Hotfix | 线上故障、紧急止血 | 最小改动恢复服务 |
@@ -227,6 +244,9 @@ auto-dev-team/
 - `行为场景层`：PM 可读的 use case、异常链路、边界 case。
 - `Blast Radius 闸门`：改代码前先扫描目标文件/符号、直接调用方、邻近测试、reverse import chain 和风险等级。
 - `Step Blast Radius wrapper`：Step 模式优先由 `scripts/blast-radius-step.sh` 从 `current-steps.md` 自动解析 target 和阈值，减少手填参数。
+- `Scope Router`：按任务尺度选择 `one-shot / flow / phase / milestone / project`
+- `Resume Router`：支持显式 Resume、隐式继续与超时自动恢复
+- `Drift Detection`：采用 `precheck -> full detect -> AI 决策 -> reconcile`
 - `后台自动测试层`：代码变更后默认执行，优先覆盖改动点、边界和直接影响面。
 - `GUI 自治验收层`：命中页面流程、窗口、表单、会话、权限、可交互界面等风险时，AI 默认执行 GUI executor；Web 默认 Playwright。
 - `Web GUI executor`：既接受 `npx playwright test`，也接受 `node xxx.ui.test.js` 的脚本式 Playwright 闭环。
@@ -254,6 +274,8 @@ auto-dev-team/
 - Skill 策略与阈值：`.autodev/autodev-config.json`
 - 初始化 `.autodev/`：`scripts/init-autodev.sh`
 - current artefact flow 管理：`scripts/flowctl.sh`
+- current stack 管理：`scripts/stackctl.sh`
+- drift detection：`python3 scripts/planctl.py detect-drift --mode precheck`
 - 写入前 Blast Radius：`scripts/blast-radius.py`
 - Step 模式 Blast Radius 包装：`scripts/blast-radius-step.sh`
 - Blast Radius 自检：`scripts/blast-radius-selftest.sh`

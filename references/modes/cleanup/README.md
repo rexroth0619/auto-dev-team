@@ -6,6 +6,8 @@
 
 进入此模式时，AI 必须主动读取以下文件（无需用户提供）：
 - `.autodev/project-map.md` - 了解项目结构
+- `references/principles/code-navigation.md` - 删除前查调用方、引用方、reverse import、相邻测试和替代实现
+- 若清理目标涉及模块、接口面、适配器、注册项或测试资产，读取 `references/principles/language-lock.md`
 
 ## 清理类型
 
@@ -44,18 +46,23 @@ AI:   扫描:
 ## 流程
 
 ```
+0. 完成 `需求确认与澄清闸门`
+   - 先输出 `🧾 需求确认`
+   - 用户确认后，输出 `🧾 需求澄清问题包` 并停下来等回复
+   - 用户回复前不得扫描、列清单、快照、Blast Radius 或删除
 1. 扫描 → 输出清单
 2. 用户确认范围
 3. 💿 执行前快照闸门（强制）
    - 必须输出 "💿 已保护" 或 "💿 闸门通过" 后才能继续
 4. 🧭 Blast Radius 删除证明（强制）
-   - 对候选删除文件 / 符号执行 `scripts/blast-radius.py ... --mode cleanup --write`
+   - 若代码导航器可用且项目已索引，先用 semantic_callers / semantic_impact 证明候选删除项无活跃调用
+   - 再对候选删除文件 / 符号执行 `scripts/blast-radius.py ... --mode cleanup --write`
    - 重点确认：直接调用方、reverse import chain、邻近测试
    - 若仍有活跃调用方，禁止继续删除
 5. 逐项清理
 6. 验证
 7. 建立存档（详见 references/principles/checkpoint-mechanism.md）
-8. 自动更新 module-registry.md (如删除了已注册组件)
+8. 自动更新 module-registry.md (如删除了已注册模块 / UI 组件 / 适配器)
 ```
 
 ## 安全规则

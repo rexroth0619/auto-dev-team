@@ -1,13 +1,14 @@
 # 模式索引
 
-> 先选模式，再读唯一的模式文档。写入模式在进入具体流程前，必须先读 `references/write-preflight.md`。
+> 先选模式，再读唯一的模式文档。新的写入意图先过需求确认与澄清问题包；用户回复澄清问题后，写入模式进入具体流程前必须读 `references/write-preflight.md`。
 
 ## 读取顺序
 
 1. 先读本文件，判断唯一模式。
-2. 若该模式会写文件或改配置，先执行 `references/write-preflight.md`。
-3. 只读取该模式对应的一个 `README.md`。
-4. Architect / Refactor / Optimize 生成计划并获批后，再进入 `references/modes/step/README.md`。
+2. 若用户表达的是新的写入意图，先按 `references/shared/interaction-contract.md` 完成 `需求确认与澄清闸门`。
+3. 若该模式会写文件或改配置，在用户回复澄清问题且缺口闭合后执行 `references/write-preflight.md`。
+4. 只读取该模式对应的一个 `README.md`。
+5. Architect / Refactor / Optimize 生成计划并获批后，再进入 `references/modes/step/README.md`。
 
 ## 模式匹配规则（按顺序命中）
 
@@ -30,15 +31,17 @@
 
 用户说"帮我改一下"/"调整一下"/"修改 xxx"等，即使未明确匹配上述模式：
 - 视为写入意图，默认进入 **FastTrack** 模式
-- 必须先走 `references/write-preflight.md` + 执行前快照闸门
+- 必须先输出 `🧾 需求确认`，用户确认后再输出 `🧾 需求澄清问题包` 并停下来等回复
+- 用户回复澄清问题且缺口闭合后，才能走 `references/write-preflight.md` + 执行前快照闸门
 - ⛔ 禁止未经模式判断就直接写文件
+- ⛔ 禁止把 FastTrack 兜底理解为“无需确认即可执行”
 
 ## 推荐主路径
 
 - 半路回来 / 切模型 / 断网恢复：`Resume -> Step / Architect / Debug / Tester`
 - 需求还在讨论 / 边界未清：`Brainstorm -> Architect -> Step`
 - 范围明确的小改动：`FastTrack`
-- 新功能已明确：可从 `Architect` 开始；若缺少 `current-brainstorm.md`，先补 mini-brainstorm
+- 新功能已明确：先过 `需求确认与澄清闸门`，再从 `Architect` 开始；若缺少 `current-brainstorm.md`，先补 mini-brainstorm
 - 修 bug：`Debug`；若问题已经从原需求分叉，先补 `current-brainstorm.md`
 
 ## 渐进式披露规则
