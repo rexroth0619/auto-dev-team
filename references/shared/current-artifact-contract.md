@@ -1,17 +1,19 @@
 # Current Artifact Contract
 
-> `current-*` 不再只是“当前文件名”，而是同一条工作流实例（flow）下的一组成套产物。目录归属、registry 和 metadata header 共同决定它是不是“正确的当前 artefact”。
+> `current-*` 不再只是“当前文件名”，而是同一条工作流实例（flow）下的一组成套产物。目录归属、registry 和 metadata header 共同决定它是不是“正确的当前 artefact”。V2 在此基础上新增 `.autodev/current-stack.json` 作为更高一层的 active attention stack。
 
 ## 目标
 
 - 让 `current-*` 有稳定实例身份，不再主要依赖 Agent 上下文猜测
 - 让初始化、补齐、切换 active、归档、清理可以脚本化
 - 让 `Brainstorm -> Architect -> Step -> Review` 共用同一条 flow
+- 让 `project / milestone / phase / flow / step` 可以通过统一 stack 指针被恢复和追踪
 
 ## 目录模型
 
 ```text
 .autodev/
+├── current-stack.json
 ├── current-flow.json
 ├── current-brainstorm.md
 ├── current-metaphor.md
@@ -36,6 +38,7 @@
 ```
 
 - `flows/<flow_id>/`：真实归属目录
+- `.autodev/current-stack.json`：当前活跃注意力栈
 - `.autodev/current-*`：当前 active flow 的兼容入口
 - `.autodev/current-flow.json`：当前 active flow 的 registry
 
@@ -46,6 +49,7 @@
 3. 派生产物必须继承同一个 `flow_id`。
 4. `current-flow.json` 负责声明当前应该有哪些 artefacts。
 5. 若 metadata 和 `current-flow.json` 不一致，视为 stale / 串线 artefact，禁止直接继续执行。
+6. 若存在 `current-stack.json`，其 `flow_ref` 必须与 active `flow_id` 对齐。
 
 ## 统一 metadata 字段
 
@@ -94,6 +98,18 @@ JS 类 artefact（如 `current-gui-test.js`）使用注释块携带同样字段�
 
 它回答的是：“现在应该读哪一套 artefacts，缺了哪些，是否还属于同一条 flow”。
 
+## current-stack.json 的职责
+
+`current-stack.json` 负责表达更高层的当前活跃路径：
+
+- 当前 `initiative / project / milestone / phase`
+- 当前 `flow / step`
+- 最近一次有效推进时间
+- 自动 Resume 是否开启
+- Resume 阈值
+
+它回答的是：“当前整盘工作到底聚焦在哪一条路径上，以及是不是该恢复、该重估了”。
+
 ## flowctl.sh 的职责
 
 优先用 `scripts/flowctl.sh` 管理 current artefacts：
@@ -105,10 +121,12 @@ JS 类 artefact（如 `current-gui-test.js`）使用注释块携带同样字段�
 - `archive`：归档 flow
 - `clean`：清理旧的 active 视图和临时产物
 
+更多关于 stack 的细节见 [`current-stack-contract.md`](current-stack-contract.md)。
+
 ## 与模式的关系
 
 - `Brainstorm`：生成 `current-brainstorm.md`，初始化 flow
-- `Resume`：消费 `current-flow.json + current-*`，恢复当前任务记忆并推荐下一步模式
+- `Resume`：消费 `current-stack.json + current-flow.json + current-*`，恢复当前任务记忆并推荐下一步模式
 - `Metaphor Layer`：生成 `current-metaphor.md`，建立当前 flow 的表达层协议
 - `Architect`：消费 `current-brainstorm.md`，生成 `current-steps.md`
 - `Step`：消费 `current-brainstorm.md + current-steps.md`，并更新其他 `current-*`

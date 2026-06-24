@@ -12,7 +12,9 @@
 ## Git / Checkpoint
 
 - 建立存档前要检查未跟踪文件，否则新文件最容易漏进提交之外。
-- `git add -A` 后必须审查暂存区，尤其注意 `.env`、密钥、`.cursor/`。
+- dirty checkpoint 默认必须 scoped；不能用 `git add -A` 把用户已有脏现场打成巨大 WIP commit。
+- `git add -- <scope>` 后必须审查暂存区，尤其注意 `.env`、密钥、`.cursor/`。
+- `scripts/checkpoint.sh` 是 skill 本体脚本，不是项目根脚本；项目内优先调用 `.autodev/bin/checkpoint`。
 - 在 monorepo 中，当前包改动很小，不代表影响范围很小；先看直接消费方。
 - 工作区干净不等于“已有当前任务保护点”；首次写入前仍要过快照闸门。
 - Blast Radius 不是“同名 grep 一把梭”；要看直接引用、reverse import chain、邻近测试和配置信号。

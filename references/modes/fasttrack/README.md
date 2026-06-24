@@ -3,6 +3,8 @@
 > 适用: 改文案、调样式、修小问题 | 限制: ≤2文件, ≤30行 | 超限自动升级为 Architect
 
 ⚠️ 若当前改动命中 GUI-capable task，执行验证前必须读取 `references/principles/gui-autonomous-loop.md`。
+⚠️ 若当前改动涉及已有代码定位、调用方、复用点或影响面，执行前必须读取 `references/principles/code-navigation.md`。
+⚠️ 若当前改动涉及接口面、契约、模块归属或测试落层，执行前必须读取 `references/principles/language-lock.md`。
 
 ## 目录
 
@@ -22,7 +24,15 @@
 
 ## 流程
 
-### 0. 版本保护
+### 0. 需求确认与澄清
+
+- 进入 FastTrack 前，必须已经完成 `references/shared/interaction-contract.md` 的 `需求确认与澄清闸门`。
+- 若 FastTrack 是由写入意图兜底或 Architect 小改动变体自动切入，必须先输出 `🧾 需求确认`。
+- 用户确认后，必须输出 `🧾 需求澄清问题包` 并停下来等回复；FastTrack / 小改动也不能跳过。
+- 用户回复澄清问题且缺口闭合后，才允许继续范围检查、快速方案、会诊、快照或 Blast Radius。
+- 若需求确认或澄清中仍有目标、边界、验收的 `待确认` 项，不能进入 FastTrack，改走 Brainstorm / Architect。
+
+### 0.5 版本保护
 
 - 💿 改动前（强制）：按 `references/principles/checkpoint-mechanism.md` 的"执行前快照闸门"执行。用户确认方案后、第一行代码写入前，必须通过闸门。
 - 💾 改动完成且验证通过后：建立 1 个存档。详见 `references/principles/checkpoint-mechanism.md`。
@@ -33,7 +43,7 @@ AI:   📍 范围检查:
       - 涉及文件: ≤2 ✅ / >2 ❌
       - 代码改动: ≤30行 ✅ / >30行 ❌
       
-      ✅ 范围可控 → 直接执行
+      ✅ 范围可控 + 需求已确认 + 澄清已回复 → 输出快速方案并进入会诊
       ❌ 超出范围 → "改动较大，建议使用完整的开发流程"
 ```
 
@@ -61,7 +71,8 @@ AI:   📋 保留性确认:
 ### 1.95 Blast Radius 快速闸门（强制）
 
 ```text
-AI:   运行 `scripts/blast-radius.py --file ... --symbol ... --mode fasttrack --task ... --write`
+AI:   若代码导航器可用且项目已索引，先用 semantic_search / semantic_impact 收窄目标。
+      再运行 `scripts/blast-radius.py --file ... --symbol ... --mode fasttrack --task ... --write`
       输出:
       - `💥 Blast-radius 开始 - [BR-...] {...}`
       - 风险等级

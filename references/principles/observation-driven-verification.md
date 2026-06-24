@@ -71,6 +71,7 @@ Skill 统一使用“观测面”而不是“console log”。
 2. 至少标注一个备用观测面，主观测面不可达时可降级。
 3. 涉及运行时路径、日志路径、控制台入口时，先读 `.autodev/path.md`。
 4. 若当前任务为 GUI-capable task，优先让观测面贴近 GUI executor 的证据包（timeline / screenshot / console / network）。
+5. 若观测目标涉及模块、接口面、契约、接缝或适配器，先读 `references/principles/language-lock.md`，让观测面贴近真实测试面。
 
 ## 最低覆盖要求
 

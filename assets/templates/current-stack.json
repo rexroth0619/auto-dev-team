@@ -1,0 +1,17 @@
+{
+  "stack_id": "STACK-REPLACE-ME",
+  "status": "active",
+  "initiative_ref": null,
+  "project_ref": null,
+  "milestone_ref": null,
+  "phase_ref": null,
+  "flow_ref": null,
+  "step_ref": null,
+  "last_meaningful_touch_at": "YYYY-MM-DDTHH:MM:SS+08:00",
+  "last_resume_at": null,
+  "auto_resume_enabled": true,
+  "resume_threshold_hours": 24,
+  "drift_precheck_enabled": true,
+  "recent_flow_ids": [],
+  "updated_at": "YYYY-MM-DDTHH:MM:SS+08:00"
+}

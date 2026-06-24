@@ -28,8 +28,9 @@ Plan 对应: [REPLACE-PLAN-REF]
 
 ## 关键决策 (防遗忘，每步执行前必读)
 
-- **复用**: [要用的现有组件]
-- **抽象决策**: [是否抽象成通用 Utility]
+- **复用**: [要用的现有模块 / 组件 / 适配器]
+- **抽象决策**: [是否加深模块 / 收窄接口面 / 抽象成通用 Utility]
+- **术语锁**: [模块 / 接口面 / 接缝 / 适配器 / 测试面]
 - **影响范围**: [会改哪些文件]
 - **边界处理**: [异常情况怎么办]
 - **测试等级**: [小测试 / 大测试]
@@ -53,9 +54,9 @@ Plan 对应: [REPLACE-PLAN-REF]
   ` [Blast Radius: path/to/file::symbol → ≤🟡] `
   多目标用 `,` / `;` / `|` 分隔；Step 执行默认由 `scripts/blast-radius-step.sh` 自动解析
 
-- [ ] 🌀 Step 1: xxx [step_ref: STEP-1] [Brainstorm Coverage: B1, B2] [可测产出: yyy] [前置条件: ...] [覆盖场景: S1, S2] [后台自动测试: zzz] [Blast Radius: file::symbol → ≤🟡] [观测驱动验证: L1] [GUI: Playwright / 不触发] [主观测面: ...] [完成定义: ...] [偏航处理: 回 Brainstorm / 回计划 / 问用户]
-- [ ] 🌀 Step 2: xxx [step_ref: STEP-2] [Brainstorm Coverage: B3] [可测产出: yyy] [前置条件: ...] [覆盖场景: S3] [后台自动测试: zzz] [Blast Radius: file::symbol → ≤🟡] [观测驱动验证: L2] [GUI: 暂不可执行 / Manual only] [主观测面: ...] [完成定义: ...] [偏航处理: 回 Brainstorm / 回计划 / 问用户]
-- [ ] 🌀 Step 3: xxx [step_ref: STEP-3] [Brainstorm Coverage: B4] [可测产出: yyy] [前置条件: ...] [覆盖场景: S4] [后台自动测试: zzz] [Blast Radius: file::symbol → ≤🔴] [观测驱动验证: L3] [GUI: Playwright / 桌面 driver] [主观测面: ...] [完成定义: ...] [偏航处理: 回 Brainstorm / 回计划 / 问用户]
+- [ ] 🌀 Step 1: xxx [step_ref: STEP-1] [Brainstorm Coverage: B1, B2] [可测产出: yyy] [术语锁: 模块/接口面/测试面] [前置条件: ...] [覆盖场景: S1, S2] [后台自动测试: zzz] [Blast Radius: file::symbol → ≤🟡] [观测驱动验证: L1] [GUI: Playwright / 不触发] [主观测面: ...] [完成定义: ...] [偏航处理: 回 Brainstorm / 回计划 / 问用户]
+- [ ] 🌀 Step 2: xxx [step_ref: STEP-2] [Brainstorm Coverage: B3] [可测产出: yyy] [术语锁: 模块/接口面/测试面] [前置条件: ...] [覆盖场景: S3] [后台自动测试: zzz] [Blast Radius: file::symbol → ≤🟡] [观测驱动验证: L2] [GUI: 暂不可执行 / Manual only] [主观测面: ...] [完成定义: ...] [偏航处理: 回 Brainstorm / 回计划 / 问用户]
+- [ ] 🌀 Step 3: xxx [step_ref: STEP-3] [Brainstorm Coverage: B4] [可测产出: yyy] [术语锁: 模块/接口面/接缝/适配器/测试面] [前置条件: ...] [覆盖场景: S4] [后台自动测试: zzz] [Blast Radius: file::symbol → ≤🔴] [观测驱动验证: L3] [GUI: Playwright / 桌面 driver] [主观测面: ...] [完成定义: ...] [偏航处理: 回 Brainstorm / 回计划 / 问用户]
 
 ⚠️ 每步必须产出可独立验证的模块 + 观测计划，禁止积攒到最后验证
 
@@ -67,6 +68,11 @@ Plan 对应: [REPLACE-PLAN-REF]
 - 前置条件:
 - 覆盖场景:
 - 改动文件: 
+- 术语锁:
+  - 模块:
+  - 接口面:
+  - 接缝 / 适配器:
+  - 测试面:
 - Blast Radius:
   - 目标:
   - 报告:
@@ -98,6 +104,11 @@ Plan 对应: [REPLACE-PLAN-REF]
 - 前置条件:
 - 覆盖场景:
 - 改动文件: 
+- 术语锁:
+  - 模块:
+  - 接口面:
+  - 接缝 / 适配器:
+  - 测试面:
 - Blast Radius:
   - 目标:
   - 报告:
