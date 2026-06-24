@@ -86,7 +86,7 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
   - 能用 Subagent 时优先走独立会诊
   - 环境不支持时降级为本地 checklist，会诊能力不丢
 - 文件写入前必须完成版本保护闸门
-- 第一行代码写入前必须完成脚本化 Blast Radius 分析，默认执行 `scripts/blast-radius.py`
+- 第一行代码写入前必须完成脚本化 Blast Radius 分析，默认执行 `${AUTODEV_SKILL_ROOT}/scripts/blast-radius.py`
 - 代码更新后默认先执行后台自动测试
 - 行为变化必须做至少一轮对应档位的观测驱动验证
 - 命中 GUI-capable task 时，默认进入 `GUI 自治验收闭环`
@@ -113,7 +113,7 @@ description: 当用户要求进行代码变更（新功能开发、bug 修复、
 
 ## `.autodev` 记忆与配置
 
-`.autodev/` 存放在项目根目录下，由 `scripts/init-autodev.sh` 初始化，并通过 `.git/info/exclude` 本地忽略。
+`.autodev/` 存放在项目根目录下，由 `${AUTODEV_SKILL_ROOT}/scripts/init-autodev.sh` 初始化，并通过 `.git/info/exclude` 本地忽略。
 如需团队共享，再明确追加到 `.gitignore`。
 
 - 基线文档：`context-snapshot.md`、`project-map.md`、`module-registry.md`、`postmortem.md`、`path.md`、`ai-sot.json`、`autodev-config.json`
@@ -132,8 +132,16 @@ stack 语义与 Resume 时间规则见 `references/shared/current-stack-contract
 版本保护机制以 `references/principles/checkpoint-mechanism.md` 为准。三层体系：
 
 - 🎯 **里程碑**：任务开始时自动建立，信任模式开始前建立，默认 tag-only 标记当前 `HEAD`
-- 💿 **保护快照**：执行前强制闸门 + 智能补充；工作区脏时 commit 保存现场，工作区干净时 tag-only 保护基线
+- 💿 **保护快照**：执行前强制闸门 + 智能补充；工作区脏时必须 scoped commit 保存本轮确认范围，工作区干净时 tag-only 保护基线
 - 💾 **存档**：每步改动验证通过后建立，使用业务指纹
+
+路径约定：
+
+- `AUTODEV_SKILL_ROOT` 指向 AutoDevTeam skill 本体目录，例如 `/Users/rexroth/.codex/skills/AutoDevTeam`
+- canonical 脚本入口是 `${AUTODEV_SKILL_ROOT}/scripts/checkpoint.sh`
+- 项目内最多存在 `.autodev/bin/checkpoint` 薄 wrapper，指向 skill 本体脚本
+- ⛔ 禁止把 `scripts/checkpoint.sh` 理解为项目根目录下的真实脚本
+- 若 wrapper 不存在，先执行 `${AUTODEV_SKILL_ROOT}/scripts/init-autodev.sh <project_dir>`，或直接调用 canonical 绝对路径
 
 任何代码改动的固定执行顺序为：
 
@@ -145,11 +153,11 @@ stack 语义与 Resume 时间规则见 `references/shared/current-stack-contract
 
 高频热路径：
 
-- `scripts/init-autodev.sh`：初始化 `.autodev/` 与基础模板
-- `scripts/flowctl.sh`：管理 active flow、current artefact 与兼容入口
-- `scripts/stackctl.sh`：管理 active stack、touch、resume 判断与摘要
-- `scripts/planctl.py`：执行 drift precheck / full detect，为动态重规划提供结构化信号
-- `scripts/checkpoint.sh`、`scripts/blast-radius.py`、`scripts/blast-radius-step.sh`：执行版本保护与 Blast Radius 闸门
+- `${AUTODEV_SKILL_ROOT}/scripts/init-autodev.sh`：初始化 `.autodev/`、基础模板与 `.autodev/bin/checkpoint` wrapper
+- `${AUTODEV_SKILL_ROOT}/scripts/flowctl.sh`：管理 active flow、current artefact 与兼容入口
+- `${AUTODEV_SKILL_ROOT}/scripts/stackctl.sh`：管理 active stack、touch、resume 判断与摘要
+- `${AUTODEV_SKILL_ROOT}/scripts/planctl.py`：执行 drift precheck / full detect，为动态重规划提供结构化信号
+- `${AUTODEV_SKILL_ROOT}/scripts/checkpoint.sh`、`${AUTODEV_SKILL_ROOT}/scripts/blast-radius.py`、`${AUTODEV_SKILL_ROOT}/scripts/blast-radius-step.sh`：执行版本保护与 Blast Radius 闸门
 - `assets/templates/current-stack.json`、`project-roadmap.md`、`milestone-plan.md`、`phase-plan.md`：V2 多尺度规划模板
 - `references/shared/interaction-contract.md`、`menu-contract.md`、`flow-snippets.md`：用户可见的路由、回执、菜单共享骨架
 

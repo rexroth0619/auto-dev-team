@@ -35,6 +35,9 @@ git add README.md
 git commit -q -m "init"
 
 "$INIT_SCRIPT" "$REPO_DIR" >/dev/null
+if [[ ! -x "$REPO_DIR/.autodev/bin/checkpoint" ]]; then
+  fail "init should create executable .autodev/bin/checkpoint wrapper"
+fi
 
 milestone_output="$("$CHECKPOINT_SCRIPT" milestone "脚本验证#起点" "checkpoint selftest" gui-checkpoint)"
 assert_contains "$milestone_output" "🎯 里程碑"
@@ -52,9 +55,29 @@ git commit --allow-empty -q -m "after-milestone"
 clean_gate_output="$("$CHECKPOINT_SCRIPT" snapshot-gate "干净保护")"
 assert_contains "$clean_gate_output" "tag-only: snapshot/"
 
+printf 'dirty gate\n' > dirty-gate.txt
+if "$CHECKPOINT_SCRIPT" snapshot-gate "脏闸门" >/tmp/autodev-unscoped-gate.out 2>&1; then
+  fail "snapshot-gate should fail-close when dirty without scope"
+fi
+if "$CHECKPOINT_SCRIPT" snapshot-gate "脏闸门" -- . >/tmp/autodev-wide-gate.out 2>&1; then
+  fail "snapshot-gate should reject repository-wide scope"
+fi
+scoped_gate_output="$("$REPO_DIR/.autodev/bin/checkpoint" snapshot-gate "脏闸门" -- dirty-gate.txt)"
+assert_contains "$scoped_gate_output" "💿 已保护"
+assert_contains "$scoped_gate_output" "scoped:"
+
 printf 'delta\n' >> README.md
-archive_output="$("$CHECKPOINT_SCRIPT" archive "脚本验证#01" chore "checkpoint selftest archive")"
+if "$CHECKPOINT_SCRIPT" archive "脚本验证#01" chore "checkpoint selftest archive" >/tmp/autodev-unscoped-archive.out 2>&1; then
+  fail "archive should fail-close when dirty without scope"
+fi
+git add README.md
+if "$CHECKPOINT_SCRIPT" archive "脚本验证#01" chore "checkpoint selftest archive" -- README.md >/tmp/autodev-staged-archive.out 2>&1; then
+  fail "archive should reject pre-existing staged changes"
+fi
+git reset HEAD README.md >/dev/null
+archive_output="$("$REPO_DIR/.autodev/bin/checkpoint" archive "脚本验证#01" chore "checkpoint selftest archive" -- README.md)"
 assert_contains "$archive_output" "💾【存档】脚本验证#01"
+assert_contains "$archive_output" "scoped:"
 
 list_output="$("$CHECKPOINT_SCRIPT" list)"
 assert_contains "$list_output" "📍 版本点列表"

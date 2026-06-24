@@ -272,7 +272,7 @@ auto-dev-team/
 
 - 项目环境与路径：`.autodev/path.md`
 - Skill 策略与阈值：`.autodev/autodev-config.json`
-- 初始化 `.autodev/`：`scripts/init-autodev.sh`
+- 初始化 `.autodev/`：`${AUTODEV_SKILL_ROOT}/scripts/init-autodev.sh`
 - current artefact flow 管理：`scripts/flowctl.sh`
 - current stack 管理：`scripts/stackctl.sh`
 - drift detection：`python3 scripts/planctl.py detect-drift --mode precheck`
@@ -280,7 +280,7 @@ auto-dev-team/
 - Step 模式 Blast Radius 包装：`scripts/blast-radius-step.sh`
 - Blast Radius 自检：`scripts/blast-radius-selftest.sh`
 - Step 包装自检：`scripts/blast-radius-step-selftest.sh`
-- 版本保护原语：`scripts/checkpoint.sh`
+- 版本保护原语：`.autodev/bin/checkpoint` wrapper → `${AUTODEV_SKILL_ROOT}/scripts/checkpoint.sh`
 - checkpoint 自检：`scripts/checkpoint-selftest.sh`
 - 预发测试 plan 生成：`scripts/release-pack.py`
 - 预发自动化 runner：`scripts/release-auto-run.py`

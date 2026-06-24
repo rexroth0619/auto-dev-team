@@ -9,11 +9,14 @@ Usage: checkpoint.sh <command> [args]
 Commands:
   ensure-branch <task-slug>
   milestone <fingerprint> [description] [task-slug]
-  snapshot-gate [task]
-  archive <fingerprint> [type] [description]
+  snapshot-gate [task] [-- path ...]
+  archive <fingerprint> [type] [description] [-- path ...]
   list
   rollback <hash|tag|index|fingerprint>
   merge-advice [integration-branch]
+
+Dirty checkpoint commits are fail-close by default. Provide scoped paths with
+`-- path ...` or AUTODEV_CHECKPOINT_PATHS (newline or colon separated).
 EOF
 }
 
@@ -126,6 +129,70 @@ matches_branch_pattern() {
 
 repo_is_dirty() {
   [[ -n "$(git status --porcelain)" ]]
+}
+
+scope_paths_from_args() {
+  local seen_sep=false
+  local arg
+  for arg in "$@"; do
+    if [[ "$arg" == "--" ]]; then
+      seen_sep=true
+      continue
+    fi
+    if [[ "$seen_sep" == true ]]; then
+      printf '%s\n' "$arg"
+    fi
+  done
+}
+
+env_scope_paths() {
+  local raw="${AUTODEV_CHECKPOINT_PATHS:-}"
+  [[ -z "$raw" ]] && return 0
+  printf '%s\n' "$raw" | tr ':' '\n' | sed '/^[[:space:]]*$/d'
+}
+
+fail_unscoped_dirty_checkpoint() {
+  local command_name="$1"
+  cat >&2 <<EOF
+⛔ ${command_name} 拒绝全仓 dirty checkpoint
+原因: 工作区已有未提交改动，但没有显式 checkpoint scope。
+继续前请选择一种方式:
+  1. 用 .autodev/bin/checkpoint ${command_name} <task> -- <path...>
+  2. 设置 AUTODEV_CHECKPOINT_PATHS 为本轮允许纳入保护的文件列表
+  3. 让用户先处理/确认现有脏工作区
+EOF
+  exit 2
+}
+
+stage_scoped_paths() {
+  local command_name="$1"
+  shift
+  local -a scope_paths=("$@")
+  if [[ ${#scope_paths[@]} -eq 0 ]]; then
+    fail_unscoped_dirty_checkpoint "$command_name"
+  fi
+
+  if ! git diff --cached --quiet; then
+    echo "⛔ ${command_name} 拒绝复用已有暂存区；请先确认或清空 staged changes" >&2
+    exit 2
+  fi
+
+  local scope_path normalized_repo
+  normalized_repo="$(cd "$REPO_ROOT" && pwd -P)"
+  for scope_path in "${scope_paths[@]}"; do
+    case "$scope_path" in
+      ""|"."|"./"|"$REPO_ROOT"|"$REPO_ROOT/"|"$normalized_repo"|"$normalized_repo/"|"/")
+        echo "⛔ ${command_name} scope 过宽: ${scope_path:-<empty>}" >&2
+        exit 2
+        ;;
+    esac
+  done
+
+  git add -- "${scope_paths[@]}"
+  if git diff --cached --quiet; then
+    echo "⛔ ${command_name} scope 内没有可提交改动，拒绝制造空保护提交" >&2
+    exit 2
+  fi
 }
 
 last_subject() {
@@ -391,14 +458,23 @@ EOF
 
 snapshot_gate() {
   local task="${1:-现场保护}"
+  local -a scope_paths=()
+  local scope_path
+  while IFS= read -r scope_path; do
+    [[ -z "$scope_path" ]] && continue
+    scope_paths+=("$scope_path")
+  done < <(scope_paths_from_args "$@"; env_scope_paths)
   local subject
   subject="$(last_subject)"
 
   if repo_is_dirty; then
-    git add -A
+    stage_scoped_paths "snapshot-gate" "${scope_paths[@]}"
     review_staging "snapshot"
     git commit -m "「${task}#保护」chore: 自动存档" >/dev/null
-    echo "💿 已保护 → $(git rev-parse --short HEAD)（执行前闸门）"
+    echo "💿 已保护 → $(git rev-parse --short HEAD)（执行前闸门，scoped: ${#scope_paths[@]} paths）"
+    if repo_is_dirty; then
+      echo "⚠️ 仍有未纳入本次保护的工作区改动；后续写入只能触碰已确认 scope" >&2
+    fi
     return 0
   fi
 
@@ -417,16 +493,22 @@ archive_commit() {
   local fingerprint="${1:?fingerprint required}"
   local kind="${2:-chore}"
   local description="${3:-自动存档}"
+  local -a scope_paths=()
+  local scope_path
+  while IFS= read -r scope_path; do
+    [[ -z "$scope_path" ]] && continue
+    scope_paths+=("$scope_path")
+  done < <(scope_paths_from_args "$@"; env_scope_paths)
 
   if ! repo_is_dirty; then
     echo "ℹ️ 无改动，跳过存档"
     return 0
   fi
 
-  git add -A
+  stage_scoped_paths "archive" "${scope_paths[@]}"
   review_staging "archive"
   git commit -m "「${fingerprint}」${kind}: ${description}" >/dev/null
-  echo "💾【存档】${fingerprint} → $(git rev-parse --short HEAD)"
+  echo "💾【存档】${fingerprint} → $(git rev-parse --short HEAD)（scoped: ${#scope_paths[@]} paths）"
 }
 
 list_archives() {

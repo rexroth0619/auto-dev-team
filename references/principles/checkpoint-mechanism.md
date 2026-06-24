@@ -1,11 +1,12 @@
 # 版本保护机制
 
-> canonical 版本保护文档。默认优先调用 `scripts/checkpoint.sh`，文档提供规则、回执格式和手工兜底。
+> canonical 版本保护文档。默认优先调用 `.autodev/bin/checkpoint`；其本质是指向 `${AUTODEV_SKILL_ROOT}/scripts/checkpoint.sh` 的项目内薄 wrapper。文档提供规则、回执格式和手工兜底。
 
 ## 目录
 
 - 核心概念
 - 配置来源
+- 路径约定
 - 脚本接口（优先）
 - 分支安全规则
 - 🎯 里程碑
@@ -44,19 +45,39 @@
 2. `origin/HEAD`
 3. 当前分支 / skill 默认值
 
+## 路径约定
+
+版本保护脚本属于 AutoDevTeam skill 本体，不属于项目仓库。
+
+- `AUTODEV_SKILL_ROOT`：AutoDevTeam skill 本体目录，例如 `/Users/rexroth/.codex/skills/AutoDevTeam`
+- canonical 脚本：`${AUTODEV_SKILL_ROOT}/scripts/checkpoint.sh`
+- 项目 wrapper：`.autodev/bin/checkpoint`
+
+初始化 `.autodev/` 时，`${AUTODEV_SKILL_ROOT}/scripts/init-autodev.sh <project_dir>` 必须创建或更新 `.autodev/bin/checkpoint`。
+
+执行优先级：
+
+1. `.autodev/bin/checkpoint ...`
+2. `${AUTODEV_SKILL_ROOT}/scripts/checkpoint.sh ...`
+3. 本文手工兜底
+
+⛔ 禁止把 `scripts/checkpoint.sh` 理解为项目根目录下的脚本。项目仓库不应该复制真实 checkpoint 脚本；最多保留 `.autodev/bin/checkpoint` wrapper 或 symlink。
+
 ## 脚本接口（优先）
 
 | 动作 | 命令 |
 |------|------|
-| 分支守卫 | `scripts/checkpoint.sh ensure-branch <task-slug>` |
-| 建立里程碑 | `scripts/checkpoint.sh milestone "<指纹>" "<描述>" <task-slug>` |
-| 执行前快照闸门 | `scripts/checkpoint.sh snapshot-gate <task>` |
-| 建立存档 | `scripts/checkpoint.sh archive "<指纹>" <type> "<描述>"` |
-| 展示存档列表 | `scripts/checkpoint.sh list` |
-| 回退到目标 | `scripts/checkpoint.sh rollback <hash|tag|index|fingerprint>` |
-| 合并建议 | `scripts/checkpoint.sh merge-advice [integration-branch]` |
+| 分支守卫 | `.autodev/bin/checkpoint ensure-branch <task-slug>` |
+| 建立里程碑 | `.autodev/bin/checkpoint milestone "<指纹>" "<描述>" <task-slug>` |
+| 执行前快照闸门 | `.autodev/bin/checkpoint snapshot-gate <task> -- <path...>` |
+| 建立存档 | `.autodev/bin/checkpoint archive "<指纹>" <type> "<描述>" -- <path...>` |
+| 展示存档列表 | `.autodev/bin/checkpoint list` |
+| 回退到目标 | `.autodev/bin/checkpoint rollback <hash|tag|index|fingerprint>` |
+| 合并建议 | `.autodev/bin/checkpoint merge-advice [integration-branch]` |
 
 脚本不可用时，再按本文手工兜底。
+
+`snapshot-gate` 与 `archive` 在工作区脏时默认 fail-close，必须通过 `-- <path...>` 或 `AUTODEV_CHECKPOINT_PATHS` 提供明确 scope。
 
 ## 分支安全规则
 
@@ -157,8 +178,9 @@ AI 开始任何代码改动前，**必须执行**：
 
 保护快照的原则：
 
-- 工作区有未提交改动：必须创建 commit，真正保存现场
+- 工作区有未提交改动：必须 scoped checkpoint，只提交本轮明确允许保护的路径
 - 工作区干净：只需要给当前 `HEAD` 建立 `snapshot/*` annotated tag，不再额外制造空 commit
+- 无法建立 scoped checkpoint：必须 fail-close，禁止继续写代码
 
 ### 执行前快照闸门（强制）
 
@@ -183,11 +205,20 @@ AI 开始任何代码改动前，**必须执行**：
 
 ```text
 执行指令到达
-├─ 有未提交改动 → 建立 💿 快照 commit
+├─ 有未提交改动
+│   ├─ 已明确本轮 checkpoint scope → 只对 scope 内路径建立 💿 快照 commit
+│   └─ 无法明确 scope → fail-close，停止写入
 └─ 工作区干净
     ├─ 已有当前任务基线（🎯 / 💿 / 💾） → 输出"闸门通过"
     └─ 无当前任务基线 → 建立 `snapshot/*` tag-only 保护点
 ```
+
+scope 规则：
+
+- scope 只能包含本轮准备触碰、且已确认可以纳入保护的文件或目录
+- 禁止用 `.`、仓库根目录、`git add -A` 或无审查的全量路径绕过 scope
+- 如果同一文件已有用户未提交改动，必须先说明该文件会被纳入保护；无法确认时停止
+- 若存在大量无关 dirty 文件，应提示用户先处理，或将当前任务缩小到可确认的 scope
 
 #### 闸门输出
 
@@ -214,7 +245,7 @@ AI 开始任何代码改动前，**必须执行**：
 1. 距离上次 commit > 10 分钟且即将写入
 2. 即将改动的文件与上次 commit 无关（跨模块）
 
-- 工作区有未提交改动：`git commit -m "「{任务}#保护」chore: 自动存档"`
+- 工作区有未提交改动：只提交明确 scope 内路径，`git commit -m "「{任务}#保护」chore: 自动存档"`
 - 工作区干净：创建 `snapshot/{任务简述}-{MMDDHHmm}` annotated tag，message 为 `「{任务}#保护」chore: 执行前基线保护（tag-only）`
 
 ## 💾 存档
@@ -241,13 +272,13 @@ AI 开始任何代码改动前，**必须执行**：
 
 ### Commit 格式
 
-`git add -A && git commit -m "「{指纹}」{类型}: {技术描述}"`
+`.autodev/bin/checkpoint archive "「{指纹}」" {类型} "{技术描述}" -- <path...>`
 
 类型：`feat` | `fix` | `refactor` | `perf` | `docs` | `chore`
 
 ### 暂存区审查
 
-每次 `git add -A` 之后、`git commit` 之前，必须执行：
+每次 scoped `git add -- <path...>` 之后、`git commit` 之前，必须执行：
 
 ```bash
 git diff --cached --name-only
@@ -268,7 +299,7 @@ credentials.* / secrets.*
 | `merge_allowed` | ⚠️ 警告并列出文件，默认不自动移除 |
 | `pr_only` | ⛔ 自动执行 `git reset HEAD <file>` 移出后再提交 |
 
-> 里程碑是 tag-only，不经过暂存区；保护快照只有在需要 commit 保存现场时才执行暂存区审查。
+> 里程碑是 tag-only，不经过暂存区；保护快照只有在需要 commit 保存现场时才执行暂存区审查。禁止使用全仓 `git add -A` 作为默认 checkpoint 行为。
 
 ### 输出格式
 
@@ -392,7 +423,7 @@ HEAD: d4e5f6g 「会员登录#02」
 
 ### 合并前分类建议
 
-执行 `scripts/checkpoint.sh merge-advice [integration-branch]`：
+执行 `.autodev/bin/checkpoint merge-advice [integration-branch]`：
 
 - 自动区分：
   - `工作流提交`：`#保护 / #起点 / #信任起点 / #完成`
@@ -438,6 +469,8 @@ HEAD: d4e5f6g 「会员登录#02」
 |------|----------|
 | 无 `.autodev/path.md` | 提示用户先创建，使用模板 `assets/templates/path.md` |
 | 当前在受保护分支 | 自动创建工作分支后再建立里程碑 tag |
+| wrapper 缺失 | 先运行 `${AUTODEV_SKILL_ROOT}/scripts/init-autodev.sh <project_dir>`，或直接调用 `${AUTODEV_SKILL_ROOT}/scripts/checkpoint.sh` |
+| dirty 工作区无法明确 scope | fail-close，停止写入并提示用户确认或先清理现场 |
 | push 失败 | 报告错误，保留本地 commit，提示手动处理 |
 | 冲突 | 停止自动流程，提示用户解决冲突后手动处理 |
 | 无改动 | 跳过 commit，正常输出任务完成报告 |
@@ -449,6 +482,8 @@ HEAD: d4e5f6g 「会员登录#02」
 - ❌ 不询问用户就自动推送到远程
 - ❌ 在受保护分支上执行 `git reset --hard`
 - ❌ 回退时不保存工作区未提交改动
+- ❌ 工作区脏时执行无 scope 的 checkpoint
+- ❌ 用 `git add -A` / 仓库根路径绕过 scoped checkpoint
 - ❌ 不执行 git 命令就凭记忆展示存档列表
 - ❌ 编造不存在的 commit hash
 - ❌ `pr_only` 模式下执行本地 merge 到集成分支

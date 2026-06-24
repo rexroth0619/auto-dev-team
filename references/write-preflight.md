@@ -38,11 +38,14 @@
    - 如果用户说“直接执行 / 不用确认 / 信任模式”，只能压缩说明和问题数量，不能跳过确认与澄清
    - 若确认或澄清中存在 `待确认` 项，先停下补齐；不得直接进入 FastTrack / 快照 / Blast Radius
 1. 初始化 `.autodev/`。
-   - 优先执行 `scripts/init-autodev.sh`
+   - 先确定 `AUTODEV_SKILL_ROOT` 指向 AutoDevTeam skill 本体目录
+   - 优先执行 `${AUTODEV_SKILL_ROOT}/scripts/init-autodev.sh <project_dir>`
    - 若脚本不可用，再手工复制 `assets/templates/` 中的必需模板
    - 必需文档包括 `.autodev/autodev-config.json`
    - 必须确保 `.autodev/temp/` 存在，用于承接 AI 生成的临时产物
    - 必须确保 `.autodev/flows/` 存在，用于承接 active flow 与历史 flow
+   - 必须确保 `.autodev/bin/checkpoint` 存在且可执行；它只是指向 `${AUTODEV_SKILL_ROOT}/scripts/checkpoint.sh` 的薄 wrapper
+   - ⛔ 禁止把 `scripts/checkpoint.sh` 理解为项目根目录下的脚本
 2. 执行工作区边界检查。
    - AI 生成的临时台账、调试输出、草稿、诊断材料，必须统一写入 `.autodev/temp/`
    - 若发现仓库其他路径存在 AI 生成的非交付临时文件，先迁移到 `.autodev/temp/`、清理，或加入 ignore 后再继续
@@ -80,19 +83,22 @@
    - 导航结果只沉淀必要决策：目标文件 / 符号、模块归属、复用点、验证范围和降级原因；不要新增独立 CodeGraph 记录文件
 7. 执行 `git log -5 --oneline`，判断最近改动与当前任务的关联或冲突。
 8. 执行分支守卫。
-   - 优先执行 `scripts/checkpoint.sh ensure-branch <task-slug>`
+   - 优先执行 `.autodev/bin/checkpoint ensure-branch <task-slug>`
+   - 若 wrapper 不存在，直接执行 `${AUTODEV_SKILL_ROOT}/scripts/checkpoint.sh ensure-branch <task-slug>`
    - 若脚本不可用，按 `references/principles/checkpoint-mechanism.md` 手工执行
 9. 🎯 建立里程碑（任务开始基线）。
-   - 默认开启；优先执行 `scripts/checkpoint.sh milestone "<任务>#起点" "任务开始前基线" <task-slug>`
+   - 默认开启；优先执行 `.autodev/bin/checkpoint milestone "<任务>#起点" "任务开始前基线" <task-slug>`
    - 里程碑默认是 tag-only；它只给当前 `HEAD` 命名，不额外制造空 commit
    - 若脚本不可用，按 `references/principles/checkpoint-mechanism.md` 手工执行
 10. 💿 注册执行前快照闸门。
    - 不在此步建立快照，延迟到实际执行指令到达时强制触发
-   - 优先执行 `scripts/checkpoint.sh snapshot-gate <task>`
-   - 快照闸门只在工作区脏时创建 commit；工作区干净时使用 tag-only 基线保护
+   - 优先执行 `.autodev/bin/checkpoint snapshot-gate <task> -- <本轮允许保护的路径...>`
+   - 若工作区干净，快照闸门使用 tag-only 基线保护
+   - 若工作区脏，必须显式传入本轮 scope；未传 scope 时脚本会 fail-close，禁止继续写代码
+   - scope 只能包含本轮即将触碰且已确认可纳入保护的文件；不得用 `.`、仓库根或无审查的全量路径绕过闸门
 11. 🧭 注册 Blast Radius 闸门。
    - 不在此步提前伪造报告，延迟到“第一行代码写入前”强制触发
-   - 默认执行 `scripts/blast-radius.py ... --write`
+   - 默认执行 `${AUTODEV_SKILL_ROOT}/scripts/blast-radius.py ... --write`
    - 产物落到 `.autodev/current-blast-radius.md` 和 `.autodev/blast-radius/*.md`
 12. 🧱 执行防屎山快速检查。
    - 先按 `references/principles/language-lock.md` 收紧架构语言，明确模块、接口面、接缝、适配器、测试面

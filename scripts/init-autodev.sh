@@ -9,6 +9,7 @@ Usage: init-autodev.sh [project_dir]
 Initialize .autodev in the target git repository:
   - create required markdown templates
   - create autodev-config.json
+  - create thin wrappers for skill-owned scripts
   - ensure .git/info/exclude contains .autodev/
 EOF
 }
@@ -36,6 +37,7 @@ mkdir -p "$AUTODEV_DIR/temp"
 mkdir -p "$AUTODEV_DIR/blast-radius"
 mkdir -p "$AUTODEV_DIR/flows"
 mkdir -p "$AUTODEV_DIR/plans"
+mkdir -p "$AUTODEV_DIR/bin"
 
 copy_if_missing() {
   local source_file="$1"
@@ -60,6 +62,17 @@ copy_if_missing "$TEMPLATE_DIR/autodev-config.json" "$AUTODEV_DIR/autodev-config
 copy_if_missing "$TEMPLATE_DIR/current-blast-radius.md" "$AUTODEV_DIR/current-blast-radius.md"
 copy_if_missing "$TEMPLATE_DIR/current-stack.json" "$AUTODEV_DIR/current-stack.json"
 copy_if_missing "$TEMPLATE_DIR/project-roadmap.md" "$AUTODEV_DIR/project-roadmap.md"
+
+CHECKPOINT_WRAPPER="$AUTODEV_DIR/bin/checkpoint"
+cat >"$CHECKPOINT_WRAPPER" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+AUTODEV_SKILL_ROOT="\${AUTODEV_SKILL_ROOT:-$SKILL_ROOT}"
+exec "\$AUTODEV_SKILL_ROOT/scripts/checkpoint.sh" "\$@"
+EOF
+chmod +x "$CHECKPOINT_WRAPPER"
+echo "🔗 已创建/更新: ${CHECKPOINT_WRAPPER#$REPO_ROOT/}（指向 skill 本体 checkpoint.sh）"
 
 python3 - "$AUTODEV_DIR/current-stack.json" "$(basename "$REPO_ROOT")" "$(date +"%Y-%m-%dT%H:%M:%S%z" | sed 's/\(..\)$/:\1/')" <<'PY'
 import json, pathlib, sys
